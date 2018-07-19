@@ -87,16 +87,16 @@
 <meta property="og:site_name" content="小小小青年">
 <meta property="og:description" content="新建Remote配置打开包含Gradle Plugin的Android Studio项目，点击项目[默认为app]的下拉箭头，选中Edit Configutations选项，在弹出的页面中点击左上角+号，添加一个Remote配置。名字随便起,然后用默认5005端口。 在Groovy文件中打断点  在IDE的Terminal中运行assembleDebug1./gradlew  assembleDe">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="http://yoursite.com/2018/06/25/Gradle-Plugin-断点调试/conf.png">
-<meta property="og:image" content="http://yoursite.com/2018/06/25/Gradle-Plugin-断点调试/remote.png">
-<meta property="og:image" content="http://yoursite.com/2018/06/25/Gradle-Plugin-断点调试/plugin.png">
-<meta property="og:image" content="http://yoursite.com/2018/06/25/Gradle-Plugin-断点调试/terminal.png">
-<meta property="og:image" content="http://yoursite.com/2018/06/25/Gradle-Plugin-断点调试/debug.png">
+<meta property="og:image" content="http://yoursite.com/2018/06/25/Gradle-Plugin-断点调试/Gradle-Plugin-断点调试/conf.png">
+<meta property="og:image" content="http://yoursite.com/2018/06/25/Gradle-Plugin-断点调试/Gradle-Plugin-断点调试/remote.png">
+<meta property="og:image" content="http://yoursite.com/2018/06/25/Gradle-Plugin-断点调试/Gradle-Plugin-断点调试/plugin.png">
+<meta property="og:image" content="http://yoursite.com/2018/06/25/Gradle-Plugin-断点调试/Gradle-Plugin-断点调试/terminal.png">
+<meta property="og:image" content="http://yoursite.com/2018/06/25/Gradle-Plugin-断点调试/Gradle-Plugin-断点调试/debug.png">
 <meta property="og:updated_time" content="2018-06-25T05:39:23.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Gradle Plugin 断点调试">
 <meta name="twitter:description" content="新建Remote配置打开包含Gradle Plugin的Android Studio项目，点击项目[默认为app]的下拉箭头，选中Edit Configutations选项，在弹出的页面中点击左上角+号，添加一个Remote配置。名字随便起,然后用默认5005端口。 在Groovy文件中打断点  在IDE的Terminal中运行assembleDebug1./gradlew  assembleDe">
-<meta name="twitter:image" content="http://yoursite.com/2018/06/25/Gradle-Plugin-断点调试/conf.png">
+<meta name="twitter:image" content="http://yoursite.com/2018/06/25/Gradle-Plugin-断点调试/Gradle-Plugin-断点调试/conf.png">
 
 
 
@@ -306,15 +306,15 @@
       
 
       
-        <h3 id="新建Remote配置"><a href="#新建Remote配置" class="headerlink" title="新建Remote配置"></a>新建Remote配置</h3><p>打开包含Gradle Plugin的Android Studio项目，点击项目[默认为app]的下拉箭头，选中Edit Configutations选项，在弹出的页面中点击左上角+号，添加一个Remote配置。名字随便起,然后用默认5005端口。<br><!-- ![ ](Gradle-Plugin-断点调试/conf.png) --><br><img src="/2018/06/25/Gradle-Plugin-断点调试/conf.png" width="100%" height="100%"><br><!-- ![ ](Gradle-Plugin-断点调试/remote.png) --><br><img src="/2018/06/25/Gradle-Plugin-断点调试/remote.png" width="100%" height="100%"></p>
+        <h3 id="新建Remote配置"><a href="#新建Remote配置" class="headerlink" title="新建Remote配置"></a>新建Remote配置</h3><p>打开包含Gradle Plugin的Android Studio项目，点击项目[默认为app]的下拉箭头，选中Edit Configutations选项，在弹出的页面中点击左上角+号，添加一个Remote配置。名字随便起,然后用默认5005端口。<br><!-- ![ ](Gradle-Plugin-断点调试/conf.png) --><br><img src="Gradle-Plugin-断点调试/conf.png" width="100%" height="100%"><br><!-- ![ ](Gradle-Plugin-断点调试/remote.png) --><br><img src="Gradle-Plugin-断点调试/remote.png" width="100%" height="100%"></p>
 <h3 id="在Groovy文件中打断点"><a href="#在Groovy文件中打断点" class="headerlink" title="在Groovy文件中打断点"></a>在Groovy文件中打断点</h3><!-- ![ ](Gradle-Plugin-断点调试/plugin.png) -->
-<p><img src="/2018/06/25/Gradle-Plugin-断点调试/plugin.png" width="100%" height="100%"><br><!-- ![ ](Gradle-Plugin-断点调试/terminal.png) --><br><img src="/2018/06/25/Gradle-Plugin-断点调试/terminal.png" width="100%" height="100%"></p>
+<p><img src="Gradle-Plugin-断点调试/plugin.png" width="100%" height="100%"><br><!-- ![ ](Gradle-Plugin-断点调试/terminal.png) --><br><img src="Gradle-Plugin-断点调试/terminal.png" width="100%" height="100%"></p>
 <h3 id="在IDE的Terminal中运行assembleDebug"><a href="#在IDE的Terminal中运行assembleDebug" class="headerlink" title="在IDE的Terminal中运行assembleDebug"></a>在IDE的Terminal中运行assembleDebug</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./gradlew  assembleDebug -Dorg.gradle.daemon=<span class="literal">false</span> -Dorg.gradle.debug=<span class="literal">true</span></span><br></pre></td></tr></table></figure>
 <blockquote>
 <p>运行后显示&gt; Starting Daemon 并阻塞。</p>
 </blockquote>
 <h3 id="运行"><a href="#运行" class="headerlink" title="运行"></a>运行</h3><!-- ![ ](Gradle-Plugin-断点调试/debug.png) -->
-<p><img src="/2018/06/25/Gradle-Plugin-断点调试/debug.png" width="100%" height="100%"></p>
+<p><img src="Gradle-Plugin-断点调试/debug.png" width="100%" height="100%"></p>
 
       
     </div>

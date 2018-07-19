@@ -87,13 +87,13 @@
 <meta property="og:site_name" content="小小小青年">
 <meta property="og:description" content="什么是小程序微信创始人张小龙说：小程序是一种不需要下载安装即可使用的应用，它实现了应用“触手可及”的梦想，用户扫一扫后者搜一下即可打开应用。也提现了“用完即走”的理念，用户不用关系是否安装太多应用的问题。应用将无处不在，随时可用，担又无需安装卸载。 了解小程序相关文档微信公众平台：分为服务号、订阅号、小程序三大账号体系。其中服务号是给企业和组织提供更强大的业务服务与用户管理能力，帮助企业快速实现">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="http://yoursite.com/2018/06/04/聊聊微信小程序%202/brother.png">
-<meta property="og:image" content="http://yoursite.com/2018/06/04/聊聊微信小程序%202/WechatIMG241.jpeg">
+<meta property="og:image" content="http://yoursite.com/2018/06/04/聊聊微信小程序%202/聊聊微信小程序/brother.png">
+<meta property="og:image" content="http://yoursite.com/2018/06/04/聊聊微信小程序%202/聊聊微信小程序/WechatIMG241.jpeg">
 <meta property="og:updated_time" content="2018-06-06T03:06:48.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="聊聊微信小程序">
 <meta name="twitter:description" content="什么是小程序微信创始人张小龙说：小程序是一种不需要下载安装即可使用的应用，它实现了应用“触手可及”的梦想，用户扫一扫后者搜一下即可打开应用。也提现了“用完即走”的理念，用户不用关系是否安装太多应用的问题。应用将无处不在，随时可用，担又无需安装卸载。 了解小程序相关文档微信公众平台：分为服务号、订阅号、小程序三大账号体系。其中服务号是给企业和组织提供更强大的业务服务与用户管理能力，帮助企业快速实现">
-<meta name="twitter:image" content="http://yoursite.com/2018/06/04/聊聊微信小程序%202/brother.png">
+<meta name="twitter:image" content="http://yoursite.com/2018/06/04/聊聊微信小程序%202/聊聊微信小程序/brother.png">
 
 
 
@@ -303,7 +303,7 @@
       
 
       
-        <p><img src="/2018/06/04/聊聊微信小程序 2/brother.png" alt=" "></p>
+        <p><img src="聊聊微信小程序/brother.png" alt=" "></p>
 <h3 id="什么是小程序"><a href="#什么是小程序" class="headerlink" title="什么是小程序"></a>什么是小程序</h3><p>微信创始人张小龙说：小程序是一种不需要下载安装即可使用的应用，它实现了应用“触手可及”的梦想，用户扫一扫后者搜一下即可打开应用。也提现了“用完即走”的理念，用户不用关系是否安装太多应用的问题。应用将无处不在，随时可用，担又无需安装卸载。</p>
 <h3 id="了解小程序"><a href="#了解小程序" class="headerlink" title="了解小程序"></a>了解小程序</h3><h4 id="相关文档"><a href="#相关文档" class="headerlink" title="相关文档"></a>相关文档</h4><p><a href="https://mp.weixin.qq.com/" target="_blank" rel="noopener">微信公众平台</a>：分为服务号、订阅号、小程序三大账号体系。其中服务号是给企业和组织提供更强大的业务服务与用户管理能力，帮助企业快速实现全新的公众号服务平台。订阅号是为媒体和个人提供一种新的信息传播方式，构建与读者之间更好的沟通与管理模式。小程序是一种新开放能力，可以在微信内被便捷地获取和传播，同时具有出色的使用体验。<br><a href="https://developers.weixin.qq.com/miniprogram/dev/index.html" target="_blank" rel="noopener">小程序开发文档</a></p>
 <h4 id="开发准备"><a href="#开发准备" class="headerlink" title="开发准备"></a>开发准备</h4><ul>
@@ -518,7 +518,7 @@
 <h3 id="WXS-模块"><a href="#WXS-模块" class="headerlink" title="WXS 模块"></a>WXS 模块</h3><p>每一个 .wxs 文件和 <wxs> 标签都是一个单独的模块。<br>每个模块都有自己独立的作用域。即在一个模块里面定义的变量与函数，默认为私有的，对其他模块不可见。<br>一个模块要想对外暴露其内部的私有变量与函数，只能通过 module.exports 实现。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// /pages/tools.wxs</span></span><br><span class="line">var foo = <span class="string">"'hello world' from tools.wxs"</span>;</span><br><span class="line">var bar = function (d) &#123;</span><br><span class="line">  <span class="keyword">return</span> d;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">module</span>.<span class="keyword">exports</span> = &#123;</span><br><span class="line">  FOO: foo,</span><br><span class="line">  bar: bar,</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">module</span>.<span class="keyword">exports</span>.msg = <span class="string">"some msg"</span>;</span><br></pre></td></tr></table></figure></wxs></p>
 <figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">wxs</span> <span class="attr">src</span>=<span class="string">"./../tools.wxs"</span> <span class="attr">module</span>=<span class="string">"tools"</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">view</span>&gt;</span> &#123;&#123;tools.msg&#125;&#125; <span class="tag">&lt;/<span class="name">view</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">view</span>&gt;</span> &#123;&#123;tools.bar(tools.FOO)&#125;&#125; <span class="tag">&lt;/<span class="name">view</span>&gt;</span></span><br></pre></td></tr></table></figure>
 <p>页面输出：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">some msg</span><br><span class="line">&apos;hello world&apos; from tools.wxs</span><br></pre></td></tr></table></figure></p>
-<h3 id="自定义组件"><a href="#自定义组件" class="headerlink" title="自定义组件"></a>自定义组件</h3><h3 id="断点调试"><a href="#断点调试" class="headerlink" title="断点调试"></a>断点调试</h3><p><img src="/2018/06/04/聊聊微信小程序 2/WechatIMG241.jpeg" alt=" "></p>
+<h3 id="自定义组件"><a href="#自定义组件" class="headerlink" title="自定义组件"></a>自定义组件</h3><h3 id="断点调试"><a href="#断点调试" class="headerlink" title="断点调试"></a>断点调试</h3><p><img src="聊聊微信小程序/WechatIMG241.jpeg" alt=" "></p>
 
       
     </div>
