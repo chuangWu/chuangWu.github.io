@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="weex,android,npm," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="本文基于Mac系统，结合Android Studio进行Weex SDK的配置与使用。 基础配置npm version 5.6.0Android Studio 3.0.1Gradle Version 2.14.1Android Plugin Version 2.2.3 Gradle配置项目build.gradle配置，classpath和subprojects需要在项目跟目录的build.grad">
+<meta name="keywords" content="weex,android,npm">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android下Weex环境配置">
+<meta property="og:url" content="http://yoursite.com/2018/05/24/Android下Weex环境配置/index.html">
+<meta property="og:site_name" content="小小小青年">
+<meta property="og:description" content="本文基于Mac系统，结合Android Studio进行Weex SDK的配置与使用。 基础配置npm version 5.6.0Android Studio 3.0.1Gradle Version 2.14.1Android Plugin Version 2.2.3 Gradle配置项目build.gradle配置，classpath和subprojects需要在项目跟目录的build.grad">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-05-25T07:06:55.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android下Weex环境配置">
+<meta name="twitter:description" content="本文基于Mac系统，结合Android Studio进行Weex SDK的配置与使用。 基础配置npm version 5.6.0Android Studio 3.0.1Gradle Version 2.14.1Android Plugin Version 2.2.3 Gradle配置项目build.gradle配置，classpath和subprojects需要在项目跟目录的build.grad">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/05/24/Android下Weex环境配置/"/>
+
+
+
+
+
+  <title>Android下Weex环境配置 | 小小小青年</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">小小小青年</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/24/Android下Weex环境配置/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="chuangWu">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="小小小青年">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Android下Weex环境配置</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-24T11:21:06+08:00">
+                2018-05-24
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本文基于Mac系统，结合Android Studio进行Weex SDK的配置与使用。</p>
+<h3 id="基础配置"><a href="#基础配置" class="headerlink" title="基础配置"></a>基础配置</h3><p>npm version 5.6.0<br>Android Studio 3.0.1<br>Gradle Version 2.14.1<br>Android Plugin Version 2.2.3</p>
+<h3 id="Gradle配置"><a href="#Gradle配置" class="headerlink" title="Gradle配置"></a>Gradle配置</h3><p>项目build.gradle配置，classpath和subprojects需要在项目跟目录的build.gradle中配置。</p>
+<h4 id="classpath依赖配置"><a href="#classpath依赖配置" class="headerlink" title="classpath依赖配置"></a>classpath依赖配置</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">classpath <span class="string">'com.taobao.android:weexplugin-gradle-plugin:1.3'</span></span><br></pre></td></tr></table></figure>
+<h4 id="版本统一管理-非必须"><a href="#版本统一管理-非必须" class="headerlink" title="版本统一管理(非必须)"></a>版本统一管理(非必须)</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">subprojects &#123;</span><br><span class="line">    ext &#123;</span><br><span class="line">        compileSdkVersion=<span class="number">26</span></span><br><span class="line">        buildToolsVersion=<span class="string">"26.0.0"</span></span><br><span class="line">        minSdkVersion=<span class="number">14</span></span><br><span class="line">        appMinSdkVersion=<span class="number">15</span></span><br><span class="line">        targetSdkVersion=<span class="number">26</span></span><br><span class="line">        supportLibVersion=<span class="string">"26.1.0"</span></span><br><span class="line">        fastjsonLibVersion=<span class="string">"1.1.46.android"</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="添加Gradle插件"><a href="#添加Gradle插件" class="headerlink" title="添加Gradle插件"></a>添加Gradle插件</h4><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apply plugin: 'com.taobao.android.weex.plugin.gradle'</span><br></pre></td></tr></table></figure>
+<h4 id="添加依赖包"><a href="#添加依赖包" class="headerlink" title="添加依赖包"></a>添加依赖包</h4><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">compile 'com.taobao.android:weex_sdk:0.16.0'</span><br><span class="line">compile 'com.google.code.findbugs:jsr305:2.0.1'</span><br><span class="line">compile 'com.squareup.okhttp:okhttp:2.3.0'</span><br><span class="line">compile 'com.squareup.okhttp:okhttp-ws:2.3.0'</span><br><span class="line">compile 'com.squareup.okio:okio:1.0.1'</span><br><span class="line">compile 'com.squareup.picasso:picasso:2.5.2'</span><br><span class="line">compile <span class="string">"com.alibaba:fastjson:$&#123;project.fastjsonLibVersion&#125;"</span></span><br><span class="line">compile <span class="string">"com.android.support:support-v4:$&#123;project.supportLibVersion&#125;"</span></span><br><span class="line">compile <span class="string">"com.android.support:appcompat-v7:$&#123;project.supportLibVersion&#125;"</span></span><br><span class="line">compile <span class="string">"com.android.support:design:$&#123;project.supportLibVersion&#125;"</span></span><br><span class="line">compile <span class="string">"com.android.support:support-annotations:$&#123;project.supportLibVersion&#125;"</span></span><br><span class="line">compile 'com.taobao.android:weex_inspector:0.10.0.5'</span><br><span class="line">compile 'com.journeyapps:zxing-android-embedded:3.4.0'</span><br><span class="line">compile 'com.taobao.android:weexplugin-loader:1.3'</span><br><span class="line">compile 'com.taobao.android:weexplugin-processor:1.3'</span><br><span class="line">compile 'com.taobao.android:weexplugin-annotation:1.3'</span><br></pre></td></tr></table></figure>
+<h3 id="SDK初始化"><a href="#SDK初始化" class="headerlink" title="SDK初始化"></a>SDK初始化</h3><p>在Application的onCreate方法中进行SDK初始化，添加图片适配器，注册扩展module和注册扩展component。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">super</span>.onCreate();</span><br><span class="line">    InitConfig config = <span class="keyword">new</span> InitConfig.Builder().setImgAdapter(<span class="keyword">new</span> ImageAdapter()).build();</span><br><span class="line">    WXSDKEngine.initialize(<span class="keyword">this</span>, config);</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        WXSDKEngine.registerModule(<span class="string">"clickEvent"</span>, ClickEventModule.class);</span><br><span class="line">        WXSDKEngine.registerModule(<span class="string">"phoneInfo"</span>, PhoneInfoModule.class);</span><br><span class="line">        WXSDKEngine.registerComponent(<span class="string">"richText"</span>, RichText.class, <span class="keyword">false</span>);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (WXException e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="图片加载"><a href="#图片加载" class="headerlink" title="图片加载"></a>图片加载</h3><p>加载图片需要实现IWXImgLoaderAdapter接口来完成，setImage方法返回了图片的地址和ImageView对象。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ImageAdapter</span> <span class="keyword">implements</span> <span class="title">IWXImgLoaderAdapter</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setImage</span><span class="params">(String url, ImageView view, WXImageQuality quality, WXImageStrategy strategy)</span> </span>&#123;</span><br><span class="line">        Picasso.with(WXEnvironment.getApplication())</span><br><span class="line">                .load(url)</span><br><span class="line">                .into(view);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="页面渲染"><a href="#页面渲染" class="headerlink" title="页面渲染"></a>页面渲染</h3><p>在Activity实例化WXSDKInstance对象，注册registerRenderListener监听，通过render方法实现渲染<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(@Nullable Bundle savedInstanceState)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">super</span>.onCreate(savedInstanceState);</span><br><span class="line">    mWXSDKInstance = <span class="keyword">new</span> WXSDKInstance(<span class="keyword">this</span>);</span><br><span class="line">    mWXSDKInstance.registerRenderListener(<span class="keyword">this</span>);</span><br><span class="line">    <span class="comment">//加载本地index.js，加载远程js使用renderByUrl方法</span></span><br><span class="line">    mWXSDKInstance.render(<span class="string">"SimpleName"</span>, WXFileUtils.loadAsset(<span class="string">"index.js"</span>, <span class="keyword">this</span>), <span class="keyword">null</span>, <span class="keyword">null</span>, WXRenderStrategy.APPEND_ASYNC);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onViewCreated</span><span class="params">(WXSDKInstance instance, View view)</span> </span>&#123;</span><br><span class="line">    setContentView(view);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="点击事件"><a href="#点击事件" class="headerlink" title="点击事件"></a>点击事件</h3><h4 id="Module的注册与获取"><a href="#Module的注册与获取" class="headerlink" title="Module的注册与获取"></a>Module的注册与获取</h4><p>Android端需要在应用初始化的时候通过WXSDKEngine来注册,注意Module必须是WXModule的子类<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">WXSDKEngine.registerModule(<span class="string">"clickEvent"</span>, ClickEventModule.class);</span><br></pre></td></tr></table></figure></p>
+<p>Weex端需要在script标签内获取module<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> modal = weex.requireModule(<span class="string">'clickEvent'</span>);</span><br></pre></td></tr></table></figure></p>
+<h4 id="weex端触发事件"><a href="#weex端触发事件" class="headerlink" title="weex端触发事件"></a>weex端触发事件</h4><p>页面层即template标签内触发点击事件<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;image :src=<span class="string">"logo"</span> <span class="class"><span class="keyword">class</span></span>=<span class="string">"logo"</span> <span class="meta">@click</span>=<span class="string">"testClick"</span>/&gt;</span><br></pre></td></tr></table></figure></p>
+<p>逻辑层即script标签内调用module对象中的方法，即执行Android端ClickEventModule的clickEvent方法<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">methods: &#123;</span><br><span class="line">    testClick() &#123;</span><br><span class="line">        clickEvent.clickEvent();</span><br><span class="line">    &#125;,</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></p>
+<h4 id="android端执行事件"><a href="#android端执行事件" class="headerlink" title="android端执行事件"></a>android端执行事件</h4><p>事件的执行可以通过JSMethod注解来指定运行的线程环境<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ClickEventModule</span> <span class="keyword">extends</span> <span class="title">WXModule</span></span>&#123;</span><br><span class="line">    <span class="meta">@JSMethod</span>(uiThread = <span class="keyword">true</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">clickEvent</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        Toast.makeText(mWXSDKInstance.getContext(), <span class="string">"item clicked"</span>, Toast.LENGTH_SHORT).show();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="数据传递-android-gt-weex"><a href="#数据传递-android-gt-weex" class="headerlink" title="数据传递 android =&gt; weex"></a>数据传递 android =&gt; weex</h3><h4 id="Module的注册与获取-1"><a href="#Module的注册与获取-1" class="headerlink" title="Module的注册与获取"></a>Module的注册与获取</h4><p>Android端需要在应用初始化的时候通过WXSDKEngine来注册,注意Module必须是WXModule的子类<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">WXSDKEngine.registerModule(<span class="string">"phoneInfo"</span>, PhoneInfoModule.class);</span><br></pre></td></tr></table></figure></p>
+<p>Weex端需要在script标签内获取module<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> phoneInfo = weex.requireModule(<span class="string">'phoneInfo'</span>);</span><br></pre></td></tr></table></figure></p>
+<h4 id="weex端触发事件-1"><a href="#weex端触发事件-1" class="headerlink" title="weex端触发事件"></a>weex端触发事件</h4><p>页面层即template标签内触发点击事件<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;text class="greeting" @click="getPhoneInfo"&gt;The environment is ready!&lt;/text&gt;</span><br></pre></td></tr></table></figure></p>
+<p>逻辑层即script标签内调用module对象中的方法，即执行Android端PhoneInfoModule的getPhoneInfo方法<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">methods: &#123;</span><br><span class="line">        getPhoneInfo() &#123;</span><br><span class="line">            phoneInfo.getPhoneInfo(function (e) &#123;</span><br><span class="line">                modal.alert(&#123;</span><br><span class="line">                    message: JSON.stringify(e),</span><br><span class="line">                    duration: <span class="number">0.3</span></span><br><span class="line">                &#125;)</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></p>
+<h4 id="android端执行事件-1"><a href="#android端执行事件-1" class="headerlink" title="android端执行事件"></a>android端执行事件</h4><p>事件的执行可以通过JSMethod注解来指定运行的线程环境<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PhoneInfoModule</span> <span class="keyword">extends</span> <span class="title">WXModule</span> </span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 获取 Phone 相关信息，并回调给 weex</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@JSMethod</span>(uiThread = <span class="keyword">false</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">getPhoneInfo</span><span class="params">(JSCallback callback)</span> </span>&#123;</span><br><span class="line">        Map&lt;String, String&gt; infos = <span class="keyword">new</span> HashMap&lt;&gt;();</span><br><span class="line">        infos.put(<span class="string">"board"</span>, Build.BOARD);</span><br><span class="line">        infos.put(<span class="string">"brand"</span>, Build.BRAND);</span><br><span class="line">        infos.put(<span class="string">"device"</span>, Build.DEVICE);</span><br><span class="line">        infos.put(<span class="string">"model"</span>, Build.MODEL);</span><br><span class="line">        callback.invoke(infos);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="数据传递-weex-gt-android"><a href="#数据传递-weex-gt-android" class="headerlink" title="数据传递 weex =&gt; android"></a>数据传递 weex =&gt; android</h3><h4 id="Component的注册与获取"><a href="#Component的注册与获取" class="headerlink" title="Component的注册与获取"></a>Component的注册与获取</h4><p>Android端需要在应用初始化的时候通过WXSDKEngine来注册,注意Component必须是WXComponent的子类<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">WXSDKEngine.registerComponent(<span class="string">"richText"</span>, RichText.class, <span class="keyword">false</span>);</span><br></pre></td></tr></table></figure></p>
+<h4 id="weex端指定数据源"><a href="#weex端指定数据源" class="headerlink" title="weex端指定数据源"></a>weex端指定数据源</h4><p>页面层即template标签内指定数据源,标签名称必须要跟注册的时候moduleName对应。<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;richText tel="10086" style="width:200px;height:100px"&gt;&lt;/richText&gt;</span><br></pre></td></tr></table></figure></p>
+<h4 id="android端获取weex数据展示"><a href="#android端获取weex数据展示" class="headerlink" title="android端获取weex数据展示"></a>android端获取weex数据展示</h4><p>我们使用一个TextView组件来展示一段文本,通过WXComponentProp注解来获取页面指定的内容<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RichText</span> <span class="keyword">extends</span> <span class="title">WXComponent</span>&lt;<span class="title">TextView</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">RichText</span><span class="params">(WXSDKInstance instance, WXDomObject dom, WXVContainer parent)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(instance, dom, parent);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> TextView <span class="title">initComponentHostView</span><span class="params">(@NonNull Context context)</span> </span>&#123;</span><br><span class="line">        TextView textView = <span class="keyword">new</span> TextView(context);</span><br><span class="line">        textView.setTextSize(<span class="number">20</span>);</span><br><span class="line">        <span class="keyword">return</span> textView;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@WXComponentProp</span>(name = <span class="string">"tel"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setTel</span><span class="params">(String number)</span> </span>&#123;</span><br><span class="line">        getHostView().setText(number + <span class="string">"哈哈哈"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="SDK混淆规则"><a href="#SDK混淆规则" class="headerlink" title="SDK混淆规则"></a>SDK混淆规则</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">-keep <span class="class"><span class="keyword">class</span> <span class="title">com</span>.<span class="title">taobao</span>.<span class="title">weex</span>.<span class="title">WXDebugTool</span></span>&#123;*;&#125;</span><br><span class="line">-keep <span class="class"><span class="keyword">class</span> <span class="title">com</span>.<span class="title">taobao</span>.<span class="title">weex</span>.<span class="title">devtools</span>.<span class="title">common</span>.<span class="title">LogUtil</span></span>&#123;*;&#125;</span><br><span class="line">-keepclassmembers <span class="class"><span class="keyword">class</span> ** </span>&#123;</span><br><span class="line">  <span class="meta">@com</span>.taobao.weex.ui.component.WXComponentProp <span class="keyword">public</span> *;</span><br><span class="line">&#125;</span><br><span class="line">-keep <span class="class"><span class="keyword">class</span> <span class="title">com</span>.<span class="title">taobao</span>.<span class="title">weex</span>.<span class="title">bridge</span>.**</span>&#123;*;&#125;</span><br><span class="line">-keep <span class="class"><span class="keyword">class</span> <span class="title">com</span>.<span class="title">taobao</span>.<span class="title">weex</span>.<span class="title">dom</span>.**</span>&#123;*;&#125;</span><br><span class="line">-keep <span class="class"><span class="keyword">class</span> <span class="title">com</span>.<span class="title">taobao</span>.<span class="title">weex</span>.<span class="title">adapter</span>.**</span>&#123;*;&#125;</span><br><span class="line">-keep <span class="class"><span class="keyword">class</span> <span class="title">com</span>.<span class="title">taobao</span>.<span class="title">weex</span>.<span class="title">common</span>.**</span>&#123;*;&#125;</span><br><span class="line">-keep <span class="class"><span class="keyword">class</span> * <span class="keyword">implements</span> <span class="title">com</span>.<span class="title">taobao</span>.<span class="title">weex</span>.<span class="title">IWXObject</span></span>&#123;*;&#125;</span><br><span class="line">-keep <span class="class"><span class="keyword">class</span> <span class="title">com</span>.<span class="title">taobao</span>.<span class="title">weex</span>.<span class="title">ui</span>.**</span>&#123;*;&#125;</span><br><span class="line">-keep <span class="class"><span class="keyword">class</span> <span class="title">com</span>.<span class="title">taobao</span>.<span class="title">weex</span>.<span class="title">ui</span>.<span class="title">component</span>.**</span>&#123;*;&#125;</span><br><span class="line">-keep <span class="class"><span class="keyword">class</span> <span class="title">com</span>.<span class="title">taobao</span>.<span class="title">weex</span>.<span class="title">utils</span>.**</span>&#123;</span><br><span class="line">    <span class="keyword">public</span> &lt;fields&gt;;</span><br><span class="line">    <span class="keyword">public</span> &lt;methods&gt;;</span><br><span class="line">    &#125;</span><br><span class="line">-keep <span class="class"><span class="keyword">class</span> <span class="title">com</span>.<span class="title">taobao</span>.<span class="title">weex</span>.<span class="title">view</span>.**</span>&#123;*;&#125;</span><br><span class="line">-keep <span class="class"><span class="keyword">class</span> <span class="title">com</span>.<span class="title">taobao</span>.<span class="title">weex</span>.<span class="title">module</span>.**</span>&#123;*;&#125;</span><br><span class="line">-keep <span class="keyword">public</span> <span class="class"><span class="keyword">class</span> * <span class="keyword">extends</span> <span class="title">com</span>.<span class="title">taobao</span>.<span class="title">weex</span>.<span class="title">common</span>.<span class="title">WXModule</span></span>&#123;*;&#125;</span><br><span class="line">-keep <span class="keyword">public</span> <span class="class"><span class="keyword">class</span> * <span class="keyword">extends</span> <span class="title">com</span>.<span class="title">taobao</span>.<span class="title">weex</span>.<span class="title">ui</span>.<span class="title">component</span>.<span class="title">WXComponent</span></span>&#123;*;&#125;</span><br><span class="line">-keep <span class="class"><span class="keyword">class</span> * <span class="keyword">implements</span> <span class="title">com</span>.<span class="title">taobao</span>.<span class="title">weex</span>.<span class="title">ui</span>.<span class="title">IExternalComponentGetter</span></span>&#123;*;&#125;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>您的支持是我原创的动力</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechatpay.jpg" alt="chuangWu 微信支付"/>
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/images/alipay.jpg" alt="chuangWu 支付宝"/>
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+
+<div>  
+     
+ 
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+      <strong>本文作者：</strong>chuangWu
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="/2018/05/24/Android下Weex环境配置/" title="Android下Weex环境配置">2018/05/24/Android下Weex环境配置/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权： </strong>
+    本站文章均采用 <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0 CN</a> 许可协议，请勿用于商业，转载注明出处！
+  </li>
+</ul>
+
+</div>
+
+      
+        <div class="post-tags">
+          
+            <a href="/tags/weex/" rel="tag"># weex</a>
+          
+            <a href="/tags/android/" rel="tag"># android</a>
+          
+            <a href="/tags/npm/" rel="tag"># npm</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/05/23/hello-markdown/" rel="next" title="markdown基本语法">
+                <i class="fa fa-chevron-left"></i> markdown基本语法
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/05/25/Mac下搭建Weex环境/" rel="prev" title="Mac下搭建Weex环境">
+                Mac下搭建Weex环境 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+      <div>    
+      
+
+
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">chuangWu</p>
+              <p class="site-description motion-element" itemprop="description">选择大于努力</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">16</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">24</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#基础配置"><span class="nav-number">1.</span> <span class="nav-text">基础配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Gradle配置"><span class="nav-number">2.</span> <span class="nav-text">Gradle配置</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#classpath依赖配置"><span class="nav-number">2.1.</span> <span class="nav-text">classpath依赖配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#版本统一管理-非必须"><span class="nav-number">2.2.</span> <span class="nav-text">版本统一管理(非必须)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#添加Gradle插件"><span class="nav-number">2.3.</span> <span class="nav-text">添加Gradle插件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#添加依赖包"><span class="nav-number">2.4.</span> <span class="nav-text">添加依赖包</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SDK初始化"><span class="nav-number">3.</span> <span class="nav-text">SDK初始化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#图片加载"><span class="nav-number">4.</span> <span class="nav-text">图片加载</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#页面渲染"><span class="nav-number">5.</span> <span class="nav-text">页面渲染</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#点击事件"><span class="nav-number">6.</span> <span class="nav-text">点击事件</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Module的注册与获取"><span class="nav-number">6.1.</span> <span class="nav-text">Module的注册与获取</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#weex端触发事件"><span class="nav-number">6.2.</span> <span class="nav-text">weex端触发事件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#android端执行事件"><span class="nav-number">6.3.</span> <span class="nav-text">android端执行事件</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#数据传递-android-gt-weex"><span class="nav-number">7.</span> <span class="nav-text">数据传递 android =&gt; weex</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Module的注册与获取-1"><span class="nav-number">7.1.</span> <span class="nav-text">Module的注册与获取</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#weex端触发事件-1"><span class="nav-number">7.2.</span> <span class="nav-text">weex端触发事件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#android端执行事件-1"><span class="nav-number">7.3.</span> <span class="nav-text">android端执行事件</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#数据传递-weex-gt-android"><span class="nav-number">8.</span> <span class="nav-text">数据传递 weex =&gt; android</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Component的注册与获取"><span class="nav-number">8.1.</span> <span class="nav-text">Component的注册与获取</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#weex端指定数据源"><span class="nav-number">8.2.</span> <span class="nav-text">weex端指定数据源</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#android端获取weex数据展示"><span class="nav-number">8.3.</span> <span class="nav-text">android端获取weex数据展示</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SDK混淆规则"><span class="nav-number">9.</span> <span class="nav-text">SDK混淆规则</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">chuangWu</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
