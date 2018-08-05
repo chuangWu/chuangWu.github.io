@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="ListView,RecyclerView," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="背景ListView与RecyclerView缓存机制原理大致相似，如下图所示：滑动过程中，离屏的ItemView即被回收至缓存，入屏的ItemView则会优先从缓存中获取，只是ListView与RecyclerView的实现细节有差异.（这只是缓存使用的其中一个场景，还有如刷新等） 缓存机制对比层级不同RecyclerView比ListView多两级缓存，支持多个离ItemView缓存，支持开发">
+<meta name="keywords" content="ListView,RecyclerView">
+<meta property="og:type" content="article">
+<meta property="og:title" content="说说ListView和RecyclerView">
+<meta property="og:url" content="http://yoursite.com/2018/07/16/说说ListView和RecyclerView/index.html">
+<meta property="og:site_name" content="小小小青年">
+<meta property="og:description" content="背景ListView与RecyclerView缓存机制原理大致相似，如下图所示：滑动过程中，离屏的ItemView即被回收至缓存，入屏的ItemView则会优先从缓存中获取，只是ListView与RecyclerView的实现细节有差异.（这只是缓存使用的其中一个场景，还有如刷新等） 缓存机制对比层级不同RecyclerView比ListView多两级缓存，支持多个离ItemView缓存，支持开发">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/2018/07/16/说说ListView和RecyclerView/说说ListView和RecyclerView/list_recycler_background.jpg">
+<meta property="og:image" content="http://yoursite.com/2018/07/16/说说ListView和RecyclerView/说说ListView和RecyclerView/listview_cache.png">
+<meta property="og:image" content="http://yoursite.com/2018/07/16/说说ListView和RecyclerView/说说ListView和RecyclerView/recyclerview_cache.jpg">
+<meta property="og:image" content="http://yoursite.com/2018/07/16/说说ListView和RecyclerView/说说ListView和RecyclerView/listview_flow.png">
+<meta property="og:image" content="http://yoursite.com/2018/07/16/说说ListView和RecyclerView/说说ListView和RecyclerView/recycler_flow.png">
+<meta property="og:image" content="http://yoursite.com/2018/07/16/说说ListView和RecyclerView/说说ListView和RecyclerView/show_list1.gif">
+<meta property="og:image" content="http://yoursite.com/2018/07/16/说说ListView和RecyclerView/说说ListView和RecyclerView/show_list2.gif">
+<meta property="og:image" content="http://yoursite.com/2018/07/16/说说ListView和RecyclerView/说说ListView和RecyclerView/show_list3.gif">
+<meta property="og:image" content="http://yoursite.com/2018/07/16/说说ListView和RecyclerView/说说ListView和RecyclerView/layout.png">
+<meta property="og:image" content="http://yoursite.com/2018/07/16/说说ListView和RecyclerView/说说ListView和RecyclerView/fill.png">
+<meta property="og:image" content="http://yoursite.com/2018/07/16/说说ListView和RecyclerView/说说ListView和RecyclerView/flag.png">
+<meta property="og:image" content="http://yoursite.com/2018/07/16/说说ListView和RecyclerView/说说ListView和RecyclerView/wx.png">
+<meta property="og:updated_time" content="2018-07-17T02:01:15.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="说说ListView和RecyclerView">
+<meta name="twitter:description" content="背景ListView与RecyclerView缓存机制原理大致相似，如下图所示：滑动过程中，离屏的ItemView即被回收至缓存，入屏的ItemView则会优先从缓存中获取，只是ListView与RecyclerView的实现细节有差异.（这只是缓存使用的其中一个场景，还有如刷新等） 缓存机制对比层级不同RecyclerView比ListView多两级缓存，支持多个离ItemView缓存，支持开发">
+<meta name="twitter:image" content="http://yoursite.com/2018/07/16/说说ListView和RecyclerView/说说ListView和RecyclerView/list_recycler_background.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/07/16/说说ListView和RecyclerView/"/>
+
+
+
+
+
+  <title>说说ListView和RecyclerView | 小小小青年</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">小小小青年</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/07/16/说说ListView和RecyclerView/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="chuangWu">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="小小小青年">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">说说ListView和RecyclerView</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-07-16T17:15:36+08:00">
+                2018-07-16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>ListView与RecyclerView缓存机制原理大致相似，如下图所示：<br><img src="说说ListView和RecyclerView/list_recycler_background.jpg" alt=""><br>滑动过程中，离屏的ItemView即被回收至缓存，入屏的ItemView则会优先从缓存中获取，只是ListView与RecyclerView的实现细节有差异.（这只是缓存使用的其中一个场景，还有如刷新等）</p>
+<h3 id="缓存机制对比"><a href="#缓存机制对比" class="headerlink" title="缓存机制对比"></a>缓存机制对比</h3><h4 id="层级不同"><a href="#层级不同" class="headerlink" title="层级不同"></a>层级不同</h4><p>RecyclerView比ListView多两级缓存，支持多个离ItemView缓存，支持开发者自定义缓存处理逻辑，支持所有RecyclerView共用同一个RecyclerViewPool(缓存池)。<br>ListView(两级缓存)<br><img src="说说ListView和RecyclerView/listview_cache.png" alt=""><br>RecyclerView(四级缓存)：<br><img src="说说ListView和RecyclerView/recyclerview_cache.jpg" alt=""><br>ListView和RecyclerView缓存机制基本一致：</p>
+<ol>
+<li>mActiveViews和mAttachedScrap功能相似，意义在于快速重用屏幕上可见的列表项ItemView，而不需要重新createView和bindView；</li>
+<li>mScrapView和mCachedViews + mReyclerViewPool功能相似，意义在于缓存离开屏幕的ItemView，目的是让即将进入屏幕的ItemView重用.</li>
+<li>RecyclerView的优势在于a.mCacheViews的使用，可以做到屏幕外的列表项ItemView进入屏幕内时也无须bindView快速重用；b.mRecyclerPool可以供多个RecyclerView共同使用，在特定场景下，如viewpager+多个列表页下有优势.客观来说，RecyclerView在特定场景下对ListView的缓存机制做了补强和完善。<h4 id="缓存不同："><a href="#缓存不同：" class="headerlink" title="缓存不同："></a>缓存不同：</h4></li>
+<li>RecyclerView缓存RecyclerView.ViewHolder，抽象可理解为：<br>View + ViewHolder(避免每次createView时调用findViewById) + flag(标识状态)；</li>
+<li>ListView缓存View。<br>缓存不同，二者在缓存的使用上也略有差别，具体来说：<br>ListView获取缓存的流程：<br><img src="说说ListView和RecyclerView/listview_flow.png" alt=""><br>RecyclerView获取缓存的流程：<br><img src="说说ListView和RecyclerView/recycler_flow.png" alt=""><br>RecyclerView中mCacheViews(屏幕外)获取缓存时，是通过匹配pos获取目标位置的缓存，这样做的好处是，当数据源数据不变的情况下，无须重新bindView：<br><img src="说说ListView和RecyclerView/show_list1.gif" alt=""><br>而同样是离屏缓存，ListView从mScrapViews根据pos获取相应的缓存，但是并没有直接使用，而是重新getView（即必定会重新bindView），相关代码如下：<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//AbsListView源码：line2345</span></span><br><span class="line"><span class="comment">//通过匹配pos从mScrapView中获取缓存</span></span><br><span class="line"><span class="keyword">final</span> View scrapView = mRecycler.getScrapView(position);</span><br><span class="line"><span class="comment">//无论是否成功都直接调用getView,导致必定会调用createView</span></span><br><span class="line"><span class="keyword">final</span> View child = mAdapter.getView(position, scrapView, <span class="keyword">this</span>);</span><br><span class="line"><span class="keyword">if</span> (scrapView != <span class="keyword">null</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (child != scrapView) &#123;</span><br><span class="line">        mRecycler.addScrapView(scrapView, position);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                ...</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>ListView中通过pos获取的是view，即pos–&gt;view；<br>RecyclerView中通过pos获取的是viewholder，即pos –&gt; (view，viewHolder，flag)；<br>从流程图中可以看出，标志flag的作用是判断view是否需要重新bindView，这也是RecyclerView实现局部刷新的一个核心。</p>
+<h4 id="局部刷新"><a href="#局部刷新" class="headerlink" title="局部刷新"></a>局部刷新</h4><p>由上文可知，RecyclerView的缓存机制确实更加完善，但还不算质的变化，RecyclerView更大的亮点在于提供了局部刷新的接口，通过局部刷新，就能避免调用许多无用的bindView。下面是RecyclerView和ListView添加，移除Item效果对比<br><img src="说说ListView和RecyclerView/show_list2.gif" alt=""><br><img src="说说ListView和RecyclerView/show_list3.gif" alt=""></p>
+<p>结合RecyclerView的缓存机制，看看局部刷新是如何实现的：<br>以RecyclerView中notifyItemRemoved(1)为例，最终会调用requestLayout()，使整个RecyclerView重新绘制，过程为：<br>onMeasure()–&gt;onLayout()–&gt;onDraw()</p>
+<p>其中，onLayout()为重点，分为三步：<br>dispathLayoutStep1()：记录RecyclerView刷新前列表项ItemView的各种信息，如Top,Left,Bottom,Right，用于动画的相关计算；<br>dispathLayoutStep2()：真正测量布局大小，位置，核心函数为layoutChildren()；<br>dispathLayoutStep3()：计算布局前后各个ItemView的状态，如Remove，Add，Move，Update等，如有必要执行相应的动画.<br>其中，layoutChildren()流程图：<br><img src="说说ListView和RecyclerView/layout.png" alt=""><br><img src="说说ListView和RecyclerView/fill.png" alt=""><br>当调用notifyItemRemoved时，会对屏幕内ItemView做预处理，修改ItemView相应的pos以及flag(流程图中红色部分)：<br><img src="说说ListView和RecyclerView/flag.png" alt=""><br>当调用fill()中RecyclerView.getViewForPosition(pos)时，RecyclerView通过对pos和flag的预处理，使得bindview只调用一次.</p>
+<p>需要指出，ListView和RecyclerView最大的区别在于数据源改变时的缓存的处理逻辑，ListView是”一锅端”，将所有的mActiveViews都移入了二级缓存mScrapViews，而RecyclerView则是更加灵活地对每个View修改标志位，区分是否重新bindView。</p>
+<h3 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h3><ol>
+<li>在一些场景下，如界面初始化，滑动等，ListView和RecyclerView都能很好地工作，两者并没有很大的差异：<br>文章的开头便抛出了这样一个问题，微信Android客户端卡券模块，大部分UI都是以列表页的形式展示，实现方式为ListView，是否有必要将其替换成RecyclerView呢？<br><img src="说说ListView和RecyclerView/wx.png" alt=""><br>答案是否定的，从性能上看，RecyclerView并没有带来显著的提升，不需要频繁更新，暂不支持用动画，意味着RecyclerView优势也不太明显，没有太大的吸引力，ListView已经能很好地满足业务需求。</li>
+<li>数据源频繁更新的场景，如弹幕：<a href="http://www.jianshu.com/p/2232a63442d6" target="_blank" rel="noopener">http://www.jianshu.com/p/2232a63442d6</a> 等RecyclerView的优势会非常明显；<br>进一步来讲，结论是：<br>列表页展示界面，需要支持动画，或者频繁更新，局部刷新，建议使用RecyclerView，更加强大完善，易扩展；其它情况(如微信卡包列表页)两者都OK，但ListView在使用上会更加方便，快捷。</li>
+</ol>
+<p>参考资料<br><a href="http://blog.csdn.net/guolin_blog/article/details/44996879" target="_blank" rel="noopener">http://blog.csdn.net/guolin_blog/article/details/44996879</a><br><a href="http://blog.csdn.net/androiddevelop/article/details/8734255" target="_blank" rel="noopener">http://blog.csdn.net/androiddevelop/article/details/8734255</a><br><a href="http://blog.csdn.net/qq_23012315/article/details/50807224" target="_blank" rel="noopener">http://blog.csdn.net/qq_23012315/article/details/50807224</a><br><a href="http://blog.csdn.net/qq_23012315/article/details/51096696" target="_blank" rel="noopener">http://blog.csdn.net/qq_23012315/article/details/51096696</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>您的支持是我原创的动力</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechatpay.jpg" alt="chuangWu 微信支付"/>
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/images/alipay.jpg" alt="chuangWu 支付宝"/>
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+
+<div>  
+     
+ 
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+      <strong>本文作者：</strong>chuangWu
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="/2018/07/16/说说ListView和RecyclerView/" title="说说ListView和RecyclerView">2018/07/16/说说ListView和RecyclerView/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权： </strong>
+    本站文章均采用 <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0 CN</a> 许可协议，请勿用于商业，转载注明出处！
+  </li>
+</ul>
+
+</div>
+
+      
+        <div class="post-tags">
+          
+            <a href="/tags/ListView/" rel="tag"># ListView</a>
+          
+            <a href="/tags/RecyclerView/" rel="tag"># RecyclerView</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/07/16/Java-笔记/" rel="next" title="Java 笔记">
+                <i class="fa fa-chevron-left"></i> Java 笔记
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/07/17/深入浅出retrofit/" rel="prev" title="深入浅出retrofit">
+                深入浅出retrofit <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+      <div>    
+      
+
+
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">chuangWu</p>
+              <p class="site-description motion-element" itemprop="description">选择大于努力</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">23</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">30</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#背景"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#缓存机制对比"><span class="nav-number">2.</span> <span class="nav-text">缓存机制对比</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#层级不同"><span class="nav-number">2.1.</span> <span class="nav-text">层级不同</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#缓存不同："><span class="nav-number">2.2.</span> <span class="nav-text">缓存不同：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#局部刷新"><span class="nav-number">2.3.</span> <span class="nav-text">局部刷新</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#结论"><span class="nav-number">3.</span> <span class="nav-text">结论</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">chuangWu</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
