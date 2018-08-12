@@ -87,13 +87,13 @@
 <meta property="og:site_name" content="小小小青年">
 <meta property="og:description" content="Flutter简介Flutter 是一个内置了布局引擎，渲染引擎，完全自绘 UI 界面的 UI Toolkit 和应用框架，使用 Dart 作为应用开发语言，采用 React 的方式编写 UI，支持一套代码在 Android/iOS 上双端运行。在 Flutter 开发之初，就有一些非常重要的设计原则： 开发效率至关重要UI 代码的编写支持代码 Hot Reload，开发者在修改 UI 界面后，修">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="http://yoursite.com/2018/07/06/Flutter入门/Flutter入门/fluttervs.jpg">
-<meta property="og:image" content="http://yoursite.com/2018/07/06/Flutter入门/Flutter入门/flutter_demo.png">
+<meta property="og:image" content="http://yoursite.com/2018/07/06/Flutter入门/fluttervs.jpg">
+<meta property="og:image" content="http://yoursite.com/2018/07/06/Flutter入门/flutter_demo.png">
 <meta property="og:updated_time" content="2018-07-13T02:01:29.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Flutter入门">
 <meta name="twitter:description" content="Flutter简介Flutter 是一个内置了布局引擎，渲染引擎，完全自绘 UI 界面的 UI Toolkit 和应用框架，使用 Dart 作为应用开发语言，采用 React 的方式编写 UI，支持一套代码在 Android/iOS 上双端运行。在 Flutter 开发之初，就有一些非常重要的设计原则： 开发效率至关重要UI 代码的编写支持代码 Hot Reload，开发者在修改 UI 界面后，修">
-<meta name="twitter:image" content="http://yoursite.com/2018/07/06/Flutter入门/Flutter入门/fluttervs.jpg">
+<meta name="twitter:image" content="http://yoursite.com/2018/07/06/Flutter入门/fluttervs.jpg">
 
 
 
@@ -306,7 +306,7 @@
         <h3 id="Flutter简介"><a href="#Flutter简介" class="headerlink" title="Flutter简介"></a>Flutter简介</h3><p>Flutter 是一个内置了布局引擎，渲染引擎，完全自绘 UI 界面的 UI Toolkit 和应用框架，使用 Dart 作为应用开发语言，采用 React 的方式编写 UI，支持一套代码在 Android/iOS 上双端运行。<br>在 Flutter 开发之初，就有一些非常重要的设计原则：</p>
 <h4 id="开发效率至关重要"><a href="#开发效率至关重要" class="headerlink" title="开发效率至关重要"></a>开发效率至关重要</h4><p>UI 代码的编写支持代码 Hot Reload，开发者在修改 UI 界面后，修改的代码马上被发送到已经部署了应用的设备上重新加载，同时应用的状态（特定对象）得以保留，开发者可以马上看到修改后的效果。重视开发工具链，Flutter 有完善的开发，调试，测试，性能分析环境。一套代码可以同时生成 Android/iOS 应用，双端运行，使业务方只需要组建一个移动开发团队，降低开发成本。</p>
 <h4 id="充分发挥设备性能"><a href="#充分发挥设备性能" class="headerlink" title="充分发挥设备性能"></a>充分发挥设备性能</h4><p>渲染引擎使用 Skia 通过 GPU 做光栅化。应用的 Dart 代码在生成发布版本时，会生成真正的机器码直接运行在目标设备上，不再需要解析器解析运行或者 JIT，并且支持 Dead Code Removal 最小化发布版的 Binary 大小（这也是为什么选择 Dart 语言的主要原因，开发过程可以动态解析执行提高开发效率，发布时可以生成机器码最大化性能）。</p>
-<h4 id="Flutter-vs-Native"><a href="#Flutter-vs-Native" class="headerlink" title="Flutter vs Native"></a>Flutter vs Native</h4><p><img src="Flutter入门/fluttervs.jpg" alt=" "><br>在客户端开发的技术栈，假设我们分成 Native（原生 SDK 开发），Hybird（RN，Weex）和 Web 这三层，Flutter 所处的位置大概在 Native 和 Hybrid 之间，它最直接的竞争的对象就是 Native。</p>
+<h4 id="Flutter-vs-Native"><a href="#Flutter-vs-Native" class="headerlink" title="Flutter vs Native"></a>Flutter vs Native</h4><p><img src="/2018/07/06/Flutter入门/fluttervs.jpg" alt=" "><br>在客户端开发的技术栈，假设我们分成 Native（原生 SDK 开发），Hybird（RN，Weex）和 Web 这三层，Flutter 所处的位置大概在 Native 和 Hybrid 之间，它最直接的竞争的对象就是 Native。</p>
 <p>应该说自绘 UI 界面的跨平台 UI Toolkit 这个概念并不新鲜，Qt 就是这里面最有名的一个，Qt 很早就有做移动平台，后面新设计的 QML 在设计理念上也有很多先进的地方，包括使用 JavaScript 作为开发语言基于 v8 运行，QML 作为界面描述语言，使用 GPU 光栅化等等。当时 Qt 在移动平台上跟 Native 的竞争完全落败，那 Flutter 会有机会吗？</p>
 <p>我自己觉得是有的，一方面 Flutter 的一些设计理念更先进，像开发过程的 Hot Reload，发布时直接生成机器码，React 的方式编写 UI 等等；另外一方面 Google 相比 Qt 一个小团队也有更多资源去推广和支持 Flutter，Google 本身的背书也让开发者更有信心。</p>
 <p>最重要的是我自己认为在当前，Native 被取代的时机更成熟了，第三方应用框架带来的 Binary 大小增加，加载和初始化耗时增加，性能下降等负面因素已经变得越来越不重要，特别是 Flutter 在这方面表现的还很不错，比如说 Flutter Runtime 在 Android 上大概只增加 7m+ 的 APK 大小。而 Flutter 的高效率，低成本对开发者，特别是中小开发团队来说是非常有吸引力的。从长远来看，Native 被 Flutter 取代的概率会变得越来越高。如果你是一个中小团队的开发者，开发一个中等规模的新应用，也不像游戏或者直播这种应用需要直接访问 GPU，那从现在开始就使用 Flutter 已经变成了一个非常可能的选择。如果你开发的是一个大型的应用，需要使用 Native + Hybird，或者 Native + Web，在这种情况使用 Flutter 去取代 Native 可能倒不是一个好的选择，或者可以考虑局部使用 Flutter。</p>
@@ -319,7 +319,7 @@
 </ul>
 <h3 id="环境搭建"><a href="#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h3><ul>
 <li><a href="https://juejin.im/post/5b36129051882574ec30b21c" target="_blank" rel="noopener">Flutter 安装（Mac）</a></li>
-<li><a href="https://juejin.im/post/5adae84c6fb9a07ace5870bb" target="_blank" rel="noopener">Flutter 安装（Window）</a><br><img src="Flutter入门/flutter_demo.png" alt=""></li>
+<li><a href="https://juejin.im/post/5adae84c6fb9a07ace5870bb" target="_blank" rel="noopener">Flutter 安装（Window）</a><br><img src="/2018/07/06/Flutter入门/flutter_demo.png" alt=""></li>
 </ul>
 <h3 id="开源项目"><a href="#开源项目" class="headerlink" title="开源项目"></a>开源项目</h3><ul>
 <li><a href="https://github.com/zhujian1989/flutter_study" target="_blank" rel="noopener">Demo</a></li>

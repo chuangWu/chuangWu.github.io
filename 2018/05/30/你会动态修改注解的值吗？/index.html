@@ -87,12 +87,12 @@
 <meta property="og:site_name" content="小小小青年">
 <meta property="og:description" content="某些情况下，我们会处于对整个框架的考虑不希望改变原有太多的代码的情况下，对注解里面的值做修改。这里所说的注解其实是@Retention为RetentionPolicy.RUNTIME情况下，毕竟我们是要通过反射的方式来处理这种运行时的注解的。这里会有两个版本的处理方式，一个是我在Java项目里写的处理，一个是在Android项目里写的. 演示注解12345@Target(ElementType.T">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="http://yoursite.com/2018/05/30/你会动态修改注解的值吗？/你会动态修改注解的值吗/brother.png">
+<meta property="og:image" content="http://yoursite.com/2018/05/30/你会动态修改注解的值吗？/brother.png">
 <meta property="og:updated_time" content="2018-05-30T10:54:25.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="你会动态修改注解的值吗？">
 <meta name="twitter:description" content="某些情况下，我们会处于对整个框架的考虑不希望改变原有太多的代码的情况下，对注解里面的值做修改。这里所说的注解其实是@Retention为RetentionPolicy.RUNTIME情况下，毕竟我们是要通过反射的方式来处理这种运行时的注解的。这里会有两个版本的处理方式，一个是我在Java项目里写的处理，一个是在Android项目里写的. 演示注解12345@Target(ElementType.T">
-<meta name="twitter:image" content="http://yoursite.com/2018/05/30/你会动态修改注解的值吗？/你会动态修改注解的值吗/brother.png">
+<meta name="twitter:image" content="http://yoursite.com/2018/05/30/你会动态修改注解的值吗？/brother.png">
 
 
 
@@ -302,7 +302,7 @@
       
 
       
-        <p><img src="你会动态修改注解的值吗/brother.png" alt=" "><br>某些情况下，我们会处于对整个框架的考虑不希望改变原有太多的代码的情况下，对注解里面的值做修改。<br>这里所说的注解其实是@Retention为RetentionPolicy.RUNTIME情况下，毕竟我们是要通过反射的方式来处理这种运行时的注解的。<br>这里会有两个版本的处理方式，一个是我在Java项目里写的处理，一个是在Android项目里写的.</p>
+        <p><img src="/2018/05/30/你会动态修改注解的值吗？/brother.png" alt=" "><br>某些情况下，我们会处于对整个框架的考虑不希望改变原有太多的代码的情况下，对注解里面的值做修改。<br>这里所说的注解其实是@Retention为RetentionPolicy.RUNTIME情况下，毕竟我们是要通过反射的方式来处理这种运行时的注解的。<br>这里会有两个版本的处理方式，一个是我在Java项目里写的处理，一个是在Android项目里写的.</p>
 <h3 id="演示注解"><a href="#演示注解" class="headerlink" title="演示注解"></a>演示注解</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Target</span>(ElementType.TYPE)</span><br><span class="line"><span class="meta">@Retention</span>(RetentionPolicy.RUNTIME)</span><br><span class="line"><span class="keyword">public</span> <span class="meta">@interface</span> ApiInfo &#123;</span><br><span class="line">    <span class="function">String <span class="title">api</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <blockquote>
 <p>注：Retention为RetentionPolicy.RUNTIME，ElementType.TYPE标识可以作用在接口、类、枚举、注解上面。</p>
