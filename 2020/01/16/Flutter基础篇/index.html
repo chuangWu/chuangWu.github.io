@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="flutter," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="Flutter简介Flutter 是一个内置了布局引擎，渲染引擎，完全自绘 UI 界面的 UI Toolkit 和应用框架，使用 Dart 作为应用开发语言，采用 React 的方式编写 UI，支持一套代码在 Android/iOS 上双端运行。在 Flutter 开发之初，就有一些非常重要的设计原则： 开发效率至关重要UI 代码的编写支持代码 Hot Reload，开发者在修改 UI 界面后，修">
+<meta name="keywords" content="flutter">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Flutter基础篇">
+<meta property="og:url" content="http://yoursite.com/2020/01/16/Flutter基础篇/index.html">
+<meta property="og:site_name" content="小小小青年">
+<meta property="og:description" content="Flutter简介Flutter 是一个内置了布局引擎，渲染引擎，完全自绘 UI 界面的 UI Toolkit 和应用框架，使用 Dart 作为应用开发语言，采用 React 的方式编写 UI，支持一套代码在 Android/iOS 上双端运行。在 Flutter 开发之初，就有一些非常重要的设计原则： 开发效率至关重要UI 代码的编写支持代码 Hot Reload，开发者在修改 UI 界面后，修">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/2020/01/16/Flutter基础篇/fluttervs.jpg">
+<meta property="og:image" content="http://yoursite.com/2020/01/16/Flutter基础篇/flutter_demo.png">
+<meta property="og:updated_time" content="2020-01-16T08:28:28.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Flutter基础篇">
+<meta name="twitter:description" content="Flutter简介Flutter 是一个内置了布局引擎，渲染引擎，完全自绘 UI 界面的 UI Toolkit 和应用框架，使用 Dart 作为应用开发语言，采用 React 的方式编写 UI，支持一套代码在 Android/iOS 上双端运行。在 Flutter 开发之初，就有一些非常重要的设计原则： 开发效率至关重要UI 代码的编写支持代码 Hot Reload，开发者在修改 UI 界面后，修">
+<meta name="twitter:image" content="http://yoursite.com/2020/01/16/Flutter基础篇/fluttervs.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/01/16/Flutter基础篇/"/>
+
+
+
+
+
+  <title>Flutter基础篇 | 小小小青年</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">小小小青年</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/16/Flutter基础篇/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="chuangWu">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/head.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="小小小青年">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Flutter基础篇</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-01-16T16:26:12+08:00">
+                2020-01-16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Flutter/" itemprop="url" rel="index">
+                    <span itemprop="name">Flutter</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv">本文总阅读量
+            <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>次
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="Flutter简介"><a href="#Flutter简介" class="headerlink" title="Flutter简介"></a>Flutter简介</h3><p>Flutter 是一个内置了布局引擎，渲染引擎，完全自绘 UI 界面的 UI Toolkit 和应用框架，使用 Dart 作为应用开发语言，采用 React 的方式编写 UI，支持一套代码在 Android/iOS 上双端运行。<br>在 Flutter 开发之初，就有一些非常重要的设计原则：</p>
+<h4 id="开发效率至关重要"><a href="#开发效率至关重要" class="headerlink" title="开发效率至关重要"></a>开发效率至关重要</h4><p>UI 代码的编写支持代码 Hot Reload，开发者在修改 UI 界面后，修改的代码马上被发送到已经部署了应用的设备上重新加载，同时应用的状态（特定对象）得以保留，开发者可以马上看到修改后的效果。重视开发工具链，Flutter 有完善的开发，调试，测试，性能分析环境。一套代码可以同时生成 Android/iOS 应用，双端运行，使业务方只需要组建一个移动开发团队，降低开发成本。</p>
+<h4 id="充分发挥设备性能"><a href="#充分发挥设备性能" class="headerlink" title="充分发挥设备性能"></a>充分发挥设备性能</h4><p>渲染引擎使用 Skia 通过 GPU 做光栅化。应用的 Dart 代码在生成发布版本时，会生成真正的机器码直接运行在目标设备上，不再需要解析器解析运行或者 JIT，并且支持 Dead Code Removal 最小化发布版的 Binary 大小（这也是为什么选择 Dart 语言的主要原因，开发过程可以动态解析执行提高开发效率，发布时可以生成机器码最大化性能）。</p>
+<h4 id="Flutter-vs-Native"><a href="#Flutter-vs-Native" class="headerlink" title="Flutter vs Native"></a>Flutter vs Native</h4><p><img src="/2020/01/16/Flutter基础篇/fluttervs.jpg" alt=" "><br>在客户端开发的技术栈，假设我们分成 Native（原生 SDK 开发），Hybird（RN，Weex）和 Web 这三层，Flutter 所处的位置大概在 Native 和 Hybrid 之间，它最直接的竞争的对象就是 Native。</p>
+<p>应该说自绘 UI 界面的跨平台 UI Toolkit 这个概念并不新鲜，Qt 就是这里面最有名的一个，Qt 很早就有做移动平台，后面新设计的 QML 在设计理念上也有很多先进的地方，包括使用 JavaScript 作为开发语言基于 v8 运行，QML 作为界面描述语言，使用 GPU 光栅化等等。当时 Qt 在移动平台上跟 Native 的竞争完全落败，那 Flutter 会有机会吗？</p>
+<p>我自己觉得是有的，一方面 Flutter 的一些设计理念更先进，像开发过程的 Hot Reload，发布时直接生成机器码，React 的方式编写 UI 等等；另外一方面 Google 相比 Qt 一个小团队也有更多资源去推广和支持 Flutter，Google 本身的背书也让开发者更有信心。</p>
+<p>最重要的是我自己认为在当前，Native 被取代的时机更成熟了，第三方应用框架带来的 Binary 大小增加，加载和初始化耗时增加，性能下降等负面因素已经变得越来越不重要，特别是 Flutter 在这方面表现的还很不错，比如说 Flutter Runtime 在 Android 上大概只增加 7m+ 的 APK 大小。而 Flutter 的高效率，低成本对开发者，特别是中小开发团队来说是非常有吸引力的。从长远来看，Native 被 Flutter 取代的概率会变得越来越高。如果你是一个中小团队的开发者，开发一个中等规模的新应用，也不像游戏或者直播这种应用需要直接访问 GPU，那从现在开始就使用 Flutter 已经变成了一个非常可能的选择。如果你开发的是一个大型的应用，需要使用 Native + Hybird，或者 Native + Web，在这种情况使用 Flutter 去取代 Native 可能倒不是一个好的选择，或者可以考虑局部使用 Flutter。</p>
+<blockquote>
+<p>早前看的一些科技博客，也有其它作者表达相似的想法，Kotlin，Swift 很有可能会变成 DOA（Dead On Arrival）。<br>这里被取代并不是指完全不用 Native，或者没有应用使用 Native 开发，只是使用 Native 的比例和概率越来越低。</p>
+</blockquote>
+<h3 id="开始"><a href="#开始" class="headerlink" title="开始"></a>开始</h3><ul>
+<li><a href="https://flutter.io/" target="_blank" rel="noopener">Flutter英文网</a></li>
+<li><a href="https://flutterchina.club/" target="_blank" rel="noopener">Flutter中文网</a><br>配置Flutter开发环境优先选择flutter.io，为什么不用Flutter中文网？因为最新特性需要翻译，网站更新需要时间。</li>
+</ul>
+<h3 id="环境搭建"><a href="#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h3><ul>
+<li><a href="https://juejin.im/post/5b36129051882574ec30b21c" target="_blank" rel="noopener">Flutter 安装（Mac）</a></li>
+<li><a href="https://juejin.im/post/5adae84c6fb9a07ace5870bb" target="_blank" rel="noopener">Flutter 安装（Window）</a><br><img src="/2020/01/16/Flutter基础篇/flutter_demo.png" alt=""></li>
+</ul>
+<h3 id="开源项目"><a href="#开源项目" class="headerlink" title="开源项目"></a>开源项目</h3><ul>
+<li><a href="https://github.com/zhujian1989/flutter_study" target="_blank" rel="noopener">Demo</a></li>
+<li><a href="https://github.com/HackSoul/zhihu-flutter" target="_blank" rel="noopener">仿知乎</a></li>
+<li><a href="https://github.com/suojingchao/catsao" target="_blank" rel="noopener">新闻客户端</a></li>
+</ul>
+<h3 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h3><ul>
+<li><a href="ksrouter://app/main" target="_blank" rel="noopener">ksrouter://app/main</a></li>
+<li><a href="ksrouter://borrower.kesucorp.com/next/with/params?name=chuang&amp;age=12" target="_blank" rel="noopener">ksrouter://borrower.kesucorp.com/next/with/params?name=chuang&amp;age=12</a></li>
+<li><a href="https://github.com/suojingchao/catsao" target="_blank" rel="noopener">新闻客户端</a></li>
+</ul>
+<h3 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h3><ul>
+<li><a href="https://zhuanlan.zhihu.com/p/37894353" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/37894353</a></li>
+<li><a href="https://juejin.im/post/5b3c8a4be51d4519935860d5" target="_blank" rel="noopener">https://juejin.im/post/5b3c8a4be51d4519935860d5</a></li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>您的支持是我原创的动力</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechatpay.jpg" alt="chuangWu 微信支付"/>
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/images/alipay.jpg" alt="chuangWu 支付宝"/>
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+
+<div>  
+     
+ 
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+      <strong>本文作者：</strong>chuangWu
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="/2020/01/16/Flutter基础篇/" title="Flutter基础篇">2020/01/16/Flutter基础篇/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权： </strong>
+    本站文章均采用 <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0 CN</a> 许可协议，请勿用于商业，转载注明出处！
+  </li>
+</ul>
+
+</div>
+
+      
+        <div class="post-tags">
+          
+            <a href="/tags/flutter/" rel="tag"># flutter</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/01/16/HashMap源码解析/" rel="next" title="HashMap源码解析">
+                <i class="fa fa-chevron-left"></i> HashMap源码解析
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/01/16/Flutter应用篇：ReadHub客户端/" rel="prev" title="Flutter应用篇：ReadHub客户端">
+                Flutter应用篇：ReadHub客户端 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+      <div>    
+      
+
+
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/head.png"
+                alt="chuangWu" />
+            
+              <p class="site-author-name" itemprop="name">chuangWu</p>
+              <p class="site-description motion-element" itemprop="description">选择大于努力</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">30</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">44</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Flutter简介"><span class="nav-number">1.</span> <span class="nav-text">Flutter简介</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#开发效率至关重要"><span class="nav-number">1.1.</span> <span class="nav-text">开发效率至关重要</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#充分发挥设备性能"><span class="nav-number">1.2.</span> <span class="nav-text">充分发挥设备性能</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Flutter-vs-Native"><span class="nav-number">1.3.</span> <span class="nav-text">Flutter vs Native</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#开始"><span class="nav-number">2.</span> <span class="nav-text">开始</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#环境搭建"><span class="nav-number">3.</span> <span class="nav-text">环境搭建</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#开源项目"><span class="nav-number">4.</span> <span class="nav-text">开源项目</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#测试"><span class="nav-number">5.</span> <span class="nav-text">测试</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考资料"><span class="nav-number">6.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">chuangWu</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      本站访客数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      人次
+    </span>
+  
+
+  
+    <span class="site-pv">
+      本站总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

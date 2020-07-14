@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="无痕埋点,全量埋点,asm," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="ASM 是一个 Java 字节码操控框架。它能被用来动态生成类或者增强既有类的功能。ASM 可以直接产生二进制 class 文件，也可以在类被加载入 Java 虚拟机之前动态改变类行为。Java class 被存储在严格格式定义的 .class 文件里，这些类文件拥有足够的元数据来解析类中的所有元素：类名称、方法、属性以及 Java 字节码（指令）。ASM 从类文件中读入信息后，能够改变类行为，分">
+<meta name="keywords" content="无痕埋点,全量埋点,asm">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android无痕埋点技术(一)：ASM基础">
+<meta property="og:url" content="http://yoursite.com/2020/01/17/Android无痕埋点技术-一-：ASM基础/index.html">
+<meta property="og:site_name" content="小小小青年">
+<meta property="og:description" content="ASM 是一个 Java 字节码操控框架。它能被用来动态生成类或者增强既有类的功能。ASM 可以直接产生二进制 class 文件，也可以在类被加载入 Java 虚拟机之前动态改变类行为。Java class 被存储在严格格式定义的 .class 文件里，这些类文件拥有足够的元数据来解析类中的所有元素：类名称、方法、属性以及 Java 字节码（指令）。ASM 从类文件中读入信息后，能够改变类行为，分">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/2020/01/17/Android无痕埋点技术-一-：ASM基础/asm_aop.png">
+<meta property="og:image" content="http://yoursite.com/2020/01/17/Android无痕埋点技术-一-：ASM基础/class_infos.png">
+<meta property="og:image" content="http://yoursite.com/2020/01/17/Android无痕埋点技术-一-：ASM基础/class_info.png">
+<meta property="og:image" content="http://yoursite.com/2020/01/17/Android无痕埋点技术-一-：ASM基础/asm_plugin.png">
+<meta property="og:updated_time" content="2020-01-17T05:47:40.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android无痕埋点技术(一)：ASM基础">
+<meta name="twitter:description" content="ASM 是一个 Java 字节码操控框架。它能被用来动态生成类或者增强既有类的功能。ASM 可以直接产生二进制 class 文件，也可以在类被加载入 Java 虚拟机之前动态改变类行为。Java class 被存储在严格格式定义的 .class 文件里，这些类文件拥有足够的元数据来解析类中的所有元素：类名称、方法、属性以及 Java 字节码（指令）。ASM 从类文件中读入信息后，能够改变类行为，分">
+<meta name="twitter:image" content="http://yoursite.com/2020/01/17/Android无痕埋点技术-一-：ASM基础/asm_aop.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/01/17/Android无痕埋点技术-一-：ASM基础/"/>
+
+
+
+
+
+  <title>Android无痕埋点技术(一)：ASM基础 | 小小小青年</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">小小小青年</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/17/Android无痕埋点技术-一-：ASM基础/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="chuangWu">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/head.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="小小小青年">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Android无痕埋点技术(一)：ASM基础</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-01-17T13:23:49+08:00">
+                2020-01-17
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Android/" itemprop="url" rel="index">
+                    <span itemprop="name">Android</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv">本文总阅读量
+            <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>次
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>ASM 是一个 Java 字节码操控框架。它能被用来动态生成类或者增强既有类的功能。ASM 可以直接产生二进制 class 文件，也可以在类被加载入 Java 虚拟机之前动态改变类行为。Java class 被存储在严格格式定义的 .class 文件里，这些类文件拥有足够的元数据来解析类中的所有元素：类名称、方法、属性以及 Java 字节码（指令）。ASM 从类文件中读入信息后，能够改变类行为，分析类信息，甚至能够根据用户要求生成新类。</p>
+<h2 id="编译过程"><a href="#编译过程" class="headerlink" title="编译过程"></a>编译过程</h2><p>在Android开发中，编译过程概况为从源代码到字节码，再将字节码打包成dex，最后合并dex成为apk的过程。</p>
+<p>第一种是APT(Annotation Processing Tool)，即注解处理器，是一种处理注解的工具，也可以说是javac工具，用来在编译时扫描和处理注解，最终生成.java文件，可以减少很多重复的代码。常用的框架有ButterKnife、Dagger、EventBus等。</p>
+<p>第二种是AspectJ，在java源文件生成字节码时进行操作。是对AOP（面向切面编程）的一个实践，AOP在Android甚至在java领域应用都十分的广泛，典型的应用场景比如：日志记录、性能监控、数据校验，缓存等。</p>
+<p>第三种是ASM，对java字节码文件进行操作。是一款轻量级字节码操作库，记得网易乐得团队做过一个效率对比。ASM效率领先Javassist。</p>
+<p><img src="/2020/01/17/Android无痕埋点技术-一-：ASM基础/asm_aop.png" alt="aop" style="zoom:50%;"></p>
+<h2 id="字节码"><a href="#字节码" class="headerlink" title="字节码"></a>字节码</h2><p>Java 字节码（英语：Java bytecode）是Java虚拟机执行的一种指令格式。通俗来讲字节码就是经过javac命令编译之后生成的Class文件。Class文件包含了Java虚拟机指令集和符号表以及若干其他的辅助信息。Class文件是一组以8位字节为基础单位的二进制流,哥哥数据项目严格按照顺序紧凑的排列在Class文件之中,中间没有任何分隔符，这使得整个Class文件中存储的内容几乎全是程序运行时的必要数据。</p>
+<h3 id="字节码结构"><a href="#字节码结构" class="headerlink" title="字节码结构"></a>字节码结构</h3><p><img src="/2020/01/17/Android无痕埋点技术-一-：ASM基础/class_infos.png" alt=""></p>
+<h3 id="占用的字节大小"><a href="#占用的字节大小" class="headerlink" title="占用的字节大小"></a>占用的字节大小</h3><p><img src="/2020/01/17/Android无痕埋点技术-一-：ASM基础/class_info.png" alt="class_info"></p>
+<ul>
+<li>Magic魔数：该项存放了一个 Java 类文件的魔数（magic number）和版本信息。一个 Java 类文件的前 4 个字节被称为它的魔数。每个正确的 Java 类文件都是以 0xCAFEBABE 开头的，这样保证了 Java 虚拟机能很轻松的分辨出 Java 文件和非 Java 文件。</li>
+<li>Version：包括主版本号和次版本号，该项存放了 Java 类文件的版本信息，类文件的版本信息让虚拟机知道如何去读取并处理该类文件。</li>
+<li>Constant Pool：该项存放了类中各种文字字符串、类名、方法名和接口名称、final 变量以及对外部类的引用信息等常量。虚拟机必须为每一个被装载的类维护一个常量池，常量池中存储了相应类型所用到的所有类型、字段和方法的符号引用。常量池的大小平均占到了整个类大小的 60% 左右。</li>
+<li>Access_flag：该项指明了该文件中定义的是类还是接口（一个 class 文件中只能有一个类或接口），同时还指名了类或接口的访问标志，如 public，private, abstract 等信息。</li>
+<li>This Class：指向表示该类全限定名称的字符串常量的指针。</li>
+<li>Super Class：指向表示父类全限定名称的字符串常量的指针。</li>
+<li>Interfaces：一个指针数组，存放了该类或父类实现的所有接口名称的字符串常量的指针。</li>
+<li>Fields：该项对类或接口中声明的字段进行了细致的描述。需要注意的是，fields 列表中仅列出了本类或接口中的字段，并不包括从超类和父接口继承而来的字段。</li>
+<li>Methods：该项对类或接口中声明的方法进行了细致的描述。例如方法的名称、参数和返回值类型等。需要注意的是，methods 列表里仅存放了本类或本接口中的方法，并不包括从超类和父接口继承而来的方法。</li>
+<li>Class attributes：该项存放了在该文件中类或接口所定义的属性的基本信息。</li>
+</ul>
+<h3 id="字节码类型对照表"><a href="#字节码类型对照表" class="headerlink" title="字节码类型对照表"></a>字节码类型对照表</h3><p>字节码的读取与分析引擎。每当有事件发生时，调用注册的ClassVisitor、AnnotationVisitor、FieldVisitor、MethodVisitor做相应的处理。</p>
+<table>
+<thead>
+<tr>
+<th>Type Signature</th>
+<th><strong>Java Type</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Z</td>
+<td>boolean</td>
+</tr>
+<tr>
+<td>B</td>
+<td>byte</td>
+</tr>
+<tr>
+<td>C</td>
+<td>char</td>
+</tr>
+<tr>
+<td>S</td>
+<td>short</td>
+</tr>
+<tr>
+<td>I</td>
+<td>int</td>
+</tr>
+<tr>
+<td>J</td>
+<td>long</td>
+</tr>
+<tr>
+<td>F</td>
+<td>float</td>
+</tr>
+<tr>
+<td>D</td>
+<td>double</td>
+</tr>
+<tr>
+<td>L</td>
+<td>fully-qualified-class ;fully-qualified-class</td>
+</tr>
+<tr>
+<td>[ type</td>
+<td>type[]</td>
+</tr>
+<tr>
+<td>( arg-types ) ret-type</td>
+<td>method type</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>比如：long f (int n, String s, int[] arr);  对应类型签名为：f (ILjava/lang/String;[I)J</li>
+<li>比如 :  void hi(double a, List<string> b);对应类型签名为：hi (DLjava/util/List;)V</string></li>
+</ul>
+<h2 id="ASM-Core-API"><a href="#ASM-Core-API" class="headerlink" title="ASM Core API"></a>ASM Core API</h2><p>核心api调用流程如下</p>
+<ul>
+<li>ASM 提供了一个类ClassReader可以方便地让我们对class文件进行读取与解析</li>
+<li>ASM 在ClassReader解析class文件过程中，解析到某一个结构就会通知到ClassVisitor的相应方法（eg：解析到类方法时，就会回调ClassVisitor.visitMethod方法）</li>
+<li>可以通过更改ClassVisitor中相应结构方法返回值，实现对类的代码切入（eg：更改ClassVisitor.visitMethod()方法的默认返回值MethodVisitor实例，通过操作该自定义MethodVisitor从而实现对原方法的改写）</li>
+<li>其它的结构遍历也如同ClassVisitor</li>
+<li>通过ClassWriter的toByteArray()方法，得到class文件的字节码内容，最后通过文件流写入方式覆盖掉原先的内容，实现class文件的改写</li>
+</ul>
+<h3 id="ClassReader"><a href="#ClassReader" class="headerlink" title="ClassReader"></a>ClassReader</h3><p>这个类会提供你要转变的类的字节数组，它的accept方法，接受一个具体的ClassVisitor，并调用实现中具体的 visit,<br>visitSource, visitOuterClass, visitAnnotation, visitAttribute, visitInnerClass,visitField, visitMethod和 visitEnd 方法。ClassReader.accept(ClassVisitor classVisitor, int parsingOptions)中，第二个参数parsingOptions的取值有以下选项：</p>
+<ul>
+<li>ClassReader.SKIP_DEBUG：表示不遍历调试内容，即跳过源文件，源码调试扩展，局部变量表，局部变量类型表和行号表属性，即以下方法既不会被解析也不会被访问（ClassVisitor.visitSource，MethodVisitor.visitLocalVariable，MethodVisitor.visitLineNumber）。使用此标识后，类文件调试信息会被去除，请警记。</li>
+<li>ClassReader.SKIP_CODE：设置该标识，则代码属性将不会被转换和访问，例如方法体代码不会进行解析和访问。</li>
+<li>ClassReader.SKIP_FRAMES：设置该标识，表示跳过栈图（StackMap）和栈图表（StackMapTable）属性，即MethodVisitor.visitFrame方法不会被转换和访问。当设置了ClassWriter.COMPUTE_FRAMES时，设置该标识会很有用，因为他避免了访问帧内容（这些内容会被忽略和重新计算，无需访问）。</li>
+<li>ClassReader.EXPAND_FRAMES：该标识用于设置扩展栈帧图。默认栈图以它们原始格式（V1_6以下使用扩展格式，其他使用压缩格式）被访问。如果设置该标识，栈图则始终以扩展格式进行访问（此标识在ClassReader和ClassWriter中增加了解压/压缩步骤，会大幅度降低性能）。</li>
+</ul>
+<h3 id="ClassVisitor"><a href="#ClassVisitor" class="headerlink" title="ClassVisitor"></a>ClassVisitor</h3><p>一个可以访问<code>Java</code>类的访问者。其方法被调用次序必须满足：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">visit visitSource? </span><br><span class="line">visitOuterClass? </span><br><span class="line">( visitAnnotation | visitAttribute )* </span><br><span class="line">( visitInnerClass | visitField | visitMethod )* </span><br><span class="line">visitEnd</span><br></pre></td></tr></table></figure>
+<h3 id="AnnotationVisitor"><a href="#AnnotationVisitor" class="headerlink" title="AnnotationVisitor"></a>AnnotationVisitor</h3><p> 定义在解析注解时会触发的事件。AnnotationVisitor api 访问时序如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">( visit | visitEnum | visitAnnotation | visitArray )* </span><br><span class="line">visitEnd</span><br></pre></td></tr></table></figure>
+<h3 id="FieldVisitor"><a href="#FieldVisitor" class="headerlink" title="FieldVisitor"></a>FieldVisitor</h3><p> 定义在解析字段时触发的事件，如解析到字段上的注解、解析到字段相关的属性等。</p>
+<h3 id="MethodVisitor"><a href="#MethodVisitor" class="headerlink" title="MethodVisitor"></a>MethodVisitor</h3><p> ASM 生成和转换class文件方法使用的是抽象类MethodVisitor，ClassVisitor.visitMethod方法返回的就是该实例。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">visitAnnotationDefault?</span><br><span class="line">( visitAnnotation | visitParameterAnnotation | visitAttribute )*</span><br><span class="line">( visitCode</span><br><span class="line">( visitTryCatchBlock | visitLabel | visitFrame | visitXxxInsn |</span><br><span class="line">visitLocalVariable | visitLineNumber )*</span><br><span class="line">visitMaxs )?</span><br><span class="line">visitEnd</span><br></pre></td></tr></table></figure>
+<p>即如果有annotations或者attributes，它们必须被第一个访问，接下来对于非抽象方法访问的就是方法内部字节码（visitCode)，然后在visitCode和visitMaxs中的那些指令会按上面所示方法顺序访问，最后类方法访问结束回调visitEnd。</p>
+<h3 id="ClassWriter"><a href="#ClassWriter" class="headerlink" title="ClassWriter"></a>ClassWriter</h3><p>这个类是ClassVisitor的一个实现类，这个类中的toByteArray方法会将最终修改的字节码以 byte 数组形式返回。它可以单独使用，也可以传递给一个或多个ClassReader或ClassVisitor适配器修改一个或多个已存在的Java类的类文件。</p>
+<p>我们知道，类文件有着自己严格的格式，当我们想要注入相关代码时，不是直接注入相关指令就可以的，比如对于方法注入，我们可能还需要对栈帧图（ stack map frames）进行计算：你需要计算所有的帧，找到有对象跳转或者绝对跳转的帧，最后还要压缩剩余的帧。同样，对于栈帧的局部变量表和操作数栈的大小也要自己进行计算。这些计算操作具备一定的难度，幸运的是，当我们创建一个ClassWriter时，可以配置 ASM 自动帮我们对指定的内容进行计算。ClassWriter的构造函数需要传入一个 flag，其含义为：</p>
+<ul>
+<li><p>ClassWriter(0)：表示 ASM 不会自动自动帮你计算栈帧和局部变量表和操作数栈大小。</p>
+</li>
+<li><p>ClassWriter(ClassWriter.COMPUTE_MAXS)：表示 ASM 会自动帮你计算局部变量表和操作数栈的大小，但是你还是需要调用visitMaxs方法，但是可以使用任意参数，因为它们会被忽略。带有这个标识，对于栈帧大小，还是需要你手动计算。</p>
+</li>
+<li><p>ClassWriter(ClassWriter.COMPUTE_FRAMES)：表示 ASM 会自动帮你计算所有的内容。你不必去调用visitFrame，但是你还是需要调用visitMaxs方法（参数可任意设置，同样会被忽略）。</p>
+<p>使用这些标识很方便，但是会带来一些性能上的损失：COMPUTE_MAXS标识会使ClassWriter慢10%，COMPUTE_FRAMES标识会使ClassWriter慢2倍，</p>
+</li>
+</ul>
+<h2 id="ASM-Bytecode-outline-viewer"><a href="#ASM-Bytecode-outline-viewer" class="headerlink" title="ASM Bytecode outline/viewer"></a>ASM Bytecode outline/viewer</h2><p>在Android Studio中，选择Preference=&gt;Plugins，搜索并安装ASM Bytecode Outline插件，重启AndroidStudio后生效。</p>
+<p>在编译器中，选择想要查看的java文件右键，选择show bytecode outline/ASM bytecode viewer即可查看，</p>
+<p><img src="/2020/01/17/Android无痕埋点技术-一-：ASM基础/asm_plugin.png" alt="asm_plugin"></p>
+<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><p><a href="https://www.jianshu.com/p/e5062d62a3d1" target="_blank" rel="noopener">https://www.jianshu.com/p/e5062d62a3d1</a></p>
+<p><a href="https://www.jianshu.com/p/abd1b1b8d3f3" target="_blank" rel="noopener">https://www.jianshu.com/p/abd1b1b8d3f3</a></p>
+<p><a href="https://www.ibm.com/developerworks/cn/java/j-lo-asm30/index.html" target="_blank" rel="noopener">https://www.ibm.com/developerworks/cn/java/j-lo-asm30/index.html</a></p>
+<p><a href="https://juejin.im/post/5aa0e7eff265da2395308f48" target="_blank" rel="noopener">https://juejin.im/post/5aa0e7eff265da2395308f48</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>您的支持是我原创的动力</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechatpay.jpg" alt="chuangWu 微信支付"/>
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/images/alipay.jpg" alt="chuangWu 支付宝"/>
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+
+<div>  
+     
+ 
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+      <strong>本文作者：</strong>chuangWu
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="/2020/01/17/Android无痕埋点技术-一-：ASM基础/" title="Android无痕埋点技术(一)：ASM基础">2020/01/17/Android无痕埋点技术-一-：ASM基础/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权： </strong>
+    本站文章均采用 <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0 CN</a> 许可协议，请勿用于商业，转载注明出处！
+  </li>
+</ul>
+
+</div>
+
+      
+        <div class="post-tags">
+          
+            <a href="/tags/无痕埋点/" rel="tag"># 无痕埋点</a>
+          
+            <a href="/tags/全量埋点/" rel="tag"># 全量埋点</a>
+          
+            <a href="/tags/asm/" rel="tag"># asm</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/01/17/Android模块化实战：学海题舟模块化/" rel="next" title="Android模块化实战：学海题舟模块化">
+                <i class="fa fa-chevron-left"></i> Android模块化实战：学海题舟模块化
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/01/17/Android无痕埋点技术-二-：实践/" rel="prev" title="Android无痕埋点技术(二)：实践">
+                Android无痕埋点技术(二)：实践 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+      <div>    
+      
+
+
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/head.png"
+                alt="chuangWu" />
+            
+              <p class="site-author-name" itemprop="name">chuangWu</p>
+              <p class="site-description motion-element" itemprop="description">选择大于努力</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">30</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">44</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#编译过程"><span class="nav-number">1.</span> <span class="nav-text">编译过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#字节码"><span class="nav-number">2.</span> <span class="nav-text">字节码</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#字节码结构"><span class="nav-number">2.1.</span> <span class="nav-text">字节码结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#占用的字节大小"><span class="nav-number">2.2.</span> <span class="nav-text">占用的字节大小</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#字节码类型对照表"><span class="nav-number">2.3.</span> <span class="nav-text">字节码类型对照表</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ASM-Core-API"><span class="nav-number">3.</span> <span class="nav-text">ASM Core API</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#ClassReader"><span class="nav-number">3.1.</span> <span class="nav-text">ClassReader</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ClassVisitor"><span class="nav-number">3.2.</span> <span class="nav-text">ClassVisitor</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#AnnotationVisitor"><span class="nav-number">3.3.</span> <span class="nav-text">AnnotationVisitor</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#FieldVisitor"><span class="nav-number">3.4.</span> <span class="nav-text">FieldVisitor</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MethodVisitor"><span class="nav-number">3.5.</span> <span class="nav-text">MethodVisitor</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ClassWriter"><span class="nav-number">3.6.</span> <span class="nav-text">ClassWriter</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ASM-Bytecode-outline-viewer"><span class="nav-number">4.</span> <span class="nav-text">ASM Bytecode outline/viewer</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文章"><span class="nav-number">5.</span> <span class="nav-text">参考文章</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">chuangWu</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      本站访客数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      人次
+    </span>
+  
+
+  
+    <span class="site-pv">
+      本站总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

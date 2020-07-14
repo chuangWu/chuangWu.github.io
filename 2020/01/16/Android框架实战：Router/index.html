@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="router,android," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="Router的定义路由，简单的来说就是映射页面直接跳转关系的。需要注意的是，这个映射关系需要在App启动的时候建立好。 Router的优点 解耦合：这个是最直观的。之前我们需要引入目标页面的Activity.class现在这些不需要要了。 自由配置：这个是为了方便产品或者运维的。我们事先定义好页面的映射关系，那么运营就可以通过后台配置他想跳转的页面了。 模块化：随着业务逐渐增多，就需要模块化。模块">
+<meta name="keywords" content="router,android">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android框架实战：Router">
+<meta property="og:url" content="http://yoursite.com/2020/01/16/Android框架实战：Router/index.html">
+<meta property="og:site_name" content="小小小青年">
+<meta property="og:description" content="Router的定义路由，简单的来说就是映射页面直接跳转关系的。需要注意的是，这个映射关系需要在App启动的时候建立好。 Router的优点 解耦合：这个是最直观的。之前我们需要引入目标页面的Activity.class现在这些不需要要了。 自由配置：这个是为了方便产品或者运维的。我们事先定义好页面的映射关系，那么运营就可以通过后台配置他想跳转的页面了。 模块化：随着业务逐渐增多，就需要模块化。模块">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2020-01-17T02:38:40.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android框架实战：Router">
+<meta name="twitter:description" content="Router的定义路由，简单的来说就是映射页面直接跳转关系的。需要注意的是，这个映射关系需要在App启动的时候建立好。 Router的优点 解耦合：这个是最直观的。之前我们需要引入目标页面的Activity.class现在这些不需要要了。 自由配置：这个是为了方便产品或者运维的。我们事先定义好页面的映射关系，那么运营就可以通过后台配置他想跳转的页面了。 模块化：随着业务逐渐增多，就需要模块化。模块">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/01/16/Android框架实战：Router/"/>
+
+
+
+
+
+  <title>Android框架实战：Router | 小小小青年</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">小小小青年</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/16/Android框架实战：Router/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="chuangWu">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/head.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="小小小青年">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Android框架实战：Router</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-01-16T18:03:38+08:00">
+                2020-01-16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Android/" itemprop="url" rel="index">
+                    <span itemprop="name">Android</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv">本文总阅读量
+            <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>次
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="Router的定义"><a href="#Router的定义" class="headerlink" title="Router的定义"></a>Router的定义</h3><p>路由，简单的来说就是映射页面直接跳转关系的。需要注意的是，这个映射关系需要在App启动的时候建立好。</p>
+<h3 id="Router的优点"><a href="#Router的优点" class="headerlink" title="Router的优点"></a>Router的优点</h3><ul>
+<li>解耦合：这个是最直观的。之前我们需要引入目标页面的Activity.class现在这些不需要要了。</li>
+<li>自由配置：这个是为了方便产品或者运维的。我们事先定义好页面的映射关系，那么运营就可以通过后台配置他想跳转的页面了。</li>
+<li>模块化：随着业务逐渐增多，就需要模块化。模块化的前提是解决页面之前的依赖关系，也就是前面说的解耦合。</li>
+<li>KSRouter可以通过RouterConfig对象配置多个域名。</li>
+<li>KSRouter支持在目标页面使用注解的方式取值。</li>
+<li>KSRouter想对于之前的Router方案来说去除了配置参数的类型。</li>
+<li>KSRouter将用户相关的操作(登录等)抛出到具体应用内部去处理，KSRouter库不做处理。</li>
+<li>KSRouter将WebView相关操作（cookie等）抛出到具体应用内部去处理，KSRouter库不做处理.</li>
+</ul>
+<h3 id="初始化Router"><a href="#初始化Router" class="headerlink" title="初始化Router"></a>初始化Router</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">RouterConfig config = <span class="keyword">new</span> RouterConfig.Builder()</span><br><span class="line">        .addHost(<span class="string">"https://borrower.kesucorp.com"</span>)</span><br><span class="line">        .addHost(<span class="string">"ksrouter://borrower.kesucorp.com"</span>)</span><br><span class="line">        .addInterceptor(<span class="keyword">new</span> BrowserRouterInterceptor())</span><br><span class="line">        .addInterceptor(<span class="keyword">new</span> UserRouterInterceptor())</span><br><span class="line">        .build();</span><br><span class="line">KSRouter.getInstance().initialize(<span class="keyword">this</span>, config);</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>通过Builder的方式创建RouterConfig。Host的配置可以是多个，比如有网页形式的https://开头的，也有本地形式的ksrouter开头的。拦截器首先通过BrowserRouterInterceptor拦截器，如果没有匹配到规则，默认会走内部WebView的方式打开。当然，如果匹配到了，走到UserRouterInterceptor中会拦截到当前打开的页面需不需要登录，如果需要登录并且当前用户还没有登录的情况下。此拦截器内部会直接跳转登录页面。否则会进入InnerRouterInterceptor这个拦截器当中。</p>
+</blockquote>
+<h3 id="简单用法"><a href="#简单用法" class="headerlink" title="简单用法"></a>简单用法</h3><h4 id="跳转到下一个页面"><a href="#跳转到下一个页面" class="headerlink" title="跳转到下一个页面"></a>跳转到下一个页面</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//当前页面</span></span><br><span class="line">KSRouter.getInstance().open(context, <span class="string">"path"</span>);</span><br><span class="line"><span class="comment">//目标页面</span></span><br><span class="line"><span class="meta">@Router</span>(<span class="string">"path"</span>)</span><br></pre></td></tr></table></figure>
+<h4 id="跳转到下一个页面并携带参数"><a href="#跳转到下一个页面并携带参数" class="headerlink" title="跳转到下一个页面并携带参数"></a>跳转到下一个页面并携带参数</h4><p>跳转代码如下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Map&lt;String, Object&gt; map = <span class="keyword">new</span> HashMap&lt;&gt;();</span><br><span class="line">map.put(RouterConstant.IntentKey.NAME, <span class="string">"wuchuang"</span>);</span><br><span class="line">map.put(RouterConstant.IntentKey.AGE, <span class="number">17</span>);</span><br><span class="line">map.put(RouterConstant.IntentKey.SERIALIZABLE, <span class="keyword">new</span> TestEntity(<span class="string">"entity_name"</span>,<span class="number">12</span>));</span><br><span class="line">KSRouter.getInstance().open(context, RouterConstant.NEXT_WITH_PARAMS, map);</span><br></pre></td></tr></table></figure></p>
+<p>目标页面代码如下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Router</span>(value = RouterConstant.NEXT_WITH_PARAMS)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">NextWithParamsActivity</span> <span class="keyword">extends</span> <span class="title">BaseActivity</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">initView</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.initView();</span><br><span class="line">        setTitle(<span class="string">"NextWithParams"</span>);</span><br><span class="line">        <span class="keyword">final</span> String name = getIntent().getStringExtra(RouterConstant.IntentKey.NAME);</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> age = getIntent().getIntExtra(RouterConstant.IntentKey.AGE, <span class="number">0</span>);</span><br><span class="line">        <span class="keyword">final</span> TestEntity entity = getIntent().getSerializableExtra(RouterConstant.IntentKey.SERIALIZABLE);</span><br><span class="line">        <span class="comment">//TODO</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getLayoutId</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> R.layout.activity_next_with_params;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>当然，如果你觉得getIntent().getXXXExtra()太繁琐，也可以通过@RouterPatams的方式获取</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Router</span>(value = RouterConstant.NEXT_WITH_PARAMS)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">NextWithParamsActivity</span> <span class="keyword">extends</span> <span class="title">BaseActivity</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@RouterParams</span>(RouterConstant.IntentKey.NAME)</span><br><span class="line">    String name;</span><br><span class="line">    <span class="meta">@RouterParams</span>(RouterConstant.IntentKey.AGE)</span><br><span class="line">    <span class="keyword">int</span> age;</span><br><span class="line">    <span class="meta">@RouterParams</span>(RouterConstant.IntentKey.SERIALIZABLE)</span><br><span class="line">    TestEntity entity;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">initView</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.initView();</span><br><span class="line">        setTitle(<span class="string">"NextWithParams"</span>);</span><br><span class="line">        <span class="comment">//TODO</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getLayoutId</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> R.layout.activity_next_with_params;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>RouterParams注册使用的前提需要在Activity中调用KSRouter的inject方法注入，这个步骤可以放在BaseActivity中，或者放在ActivityLifecycleCallbacks中来完成都是可以的。</p>
+</blockquote>
+<h4 id="其他Router功能"><a href="#其他Router功能" class="headerlink" title="其他Router功能"></a>其他Router功能</h4><p>通过一个接口来展示Router功能<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 初始化</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">initialize</span><span class="params">(Context context, RouterConfig routerConfig)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Router注入</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> activity</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">inject</span><span class="params">(Activity activity)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 用于WebView打开App页面(可携带参数)</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function">RouterInfo <span class="title">openWithWeb</span><span class="params">(Context context, String url)</span></span>;</span><br><span class="line"></span><br><span class="line"> </span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 用于WebView打开App页面(可携带参数)</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line"><span class="function">RouterInfo <span class="title">openForResultWithWeb</span><span class="params">(Context context, String url)</span></span>;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * App内部打开App页面(不带参数)</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function">RouterInfo <span class="title">open</span><span class="params">(Context context, String path)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * App内部打开App页面(带参数)</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function">RouterInfo <span class="title">open</span><span class="params">(Context context, String path, Map&lt;String, Object&gt; params)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * App内部打开App页面并且需要返回结果(不带参数)</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function">RouterInfo <span class="title">openForResult</span><span class="params">(Context context, String path, <span class="keyword">int</span> requestCode)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * App内部打开App页面并且需要返回结果(带参数)</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function">RouterInfo <span class="title">openForResult</span><span class="params">(Context context, String path, Map&lt;String, Object&gt; params, <span class="keyword">int</span> requestCode)</span></span>;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 获取当前路由的Path</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function">String <span class="title">getCurrentPath</span><span class="params">(Class cls)</span></span>;</span><br></pre></td></tr></table></figure></p>
+<h3 id="源码解析"><a href="#源码解析" class="headerlink" title="源码解析"></a>源码解析</h3><h4 id="定义RouterInfo"><a href="#定义RouterInfo" class="headerlink" title="定义RouterInfo"></a>定义RouterInfo</h4><p>如何定义页面直接的映射和跳转关系，可以从一个实体类中看出。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RouterInfo</span> <span class="keyword">implements</span> <span class="title">Cloneable</span></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> List&lt;String&gt; paths;</span><br><span class="line">    <span class="keyword">private</span> String activityCls;</span><br><span class="line">    <span class="keyword">private</span> Map&lt;String, Object&gt; paramsMap;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> requestCode;</span><br><span class="line">    <span class="keyword">private</span> String currentPath;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p>paths包含了一个一对多的关系，也就是说一个页面可以存在多个Path，不同的Path只要在当前页面声明过都可以跳转到这个页面。<br>activityCls是用原生Intent跳转是所需要的参数。<br>paramsMap为页面跳转所携带的数据。如果页面通过startActivityForResult形式，那么requestCode是必不可少的参数。<br>currentPath可以获取当前跳转页面对应的Path，用来处理Activity内部多个Fragment跳转的场景。</p>
+</blockquote>
+<h4 id="InnerRouterInterceptor"><a href="#InnerRouterInterceptor" class="headerlink" title="InnerRouterInterceptor"></a>InnerRouterInterceptor</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"> <span class="function"><span class="keyword">public</span> RouterInfo <span class="title">intercept</span><span class="params">(Context context, RouterChain routerChain)</span> </span>&#123;</span><br><span class="line">     RouterInfo routerInfo = routerChain.routerInfo();</span><br><span class="line">     <span class="keyword">if</span> (routerInfo != <span class="keyword">null</span>) &#123;</span><br><span class="line">         nextWithRouterInfo(context, routerInfo);</span><br><span class="line">     &#125;</span><br><span class="line">     <span class="keyword">return</span> routerInfo;</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line"> <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">nextWithRouterInfo</span><span class="params">(Context context, RouterInfo routerInfo)</span> </span>&#123;</span><br><span class="line">     Intent intent = <span class="keyword">new</span> Intent();</span><br><span class="line">     Map&lt;String, Object&gt; map = routerInfo.getParamsMap();</span><br><span class="line">     <span class="keyword">if</span> (map != <span class="keyword">null</span>)</span><br><span class="line">         addParams(map, intent);</span><br><span class="line">     intent.setClassName(context, routerInfo.getActivityCls());</span><br><span class="line">     <span class="keyword">int</span> requestCode = routerInfo.getRequestCode();</span><br><span class="line">     <span class="keyword">if</span> (requestCode != <span class="number">0</span>) &#123;</span><br><span class="line">         <span class="keyword">if</span> (context <span class="keyword">instanceof</span> Activity) &#123;</span><br><span class="line">             ((Activity) context).startActivityForResult(intent, requestCode);</span><br><span class="line">         &#125;</span><br><span class="line">     &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">         context.startActivity(intent);</span><br><span class="line">     &#125;</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"> <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">addParams</span><span class="params">(Map&lt;String, Object&gt; map, Intent intent)</span> </span>&#123;</span><br><span class="line">     <span class="keyword">for</span> (String key : map.keySet()) &#123;</span><br><span class="line">         Object value = map.get(key);</span><br><span class="line">         Class valueClass = value.getClass();</span><br><span class="line">         <span class="keyword">if</span> (valueClass.isAssignableFrom(Integer.class) || valueClass.isAssignableFrom(<span class="keyword">int</span>.class)) &#123;</span><br><span class="line">             intent.putExtra(key, (Integer) value);</span><br><span class="line">         &#125; <span class="keyword">else</span> <span class="keyword">if</span> (valueClass.isAssignableFrom(Long.class) || valueClass.isAssignableFrom(<span class="keyword">long</span>.class)) &#123;</span><br><span class="line">             intent.putExtra(key, (Long) value);</span><br><span class="line">         &#125; <span class="keyword">else</span> <span class="keyword">if</span> (valueClass.isAssignableFrom(Float.class) || valueClass.isAssignableFrom(<span class="keyword">float</span>.class)) &#123;</span><br><span class="line">             intent.putExtra(key, (Float) value);</span><br><span class="line">         &#125; <span class="keyword">else</span> <span class="keyword">if</span> (valueClass.isAssignableFrom(Double.class) || valueClass.isAssignableFrom(<span class="keyword">double</span>.class)) &#123;</span><br><span class="line">             intent.putExtra(key, (Double) value);</span><br><span class="line">         &#125; <span class="keyword">else</span> <span class="keyword">if</span> (valueClass.isAssignableFrom(String.class)) &#123;</span><br><span class="line">             intent.putExtra(key, (String) value);</span><br><span class="line">         &#125; <span class="keyword">else</span> <span class="keyword">if</span> (Serializable.class.isAssignableFrom(valueClass)) &#123;</span><br><span class="line">             intent.putExtra(key, (Serializable) value);</span><br><span class="line">         &#125; <span class="keyword">else</span> <span class="keyword">if</span> (Parcelable.class.isAssignableFrom(valueClass)) &#123;</span><br><span class="line">             intent.putExtra(key, (Parcelable) value);</span><br><span class="line">         &#125;</span><br><span class="line">     &#125;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>注：根据requestCode来判断是否需要返回结果给前一个Activity，通过isAssignableFrom方法来确定当前参数的类型[常用的基本数据类型，Serializable或者Parcelable数据]。并按照指定类型放入Intent中。</p>
+</blockquote>
+<h3 id="和老版本对比"><a href="#和老版本对比" class="headerlink" title="和老版本对比"></a>和老版本对比</h3><h4 id="HOST或者说是协议的添加"><a href="#HOST或者说是协议的添加" class="headerlink" title="HOST或者说是协议的添加"></a>HOST或者说是协议的添加</h4><p>比如首页的Router配置信息如下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Router</span>(&#123;</span><br><span class="line">        BuildConfig.dai + <span class="string">"/finance"</span>, BuildConfig.dai + <span class="string">"/project/list"</span>, BuildConfig.dai + <span class="string">"/creditassign/list"</span>, BuildConfig.dai + <span class="string">"/discovery"</span>, BuildConfig.dai + <span class="string">"/user"</span>,</span><br><span class="line">        BuildConfig.www + <span class="string">"/finance"</span>, BuildConfig.www + <span class="string">"/project/list"</span>, BuildConfig.www + <span class="string">"/creditassign/list"</span>, BuildConfig.www + <span class="string">"/discovery"</span>, BuildConfig.www + <span class="string">"/user"</span></span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure></p>
+<p>KSRouter中只需要这样写<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Router</span>(&#123;</span><br><span class="line">        <span class="string">"/finance"</span>, <span class="string">"/project/list"</span>, <span class="string">"/creditassign/list"</span>, <span class="string">"/discovery"</span>,  <span class="string">"/user"</span></span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure></p>
+<h4 id="Router注解不提供参数类型"><a href="#Router注解不提供参数类型" class="headerlink" title="Router注解不提供参数类型"></a>Router注解不提供参数类型</h4><p>比如充值页面Router配置信息如下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Router</span>(value = BuildConfig.passport + <span class="string">"/user/recharge"</span>, floatParams = <span class="string">"rechargenum"</span>, transfer = <span class="string">"amount=&gt;rechargenum"</span>, booleanParams = <span class="string">"skip_result_act"</span>)</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p>注：不配置参数类型也是可以获取到数据。</p>
+</blockquote>
+<p>KSRouter中只需要这样写<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Router</span>(<span class="string">"/user/recharge"</span>)</span><br></pre></td></tr></table></figure></p>
+<h4 id="目标页面参数的名称转换"><a href="#目标页面参数的名称转换" class="headerlink" title="目标页面参数的名称转换"></a>目标页面参数的名称转换</h4><p>比如充值页面Router配置信息如下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Router</span>(value = BuildConfig.passport + <span class="string">"/user/recharge"</span>, floatParams = <span class="string">"rechargenum"</span>, transfer = <span class="string">"amount=&gt;rechargenum"</span>, booleanParams = <span class="string">"skip_result_act"</span>)</span><br></pre></td></tr></table></figure></p>
+<p>KSRouter中只需要这样写<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RouterParams</span>(<span class="string">"amount"</span>)</span><br><span class="line"><span class="keyword">float</span> rechargenum;</span><br><span class="line">或者</span><br><span class="line"><span class="meta">@RouterParams</span></span><br><span class="line"><span class="keyword">float</span> amount;</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p>首先寻找注解上对应的key,如果不存在，就会拿当前字段的名称当做key来取值。</p>
+</blockquote>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>您的支持是我原创的动力</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechatpay.jpg" alt="chuangWu 微信支付"/>
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/images/alipay.jpg" alt="chuangWu 支付宝"/>
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+
+<div>  
+     
+ 
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+      <strong>本文作者：</strong>chuangWu
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="/2020/01/16/Android框架实战：Router/" title="Android框架实战：Router">2020/01/16/Android框架实战：Router/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权： </strong>
+    本站文章均采用 <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0 CN</a> 许可协议，请勿用于商业，转载注明出处！
+  </li>
+</ul>
+
+</div>
+
+      
+        <div class="post-tags">
+          
+            <a href="/tags/router/" rel="tag"># router</a>
+          
+            <a href="/tags/android/" rel="tag"># android</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/01/16/Glide源码解析-一-：简介/" rel="next" title="Glide源码解析(一)：简介">
+                <i class="fa fa-chevron-left"></i> Glide源码解析(一)：简介
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/01/17/Android模块化实战：学海题舟模块化/" rel="prev" title="Android模块化实战：学海题舟模块化">
+                Android模块化实战：学海题舟模块化 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+      <div>    
+      
+
+
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/head.png"
+                alt="chuangWu" />
+            
+              <p class="site-author-name" itemprop="name">chuangWu</p>
+              <p class="site-description motion-element" itemprop="description">选择大于努力</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">30</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">44</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Router的定义"><span class="nav-number">1.</span> <span class="nav-text">Router的定义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Router的优点"><span class="nav-number">2.</span> <span class="nav-text">Router的优点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#初始化Router"><span class="nav-number">3.</span> <span class="nav-text">初始化Router</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#简单用法"><span class="nav-number">4.</span> <span class="nav-text">简单用法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#跳转到下一个页面"><span class="nav-number">4.1.</span> <span class="nav-text">跳转到下一个页面</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#跳转到下一个页面并携带参数"><span class="nav-number">4.2.</span> <span class="nav-text">跳转到下一个页面并携带参数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#其他Router功能"><span class="nav-number">4.3.</span> <span class="nav-text">其他Router功能</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#源码解析"><span class="nav-number">5.</span> <span class="nav-text">源码解析</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#定义RouterInfo"><span class="nav-number">5.1.</span> <span class="nav-text">定义RouterInfo</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#InnerRouterInterceptor"><span class="nav-number">5.2.</span> <span class="nav-text">InnerRouterInterceptor</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#和老版本对比"><span class="nav-number">6.</span> <span class="nav-text">和老版本对比</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#HOST或者说是协议的添加"><span class="nav-number">6.1.</span> <span class="nav-text">HOST或者说是协议的添加</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Router注解不提供参数类型"><span class="nav-number">6.2.</span> <span class="nav-text">Router注解不提供参数类型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#目标页面参数的名称转换"><span class="nav-number">6.3.</span> <span class="nav-text">目标页面参数的名称转换</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">chuangWu</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      本站访客数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      人次
+    </span>
+  
+
+  
+    <span class="site-pv">
+      本站总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

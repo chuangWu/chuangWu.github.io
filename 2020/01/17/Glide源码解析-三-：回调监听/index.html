@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="glide,源码解析," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="图片回调流程前面的文章详细介绍了Glide加载图片的流程，这里我们重点回顾一下图片的的显示流程：DecodeJob完成图片的装载之后，会回调到notifyEncodeAndRelease()方法，之后的流程如下。  EngineJob.onResourceReady EngineJob.notifyCallbacksOfResult EngineJob.callCallbackOnResource">
+<meta name="keywords" content="glide,源码解析">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Glide源码解析(三)：回调监听">
+<meta property="og:url" content="http://yoursite.com/2020/01/17/Glide源码解析-三-：回调监听/index.html">
+<meta property="og:site_name" content="小小小青年">
+<meta property="og:description" content="图片回调流程前面的文章详细介绍了Glide加载图片的流程，这里我们重点回顾一下图片的的显示流程：DecodeJob完成图片的装载之后，会回调到notifyEncodeAndRelease()方法，之后的流程如下。  EngineJob.onResourceReady EngineJob.notifyCallbacksOfResult EngineJob.callCallbackOnResource">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2020-03-10T09:51:43.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Glide源码解析(三)：回调监听">
+<meta name="twitter:description" content="图片回调流程前面的文章详细介绍了Glide加载图片的流程，这里我们重点回顾一下图片的的显示流程：DecodeJob完成图片的装载之后，会回调到notifyEncodeAndRelease()方法，之后的流程如下。  EngineJob.onResourceReady EngineJob.notifyCallbacksOfResult EngineJob.callCallbackOnResource">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/01/17/Glide源码解析-三-：回调监听/"/>
+
+
+
+
+
+  <title>Glide源码解析(三)：回调监听 | 小小小青年</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">小小小青年</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/17/Glide源码解析-三-：回调监听/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="chuangWu">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/head.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="小小小青年">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Glide源码解析(三)：回调监听</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-01-17T17:12:57+08:00">
+                2020-01-17
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv">本文总阅读量
+            <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>次
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="图片回调流程"><a href="#图片回调流程" class="headerlink" title="图片回调流程"></a>图片回调流程</h3><p>前面的文章详细介绍了Glide加载图片的流程，这里我们重点回顾一下图片的的显示流程：DecodeJob完成图片的装载之后，会回调到notifyEncodeAndRelease()方法，之后的流程如下。</p>
+<ol>
+<li>EngineJob.onResourceReady</li>
+<li>EngineJob.notifyCallbacksOfResult</li>
+<li>EngineJob.callCallbackOnResourceReady</li>
+<li>ResourceCallback.onResourceReady</li>
+<li>SingleRequest.onResourceReady</li>
+<li>ImageViewTarget.onResourceReady</li>
+<li>ImageViewTarget.setResource</li>
+<li>view.setImageDrawable(resource);</li>
+</ol>
+<p>上面的流程可以看到，图片展示的地方是在Target的onResourceReady()中执行的。这里的Target是哪个步骤构建的呢？回顾一下前面的文章流程中可以知道，在into()方法中，会构建Target，在Request的构建中，Target作为参数传进Request中。</p>
+<h3 id="自定义Target的原理和实现"><a href="#自定义Target的原理和实现" class="headerlink" title="自定义Target的原理和实现"></a>自定义Target的原理和实现</h3><p>面的图片回调流程基本上就介绍了Target的原理，自定义Target的时候，只需要实现onResourceReady（）方法中展示图片即可，使用定义Target的用法如下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">SimpleTarget&lt;GlideDrawable&gt; simpleTarget = <span class="keyword">new</span> SimpleTarget&lt;GlideDrawable&gt;() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onResourceReady</span><span class="params">(GlideDrawable resource, GlideAnimation glideAnimation)</span> </span>&#123;</span><br><span class="line">        imageView.setImageDrawable(resource);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">Glide.with(<span class="keyword">this</span>).load(url).into(simpleTarget);</span><br></pre></td></tr></table></figure></p>
+<p>以上是基本的自定义Target的用法，掌握了图片的显示流程就可以定义复杂的Target，实现复杂的图片加载需求。</p>
+<h3 id="Preload的功能和原理"><a href="#Preload的功能和原理" class="headerlink" title="Preload的功能和原理"></a>Preload的功能和原理</h3><p>preload()可以替换into()法的另外一个方法，和into()不同的是，preload()方法只加载图片，而不显示图片，是一种图片预加载的功能，使真正显示图片的时候不需要从网络获取，提高图片的显示速度。preload()方法是如何实现不加载图片的呢？通过前面的图片加载流程，我们知道，获取图片之后DecodeJob会执行图片的显示流程，而图片显示是Target完成的。之前的文章分析Glide加载图片的流程的时候我们知道into()方法，Glide内部逻辑中会构建一个Target，这个Target就是显示图片的对象。我们需要分析preload()内部的Target是如何不显示图片的。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> Target&lt;TranscodeType&gt; <span class="title">preload</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> preload(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL);</span><br><span class="line">  &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> Target&lt;TranscodeType&gt; <span class="title">preload</span><span class="params">(<span class="keyword">int</span> width, <span class="keyword">int</span> height)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> PreloadTarget&lt;TranscodeType&gt; target = PreloadTarget.obtain(requestManager, width, height);</span><br><span class="line">    <span class="keyword">return</span> into(target);</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>我们可以看到：preload()方法会先构建一个PreloadTarget对象，然后调用into(targe)。所以PreloadTarget类完成了图片不显示的逻辑。我们分析一下PreloadTarget的实现：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Handler HANDLER = <span class="keyword">new</span> Handler(Looper.getMainLooper(), <span class="keyword">new</span> Callback() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">handleMessage</span><span class="params">(Message message)</span> </span>&#123;</span><br><span class="line">      <span class="keyword">if</span> (message.what == MESSAGE_CLEAR) &#123;</span><br><span class="line">        ((PreloadTarget&lt;?&gt;) message.obj).clear();</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;);</span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onResourceReady</span><span class="params">(Z resource, Transition&lt;? <span class="keyword">super</span> Z&gt; transition)</span> </span>&#123;</span><br><span class="line">    HANDLER.obtainMessage(MESSAGE_CLEAR, <span class="keyword">this</span>).sendToTarget();</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到PreloadTarget内部在onResourceReady()中仅仅是发送了一个message，并没有显示图片。需要注意的是preload()默认是全尺寸缓存图片的，使用into()显示preoload()已经预加载的图片时，需要指定缓存策略为DiskCacheStrategy.SOURCE，否则into()会找不到缓存，从网络加载图片。</p>
+<h3 id="downloadOnly的功能和原理"><a href="#downloadOnly的功能和原理" class="headerlink" title="downloadOnly的功能和原理"></a>downloadOnly的功能和原理</h3><p>into()和preload()方法都是加载图片的操作，不提供图片的路径信息，开发者只关心图片显示的问题，对图片本身不关注，如果我们需要对图片本身的信息做处理的话，就需要知道图片的保存路径，Glide提供了两个方法可以获取图片的路径：</p>
+<ul>
+<li>downloadOnly(int width, int height)</li>
+<li>downloadOnly(Y target)</li>
+</ul>
+<p>downloadOnly(int width, int height)方法，该方法主要完成图片加载不显示，与preload功能相似，同时他提供了一个获取图片缓存路径的方法，该方法是阻塞方法，如果图片没有下载成功，会阻塞，因此一般使用get()方法需要在子线程中调用，同时get()内部也会检查是否在子线程，否则抛异常。<br>downloadOnly(Y target)不同的是不需要再子线程中运行。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="keyword">static</span> <span class="keyword">final</span> RequestOptions DOWNLOAD_ONLY_OPTIONS =</span><br><span class="line">      <span class="keyword">new</span> RequestOptions().diskCacheStrategy(DiskCacheStrategy.DATA).priority(Priority.LOW) .skipMemoryCache(<span class="keyword">true</span>);</span><br><span class="line"> <span class="function"><span class="keyword">public</span> FutureTarget&lt;File&gt; <span class="title">downloadOnly</span><span class="params">(<span class="keyword">int</span> width, <span class="keyword">int</span> height)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> getDownloadOnlyRequest().submit(width, height);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function"><span class="keyword">protected</span> RequestBuilder&lt;File&gt; <span class="title">getDownloadOnlyRequest</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> RequestBuilder&lt;&gt;(File.class,<span class="keyword">this</span>).apply(DOWNLOAD_ONLY_OPTIONS);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> FutureTarget&lt;TranscodeType&gt; <span class="title">submit</span><span class="params">(<span class="keyword">int</span> width, <span class="keyword">int</span> height)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> RequestFutureTarget&lt;TranscodeType&gt; target =</span><br><span class="line">        <span class="keyword">new</span> RequestFutureTarget&lt;&gt;(glideContext.getMainHandler(), width, height);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (Util.isOnBackgroundThread()) &#123;</span><br><span class="line">      glideContext.getMainHandler().post(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">          <span class="keyword">if</span> (!target.isCancelled()) &#123;</span><br><span class="line">            into(target, target);</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      into(target, target);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> target;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure></p>
+<p>可以看到downloadOnly(int width, int height)内部构建的Target是RequestFutureTarget，图片的不显示功能和get()图片缓存文件都是在这里提供的。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"> <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">onResourceReady</span><span class="params">(R resource, Transition&lt;? <span class="keyword">super</span> R&gt; transition)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// Ignored, synchronized for backwards compatibility.</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> R <span class="title">get</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException, ExecutionException </span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      <span class="keyword">return</span> doGet(<span class="keyword">null</span>);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (TimeoutException e) &#123;</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> AssertionError(e);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">synchronized</span> R <span class="title">doGet</span><span class="params">(Long timeoutMillis)</span></span></span><br><span class="line"><span class="function">      <span class="keyword">throws</span> ExecutionException, InterruptedException, TimeoutException </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (assertBackgroundThread &amp;&amp; !isDone()) &#123;</span><br><span class="line">      Util.assertBackgroundThread();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (isCancelled) &#123;</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> CancellationException();</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (loadFailed) &#123;</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> ExecutionException(exception);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (resultReceived) &#123;</span><br><span class="line">      <span class="keyword">return</span> resource;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (timeoutMillis == <span class="keyword">null</span>) &#123;</span><br><span class="line">      waiter.waitForTimeout(<span class="keyword">this</span>, <span class="number">0</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (timeoutMillis &gt; <span class="number">0</span>) &#123;</span><br><span class="line">      waiter.waitForTimeout(<span class="keyword">this</span>, timeoutMillis);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (Thread.interrupted()) &#123;</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> InterruptedException();</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (loadFailed) &#123;</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> GlideExecutionException(exception);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (isCancelled) &#123;</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> CancellationException();</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (!resultReceived) &#123;</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> TimeoutException();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> resource;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure></p>
+<p>RequestFutureTarget的onResourceReady内部没有做任何实现。而get()方法是个阻塞方法，如果图片还没有加载完成，get()的调用线程会被阻塞；同时get()内部也做了线程判断，如果不是在子线程，会抛异常。</p>
+<h3 id="Listener的功能和原理"><a href="#Listener的功能和原理" class="headerlink" title="Listener的功能和原理"></a>Listener的功能和原理</h3><p>listener()方法提供了一个功能：图片加载的状态，加载完成或者加载失败的结果。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">boolean</span> <span class="title">onLoadFailed</span><span class="params">(@Nullable GlideException e, Object model, Target&lt;R&gt; target,</span></span></span><br><span class="line"><span class="function"><span class="params">     <span class="keyword">boolean</span> isFirstResource)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">boolean</span> <span class="title">onResourceReady</span><span class="params">(R resource, Object model, Target&lt;R&gt; target, DataSource dataSource,</span></span></span><br><span class="line"><span class="function"><span class="params">     <span class="keyword">boolean</span> isFirstResource)</span></span>;</span><br></pre></td></tr></table></figure></p>
+<p>listener方法的参数RequestListener内部有两个方法</p>
+<ol>
+<li>onResourceReady 标识加载成功，以及图片资源resource，返回值标识是否处理了结果</li>
+<li>onLoadFailed 表示加载失败，以及失败的原因GlideException 。返回值标识是否处理了结果</li>
+</ol>
+<p>listener方法的参数RequestListener，会在构建Request的时候，保存在request的属性requestListener。<br>在DecodeJob回调的流程中会在Request中调用onResourceReady或者onLoadFailed</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>您的支持是我原创的动力</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechatpay.jpg" alt="chuangWu 微信支付"/>
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/images/alipay.jpg" alt="chuangWu 支付宝"/>
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+
+<div>  
+     
+ 
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+      <strong>本文作者：</strong>chuangWu
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="/2020/01/17/Glide源码解析-三-：回调监听/" title="Glide源码解析(三)：回调监听">2020/01/17/Glide源码解析-三-：回调监听/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权： </strong>
+    本站文章均采用 <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0 CN</a> 许可协议，请勿用于商业，转载注明出处！
+  </li>
+</ul>
+
+</div>
+
+      
+        <div class="post-tags">
+          
+            <a href="/tags/glide/" rel="tag"># glide</a>
+          
+            <a href="/tags/源码解析/" rel="tag"># 源码解析</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/01/17/Glide源码解析-二-：流程分析/" rel="next" title="Glide源码解析(二)：流程分析">
+                <i class="fa fa-chevron-left"></i> Glide源码解析(二)：流程分析
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/01/17/Glide源码解析-四-：自定义模块/" rel="prev" title="Glide源码解析(四)：自定义模块">
+                Glide源码解析(四)：自定义模块 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+      <div>    
+      
+
+
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/head.png"
+                alt="chuangWu" />
+            
+              <p class="site-author-name" itemprop="name">chuangWu</p>
+              <p class="site-description motion-element" itemprop="description">选择大于努力</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">30</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">44</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#图片回调流程"><span class="nav-number">1.</span> <span class="nav-text">图片回调流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#自定义Target的原理和实现"><span class="nav-number">2.</span> <span class="nav-text">自定义Target的原理和实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Preload的功能和原理"><span class="nav-number">3.</span> <span class="nav-text">Preload的功能和原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#downloadOnly的功能和原理"><span class="nav-number">4.</span> <span class="nav-text">downloadOnly的功能和原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Listener的功能和原理"><span class="nav-number">5.</span> <span class="nav-text">Listener的功能和原理</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">chuangWu</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      本站访客数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      人次
+    </span>
+  
+
+  
+    <span class="site-pv">
+      本站总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

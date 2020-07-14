@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="glide,源码解析," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="介绍下android开发中常用的图片框架，以及对比他们的优缺点。 UILUIL 是一个老牌的图片加载框架，旨在提供一个强大的、灵活的和高度可定制的工具，以实现图像加载、缓存和显示功能。UIL 支持多线程图片加载，支持占位图和错误图、支持图片下载进度的监听，支持缓存不同尺寸图片，支持图片内存缓存和硬盘缓存，支持自定义图片加载格式，支持 ListView或者 GridView 滚动时暂停加载。但 UI">
+<meta name="keywords" content="glide,源码解析">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Glide源码解析(一)：简介">
+<meta property="og:url" content="http://yoursite.com/2020/01/16/Glide源码解析-一-：简介/index.html">
+<meta property="og:site_name" content="小小小青年">
+<meta property="og:description" content="介绍下android开发中常用的图片框架，以及对比他们的优缺点。 UILUIL 是一个老牌的图片加载框架，旨在提供一个强大的、灵活的和高度可定制的工具，以实现图像加载、缓存和显示功能。UIL 支持多线程图片加载，支持占位图和错误图、支持图片下载进度的监听，支持缓存不同尺寸图片，支持图片内存缓存和硬盘缓存，支持自定义图片加载格式，支持 ListView或者 GridView 滚动时暂停加载。但 UI">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/2020/01/16/Glide源码解析-一-：简介/image_loader_compare.png">
+<meta property="og:updated_time" content="2020-03-06T07:23:13.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Glide源码解析(一)：简介">
+<meta name="twitter:description" content="介绍下android开发中常用的图片框架，以及对比他们的优缺点。 UILUIL 是一个老牌的图片加载框架，旨在提供一个强大的、灵活的和高度可定制的工具，以实现图像加载、缓存和显示功能。UIL 支持多线程图片加载，支持占位图和错误图、支持图片下载进度的监听，支持缓存不同尺寸图片，支持图片内存缓存和硬盘缓存，支持自定义图片加载格式，支持 ListView或者 GridView 滚动时暂停加载。但 UI">
+<meta name="twitter:image" content="http://yoursite.com/2020/01/16/Glide源码解析-一-：简介/image_loader_compare.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/01/16/Glide源码解析-一-：简介/"/>
+
+
+
+
+
+  <title>Glide源码解析(一)：简介 | 小小小青年</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">小小小青年</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/16/Glide源码解析-一-：简介/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="chuangWu">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/head.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="小小小青年">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Glide源码解析(一)：简介</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-01-16T18:00:31+08:00">
+                2020-01-16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Android/" itemprop="url" rel="index">
+                    <span itemprop="name">Android</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv">本文总阅读量
+            <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>次
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>介绍下android开发中常用的图片框架，以及对比他们的优缺点。</p>
+<h3 id="UIL"><a href="#UIL" class="headerlink" title="UIL"></a>UIL</h3><p>UIL 是一个老牌的图片加载框架，旨在提供一个强大的、灵活的和高度可定制的工具，以实现图像加载、缓存和显示功能。<br>UIL 支持多线程图片加载，支持占位图和错误图、支持图片下载进度的监听，支持缓存不同尺寸图片，支持图片内存缓存和硬盘缓存，支持自定义图片加载格式，支持 ListView或者 GridView 滚动时暂停加载。但 UIL 不支持动图展示，且该框架的作者已经宣布不在对其进行维护。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ImageLoader.getInstance().displayImage(url, imageView, <span class="keyword">null</span>);</span><br></pre></td></tr></table></figure></p>
+<h3 id="Picasso"><a href="#Picasso" class="headerlink" title="Picasso"></a>Picasso</h3><p>Picasso 其名字来源于画家毕加索，是著名开源公司 Square 的作品，与 OkHttp 和 Retrofit 合称开发三件套。Picasso 同样支持占位图和错误图展示，支持图形变换操作，支持内存和硬盘缓存，支持加载本地或者网络资源，比较有特色的是其拥有统计功能，可以知道一共使用了多少内存，缓存命中率， 图片来自内存还是硬盘等。Picasso 使用起来也是简单方便，基本上一行代码可解决显示图片请求。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Picasso.with(context)  .load(url).into(imageView);</span><br></pre></td></tr></table></figure></p>
+<h3 id="Glide"><a href="#Glide" class="headerlink" title="Glide"></a>Glide</h3><p>Glide 是一个 Google 官方推荐的快速高效的图片加载库，主要目标是让任何形式的图片列表的滚动尽可能地变得更快、更平滑。<br>Glide 提供了简单易用的API，典型流式语法风格，大部分展示图片需求可以一行代码搞定。Glide 的 API 还特别灵活，在支持开发者自定义配置和模块的同时又和其图片加载图片的逻辑没有任何交集，是一种低耦合的编程方式的实现。默认情况下，通信组件使用 HttpUrlConnection，但也提供了 Volley 和 OkHttp 快速集成的工具。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Glide.with(fragment).load(url).into(imageView);</span><br></pre></td></tr></table></figure></p>
+<p>Glide使用了多个步骤来确保在Android上加载图片尽可能的快速和平滑：</p>
+<ul>
+<li>自动、智能地下采样(downsampling)和缓存(caching)，以最小化存储开销和解码次数；</li>
+<li>积极的资源重用，例如字节数组和Bitmap，以最小化昂贵的垃圾回收和堆碎片影响；</li>
+<li>深度的生命周期集成，以确保仅优先处理活跃的 Fragment 和 Activity 的请求，并有利于应用在必要时释放资源以避免在后台时被杀掉。</li>
+</ul>
+<h3 id="Fresco"><a href="#Fresco" class="headerlink" title="Fresco"></a>Fresco</h3><p>Fresco 是一个强大的图片加载组件，其设计中有一个叫做 Image Pipeline 的模块，负责从网络、本地文件系统、本地资源加载图片。为了最大限度节省空间和CPU时间，它含有 3 级缓存设计（2级内存，1级磁盘）。还有一个叫做 Drawees 的模块，它会在图片加载完成前显示占位图，加载成功后自动替换为目标图片。当图片不再显示在屏幕上时，它会及时地释放内存和空间占用。Fresco 包含以下特性：</p>
+<ul>
+<li>内存管理：在 Andrid 5.0 以下系统，Fresco 会将图片放到 ASM（Anonymous Shared Memory，匿名共享内存）区域，减少了低性能手机上 OOM 的发生。在图片不用时，应该显式释放这部分资源，SimpleDraweeView 自动处理了这个释放过程。在 5.0 及以上版本系统，由于 Android 对其内存管理做了很大优化，Bitmap 缓存位于 Java 堆区，同样避免了 OOM 的发生。</li>
+<li>图片加载：Image Pipeline 允许你用多种方式来定义图片的加载过程图片可以来自远程服务器，本地文件，或者Content Provider，本地资源。压缩后的文件缓存在本地存储中，Bitmap数据缓存在内存中。</li>
+<li>图片绘制：可自定义占位图或者进度条，自定义 overlay，现在失败后的点击重试等。</li>
+<li>图片渐进式呈现：Android 本身的图片库不支持此格式，但是Fresco支持渐进式图片。渐进式格式先呈现大致的图片轮廓，然后随着图片下载的继续，呈现逐渐清晰的图片，对于移动设备，尤其是慢网络有极大的利好，可带来更好的用户体验。</li>
+<li>友好的支持 Gif 图片和 Webp 动图。</li>
+</ul>
+<h3 id="共同特性"><a href="#共同特性" class="headerlink" title="共同特性"></a>共同特性</h3><ul>
+<li>支持占位图或者加载错误图</li>
+<li>支持 图像变换，如 裁剪、尺寸修改、方圆转换等</li>
+<li>可配置度高，图片缓存的内存缓存、本地缓存、线程池、缓存算法等大都可轻松配置。</li>
+<li>自适应程度高，根据系统性能初始化缓存配置、系统信息变更后动态调整策略。比如根据 CPU 核数确定最大并发数，根据可用内存确定内存缓存大小，网络状态变化时调整最大并发数等。</li>
+<li>多级缓存，都至少有二级缓存，提高图片的加载速度</li>
+<li>支持多种数据源，如网络、本地、Assets等</li>
+<li>支持多种 Displayer，支持自定义的 Displayer 概念。</li>
+<li>支持配置图片格式，如配置 ARGB_8888、RGB_565 等</li>
+</ul>
+<p><img src="/2020/01/16/Glide源码解析-一-：简介/image_loader_compare.png" alt=" "></p>
+<h3 id="图片格式"><a href="#图片格式" class="headerlink" title="图片格式"></a>图片格式</h3><p>不论采用哪个框架，同一张图片其显示质量取决于图片在内存中的格式，与框架无关。这四个框架都支持配置图片格式。格式清晰度从高到低如下：</p>
+<blockquote>
+<p>ARGB_8888 &gt;RGB_565 &gt; ARGB_4444 &gt;ALPHA_8</p>
+</blockquote>
+<ul>
+<li>ALPHA_8，代表像素只有透明度信息，没有颜色信息，一个像素占 8 bit，即 1 Byte。</li>
+<li>RGB_565，代表像素只有颜色信息，没有透明度信息，其中 R 占用 5 bit，G 占用 6 bit，B 占用 5 bit，一个像素大小为 5+6+5=16 bit ，即 2 Byte。</li>
+<li>ARGB_4444，代表像素既有透明度信息，也有颜色信息，其中 A 占用 4 bit，R 占用 4 bit，G 占用 4 bit，B 占用 4 bit，一个像素大小为 4+4+4+4=16 bit ，即 2 Byte。</li>
+<li>ARGB_8888，代表像素既有透明度信息，也有颜色信息，其中 A 占用 8 bit，R 占用 8 bit，G 占用 8 bit，B 占用 8 bit，一个像素大小为 8+8+8+8=32 bit ，即 4 Byte。</li>
+</ul>
+<h3 id="如何选择图片加载框架"><a href="#如何选择图片加载框架" class="headerlink" title="如何选择图片加载框架"></a>如何选择图片加载框架</h3><p>UIL：建议弃用，除非你的项目一直在用 UIL 且框架迁移成本（时间成本）比较大。否则不建议使用或沿用，因为官方已经不再对其维护，且由于不支持动图，若 app 有动图支持的话还需引入其他图片框架，增加应用体积，还不如一步到位。</p>
+<p>Picasso：不建议使用，Glide 是 Picasso 的加强版，可以说它的目的就是为了取代 Picasso，所以在 Glide 和 Picasso 之间选择，优先推荐 Glide 。</p>
+<p>Glide vs Fresco：这两个框架性能不分伯仲，都可以减少 OOM 的发生。Glide 注重于平滑的滚动，善于处理大型的图片流，Glide还支持播放短视频，有此需求的话 Glide 为不二之选，另外 Glide 还有一个隐藏的优点，它是 Google 官方推荐的框架，所以相对于后期维护成本来说更低一些。Fresco 的优点是内存管理，尤其是在 5.0 以下的系统中优化做的非常好，将图片放在 ASM 中。其缺点也很明显，包的体积太大，其在图片多的应用中更能体现其价值。Fresco 对代码的侵入性可能会更高一些，由于所有的View 组件需要继承自一个基类 DraweeView ，需指定明确尺寸或者用 match_parent 来布局（为了更好的用户体验，解决占位图和真实图尺寸大小不匹配导致UI跳跃的问题），如果你是一个新项目，可以考虑用 Fresco。</p>
+<p>总结：框架只在Glide 和 Fresco 中选择，Glide 是 Google 官方推荐的框架，是开发者的首选。如果你对包体积没有要求，且图片需求特别多的情况推荐使用 Fresco。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>您的支持是我原创的动力</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechatpay.jpg" alt="chuangWu 微信支付"/>
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/images/alipay.jpg" alt="chuangWu 支付宝"/>
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+
+<div>  
+     
+ 
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+      <strong>本文作者：</strong>chuangWu
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="/2020/01/16/Glide源码解析-一-：简介/" title="Glide源码解析(一)：简介">2020/01/16/Glide源码解析-一-：简介/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权： </strong>
+    本站文章均采用 <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0 CN</a> 许可协议，请勿用于商业，转载注明出处！
+  </li>
+</ul>
+
+</div>
+
+      
+        <div class="post-tags">
+          
+            <a href="/tags/glide/" rel="tag"># glide</a>
+          
+            <a href="/tags/源码解析/" rel="tag"># 源码解析</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/01/16/Android屏幕适配/" rel="next" title="Android屏幕适配">
+                <i class="fa fa-chevron-left"></i> Android屏幕适配
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/01/16/Android框架实战：Router/" rel="prev" title="Android框架实战：Router">
+                Android框架实战：Router <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+      <div>    
+      
+
+
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/head.png"
+                alt="chuangWu" />
+            
+              <p class="site-author-name" itemprop="name">chuangWu</p>
+              <p class="site-description motion-element" itemprop="description">选择大于努力</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">30</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">44</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#UIL"><span class="nav-number">1.</span> <span class="nav-text">UIL</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Picasso"><span class="nav-number">2.</span> <span class="nav-text">Picasso</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Glide"><span class="nav-number">3.</span> <span class="nav-text">Glide</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Fresco"><span class="nav-number">4.</span> <span class="nav-text">Fresco</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#共同特性"><span class="nav-number">5.</span> <span class="nav-text">共同特性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#图片格式"><span class="nav-number">6.</span> <span class="nav-text">图片格式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#如何选择图片加载框架"><span class="nav-number">7.</span> <span class="nav-text">如何选择图片加载框架</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">chuangWu</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      本站访客数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      人次
+    </span>
+  
+
+  
+    <span class="site-pv">
+      本站总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

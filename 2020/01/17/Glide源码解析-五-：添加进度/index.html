@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="glide,源码解析,加载进度," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="Glide本身功能十分强大，但是有一个缺点就是不支持监听下载进度回调。如果图片比较小的话，会很快加载出来，如果图片比较大的话，就会出现产品上的体验问题。这个时候监听下载进度就十分的有必要了。 更换HttpUrlConnection为okhttp通过源码分析，我们知道Glide内部是通过HttpUrlConnection来进行底层网络请求的。但是HttpUrlConnection的可扩展性比较有限，">
+<meta name="keywords" content="glide,源码解析,加载进度">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Glide源码解析(五)：添加进度">
+<meta property="og:url" content="http://yoursite.com/2020/01/17/Glide源码解析-五-：添加进度/index.html">
+<meta property="og:site_name" content="小小小青年">
+<meta property="og:description" content="Glide本身功能十分强大，但是有一个缺点就是不支持监听下载进度回调。如果图片比较小的话，会很快加载出来，如果图片比较大的话，就会出现产品上的体验问题。这个时候监听下载进度就十分的有必要了。 更换HttpUrlConnection为okhttp通过源码分析，我们知道Glide内部是通过HttpUrlConnection来进行底层网络请求的。但是HttpUrlConnection的可扩展性比较有限，">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2020-03-16T07:13:19.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Glide源码解析(五)：添加进度">
+<meta name="twitter:description" content="Glide本身功能十分强大，但是有一个缺点就是不支持监听下载进度回调。如果图片比较小的话，会很快加载出来，如果图片比较大的话，就会出现产品上的体验问题。这个时候监听下载进度就十分的有必要了。 更换HttpUrlConnection为okhttp通过源码分析，我们知道Glide内部是通过HttpUrlConnection来进行底层网络请求的。但是HttpUrlConnection的可扩展性比较有限，">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/01/17/Glide源码解析-五-：添加进度/"/>
+
+
+
+
+
+  <title>Glide源码解析(五)：添加进度 | 小小小青年</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">小小小青年</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/17/Glide源码解析-五-：添加进度/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="chuangWu">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/head.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="小小小青年">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Glide源码解析(五)：添加进度</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-01-17T17:13:31+08:00">
+                2020-01-17
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv">本文总阅读量
+            <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>次
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>Glide本身功能十分强大，但是有一个缺点就是不支持监听下载进度回调。如果图片比较小的话，会很快加载出来，如果图片比较大的话，就会出现产品上的体验问题。这个时候监听下载进度就十分的有必要了。</p>
+<h3 id="更换HttpUrlConnection为okhttp"><a href="#更换HttpUrlConnection为okhttp" class="headerlink" title="更换HttpUrlConnection为okhttp"></a>更换HttpUrlConnection为okhttp</h3><p>通过源码分析，我们知道Glide内部是通过HttpUrlConnection来进行底层网络请求的。但是HttpUrlConnection的可扩展性比较有限，我们在它的基础之上无法实现监听下载进度的功能，因此今天的第一个大动作就是要将Glide中的HTTP通讯组件替换成OkHttp。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">OkHttpFetcher</span> <span class="keyword">implements</span> <span class="title">DataFetcher</span>&lt;<span class="title">InputStream</span>&gt; </span>&#123; </span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> OkHttpClient client; </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> GlideUrl url; </span><br><span class="line">    <span class="keyword">private</span> InputStream stream; </span><br><span class="line">    <span class="keyword">private</span> ResponseBody responseBody; </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="keyword">boolean</span> isCancelled; </span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">OkHttpFetcher</span><span class="params">(OkHttpClient client, GlideUrl url)</span> </span>&#123; </span><br><span class="line">        <span class="keyword">this</span>.client = client; </span><br><span class="line">        <span class="keyword">this</span>.url = url; </span><br><span class="line">    &#125; </span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span> </span><br><span class="line">    <span class="function"><span class="keyword">public</span> InputStream <span class="title">loadData</span><span class="params">(Priority priority)</span> <span class="keyword">throws</span> Exception </span>&#123; </span><br><span class="line">        Request.Builder requestBuilder = <span class="keyword">new</span> Request.Builder() </span><br><span class="line">                .url(url.toStringUrl()); </span><br><span class="line">        <span class="keyword">for</span> (Map.Entry&lt;String, String&gt; headerEntry : url.getHeaders().entrySet()) &#123;</span><br><span class="line">            String key = headerEntry.getKey(); </span><br><span class="line">            requestBuilder.addHeader(key, headerEntry.getValue()); </span><br><span class="line">        &#125; </span><br><span class="line">        Request request = requestBuilder.build(); </span><br><span class="line">        <span class="keyword">if</span> (isCancelled) &#123; </span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>; </span><br><span class="line">        &#125; </span><br><span class="line">        Response response = client.newCall(request).execute(); </span><br><span class="line">        responseBody = response.body(); </span><br><span class="line">        <span class="keyword">if</span> (!response.isSuccessful() || responseBody == <span class="keyword">null</span>) &#123; </span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IOException(<span class="string">"Request failed with code: "</span> + response.code());</span><br><span class="line">        &#125; </span><br><span class="line">        stream = ContentLengthInputStream.obtain(responseBody.byteStream(), </span><br><span class="line">                responseBody.contentLength()); </span><br><span class="line">        <span class="keyword">return</span> stream; </span><br><span class="line">    &#125; </span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span> </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">cleanup</span><span class="params">()</span> </span>&#123; </span><br><span class="line">        <span class="keyword">try</span> &#123; </span><br><span class="line">            <span class="keyword">if</span> (stream != <span class="keyword">null</span>) &#123; </span><br><span class="line">                stream.close(); </span><br><span class="line">            &#125; </span><br><span class="line">            <span class="keyword">if</span> (responseBody != <span class="keyword">null</span>) &#123; </span><br><span class="line">                responseBody.close(); </span><br><span class="line">            &#125; </span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException e) &#123; </span><br><span class="line">            e.printStackTrace(); </span><br><span class="line">        &#125; </span><br><span class="line">    &#125; </span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span> </span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getId</span><span class="params">()</span> </span>&#123; </span><br><span class="line">        <span class="keyword">return</span> url.getCacheKey(); </span><br><span class="line">    &#125; </span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span> </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">cancel</span><span class="params">()</span> </span>&#123; </span><br><span class="line">        isCancelled = <span class="keyword">true</span>; </span><br><span class="line">    &#125; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>然后新建一个OkHttpGlideUrlLoader类，并且实现ModelLoader<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">OkHttpGlideUrlLoader</span> <span class="keyword">implements</span> <span class="title">ModelLoader</span>&lt;<span class="title">GlideUrl</span>, <span class="title">InputStream</span>&gt; </span>&#123; </span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> OkHttpClient okHttpClient; </span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Factory</span> <span class="keyword">implements</span> <span class="title">ModelLoaderFactory</span>&lt;<span class="title">GlideUrl</span>, <span class="title">InputStream</span>&gt; </span>&#123; </span><br><span class="line"></span><br><span class="line">        <span class="keyword">private</span> OkHttpClient client; </span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="title">Factory</span><span class="params">()</span> </span>&#123; </span><br><span class="line">        &#125; </span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="title">Factory</span><span class="params">(OkHttpClient client)</span> </span>&#123; </span><br><span class="line">            <span class="keyword">this</span>.client = client; </span><br><span class="line">        &#125; </span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">private</span> <span class="keyword">synchronized</span> OkHttpClient <span class="title">getOkHttpClient</span><span class="params">()</span> </span>&#123; </span><br><span class="line">            <span class="keyword">if</span> (client == <span class="keyword">null</span>) &#123; </span><br><span class="line">                client = <span class="keyword">new</span> OkHttpClient(); </span><br><span class="line">            &#125; </span><br><span class="line">            <span class="keyword">return</span> client; </span><br><span class="line">        &#125; </span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span> </span><br><span class="line">        <span class="function"><span class="keyword">public</span> ModelLoader&lt;GlideUrl, InputStream&gt; <span class="title">build</span><span class="params">(Context context, GenericLoaderFactory factories)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> OkHttpGlideUrlLoader(getOkHttpClient()); </span><br><span class="line">        &#125; </span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span> </span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">teardown</span><span class="params">()</span> </span>&#123; </span><br><span class="line">        &#125; </span><br><span class="line">    &#125; </span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">OkHttpGlideUrlLoader</span><span class="params">(OkHttpClient client)</span> </span>&#123; </span><br><span class="line">        <span class="keyword">this</span>.okHttpClient = client; </span><br><span class="line">    &#125; </span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span> </span><br><span class="line">    <span class="function"><span class="keyword">public</span> DataFetcher&lt;InputStream&gt; <span class="title">getResourceFetcher</span><span class="params">(GlideUrl model, <span class="keyword">int</span> width, <span class="keyword">int</span> height)</span> </span>&#123; </span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> OkHttpFetcher(okHttpClient, model); </span><br><span class="line">    &#125; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>新建一个MyGlideModule类并实现GlideModule接口，然后在registerComponents()方法中将我们刚刚创建的OkHttpGlideUrlLoader和OkHttpFetcher注册到Glide当中，将原来的HTTP通讯组件给替换掉。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyGlideModule</span> <span class="keyword">implements</span> <span class="title">GlideModule</span> </span>&#123; </span><br><span class="line">    <span class="meta">@Override</span> </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">applyOptions</span><span class="params">(Context context, GlideBuilder builder)</span> </span>&#123; </span><br><span class="line">    &#125; </span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span> </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">registerComponents</span><span class="params">(Context context, Glide glide)</span> </span>&#123; </span><br><span class="line">        glide.register(GlideUrl.class, InputStream.class, <span class="keyword">new</span> OkHttpGlideUrlLoader.Factory());</span><br><span class="line">    &#125; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>最后，为了让Glide能够识别我们自定义的MyGlideModule，还得在AndroidManifest.xml文件当中加入如下配置才行：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;meta-data </span><br><span class="line">    android:name=<span class="string">"com.example.glideprogresstest.MyGlideModule"</span> </span><br><span class="line">    android:value=<span class="string">"GlideModule"</span> /&gt;</span><br></pre></td></tr></table></figure></p>
+<h3 id="实现下载进度监听"><a href="#实现下载进度监听" class="headerlink" title="实现下载进度监听"></a>实现下载进度监听</h3><p>新建一个监听进度的接口<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">ProgressListener</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">onProgress</span><span class="params">(<span class="keyword">int</span> progress)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>实现okhttp网络拦截器<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ProgressInterceptor</span> <span class="keyword">implements</span> <span class="title">Interceptor</span> </span>&#123; </span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> Map&lt;String, ProgressListener&gt; LISTENER_MAP = <span class="keyword">new</span> HashMap&lt;&gt;();</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">addListener</span><span class="params">(String url, ProgressListener listener)</span> </span>&#123;</span><br><span class="line">        LISTENER_MAP.put(url, listener); </span><br><span class="line">    &#125; </span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">removeListener</span><span class="params">(String url)</span> </span>&#123; </span><br><span class="line">        LISTENER_MAP.remove(url); </span><br><span class="line">    &#125; </span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span> </span><br><span class="line">    <span class="function"><span class="keyword">public</span> Response <span class="title">intercept</span><span class="params">(Chain chain)</span> <span class="keyword">throws</span> IOException </span>&#123; </span><br><span class="line">        Request request = chain.request(); </span><br><span class="line">        Response response = chain.proceed(request); </span><br><span class="line">        <span class="keyword">return</span> response; </span><br><span class="line">    &#125; </span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>在MyGlideModule中的registerComponents方法中，添加okhttp拦截器。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span> </span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">registerComponents</span><span class="params">(Context context, Glide glide)</span> </span>&#123; </span><br><span class="line">    OkHttpClient.Builder builder = <span class="keyword">new</span> OkHttpClient.Builder(); </span><br><span class="line">    builder.addInterceptor(<span class="keyword">new</span> ProgressInterceptor()); </span><br><span class="line">    OkHttpClient okHttpClient = builder.build(); </span><br><span class="line">    glide.register(GlideUrl.class, InputStream.class, <span class="keyword">new</span> OkHttpGlideUrlLoader.Factory(okHttpClient));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="计算下载进度"><a href="#计算下载进度" class="headerlink" title="计算下载进度"></a>计算下载进度</h3><p>下载进度的详细计算规则如下<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ProgressResponseBody</span> <span class="keyword">extends</span> <span class="title">ResponseBody</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String TAG = <span class="string">"ProgressResponseBody"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> BufferedSource bufferedSource;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> ResponseBody responseBody;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> ProgressListener listener;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ProgressResponseBody</span><span class="params">(String url, ResponseBody responseBody)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.responseBody = responseBody;</span><br><span class="line">        listener = ProgressInterceptor.LISTENER_MAP.get(url);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> MediaType <span class="title">contentType</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> responseBody.contentType();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">long</span> <span class="title">contentLength</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> responseBody.contentLength();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span> </span><br><span class="line">    <span class="function"><span class="keyword">public</span> BufferedSource <span class="title">source</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (bufferedSource == <span class="keyword">null</span>) &#123;</span><br><span class="line">            bufferedSource = Okio.buffer(<span class="keyword">new</span> ProgressSource(responseBody.source()));</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> bufferedSource;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">ProgressSource</span> <span class="keyword">extends</span> <span class="title">ForwardingSource</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">long</span> totalBytesRead = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">int</span> currentProgress;</span><br><span class="line"></span><br><span class="line">        ProgressSource(Source source) &#123;</span><br><span class="line">            <span class="keyword">super</span>(source);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span> </span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">long</span> <span class="title">read</span><span class="params">(Buffer sink, <span class="keyword">long</span> byteCount)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">            <span class="keyword">long</span> bytesRead = <span class="keyword">super</span>.read(sink, byteCount);</span><br><span class="line">            <span class="keyword">long</span> fullLength = responseBody.contentLength();</span><br><span class="line">            <span class="keyword">if</span> (bytesRead == -<span class="number">1</span>) &#123;</span><br><span class="line">                totalBytesRead = fullLength;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                totalBytesRead += bytesRead;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">int</span> progress = (<span class="keyword">int</span>) (<span class="number">100f</span> * totalBytesRead / fullLength);</span><br><span class="line">            Log.d(TAG, <span class="string">"download progress is "</span> + progress);</span><br><span class="line">            <span class="keyword">if</span> (listener != <span class="keyword">null</span> &amp;&amp; progress != currentProgress) &#123;</span><br><span class="line">                listener.onProgress(progress);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (listener != <span class="keyword">null</span> &amp;&amp; totalBytesRead == fullLength) &#123;</span><br><span class="line">                listener = <span class="keyword">null</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            currentProgress = progress;</span><br><span class="line">            <span class="keyword">return</span> bytesRead;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="使用计算的下载进度"><a href="#使用计算的下载进度" class="headerlink" title="使用计算的下载进度"></a>使用计算的下载进度</h3><p>通过网络拦截器，拦截响应体数据流，来实现对进度的监听。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ProgressInterceptor</span> <span class="keyword">implements</span> <span class="title">Interceptor</span> </span>&#123; </span><br><span class="line">    ... </span><br><span class="line">    <span class="meta">@Override</span> </span><br><span class="line">    <span class="function"><span class="keyword">public</span> Response <span class="title">intercept</span><span class="params">(Chain chain)</span> <span class="keyword">throws</span> IOException </span>&#123; </span><br><span class="line">        Request request = chain.request(); </span><br><span class="line">        Response response = chain.proceed(request); </span><br><span class="line">        String url = request.url().toString(); </span><br><span class="line">        ResponseBody body = response.body(); </span><br><span class="line">        Response newResponse = response.newBuilder().body(<span class="keyword">new</span> ProgressResponseBody(url, body)).build();</span><br><span class="line">        <span class="keyword">return</span> newResponse; </span><br><span class="line">    &#125; </span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="加载图片"><a href="#加载图片" class="headerlink" title="加载图片"></a>加载图片</h3><p>界面上显示加载图片进度。并通过ProgressInterceptor.addListener方法添加监听。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">loadImage</span><span class="params">(View view)</span> </span>&#123;</span><br><span class="line">    ProgressInterceptor.addListener(url, <span class="keyword">new</span> ProgressListener() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onProgress</span><span class="params">(<span class="keyword">int</span> progress)</span> </span>&#123;</span><br><span class="line">            progressDialog.setProgress(progress);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">    Glide.with(<span class="keyword">this</span>)</span><br><span class="line">            .load(url)</span><br><span class="line">            .diskCacheStrategy(DiskCacheStrategy.NONE)</span><br><span class="line">            .override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)</span><br><span class="line">            .into(<span class="keyword">new</span> GlideDrawableImageViewTarget(image) &#123;</span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onLoadStarted</span><span class="params">(Drawable placeholder)</span> </span>&#123;</span><br><span class="line">                    <span class="keyword">super</span>.onLoadStarted(placeholder);</span><br><span class="line">                    progressDialog.show();</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="meta">@Override</span> </span><br><span class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onResourceReady</span><span class="params">(GlideDrawable resource, GlideAnimation&lt;? <span class="keyword">super</span> GlideDrawable&gt; animation)</span> </span>&#123;</span><br><span class="line">                    <span class="keyword">super</span>.onResourceReady(resource, animation);</span><br><span class="line">                    progressDialog.dismiss();</span><br><span class="line">                    ProgressInterceptor.removeListener(url);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h3><ul>
+<li><a href="https://blog.csdn.net/guolin_blog/article/details/78357251" target="_blank" rel="noopener">https://blog.csdn.net/guolin_blog/article/details/78357251</a></li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>您的支持是我原创的动力</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechatpay.jpg" alt="chuangWu 微信支付"/>
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/images/alipay.jpg" alt="chuangWu 支付宝"/>
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+
+<div>  
+     
+ 
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+      <strong>本文作者：</strong>chuangWu
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="/2020/01/17/Glide源码解析-五-：添加进度/" title="Glide源码解析(五)：添加进度">2020/01/17/Glide源码解析-五-：添加进度/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权： </strong>
+    本站文章均采用 <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0 CN</a> 许可协议，请勿用于商业，转载注明出处！
+  </li>
+</ul>
+
+</div>
+
+      
+        <div class="post-tags">
+          
+            <a href="/tags/glide/" rel="tag"># glide</a>
+          
+            <a href="/tags/源码解析/" rel="tag"># 源码解析</a>
+          
+            <a href="/tags/加载进度/" rel="tag"># 加载进度</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/01/17/Glide源码解析-四-：自定义模块/" rel="next" title="Glide源码解析(四)：自定义模块">
+                <i class="fa fa-chevron-left"></i> Glide源码解析(四)：自定义模块
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/03/18/OkHttp源码解析-一-：基本使用/" rel="prev" title="OkHttp源码解析(一)：基本使用">
+                OkHttp源码解析(一)：基本使用 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+      <div>    
+      
+
+
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/head.png"
+                alt="chuangWu" />
+            
+              <p class="site-author-name" itemprop="name">chuangWu</p>
+              <p class="site-description motion-element" itemprop="description">选择大于努力</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">30</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">44</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#更换HttpUrlConnection为okhttp"><span class="nav-number">1.</span> <span class="nav-text">更换HttpUrlConnection为okhttp</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#实现下载进度监听"><span class="nav-number">2.</span> <span class="nav-text">实现下载进度监听</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#计算下载进度"><span class="nav-number">3.</span> <span class="nav-text">计算下载进度</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用计算的下载进度"><span class="nav-number">4.</span> <span class="nav-text">使用计算的下载进度</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#加载图片"><span class="nav-number">5.</span> <span class="nav-text">加载图片</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考文章"><span class="nav-number">6.</span> <span class="nav-text">参考文章</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">chuangWu</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      本站访客数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      人次
+    </span>
+  
+
+  
+    <span class="site-pv">
+      本站总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
