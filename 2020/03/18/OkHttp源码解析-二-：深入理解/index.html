@@ -5,7 +5,7 @@
   
 
 
-<html class="theme-next gemini use-motion" lang="zh-Hans">
+<html class="theme-next muse use-motion" lang="zh-Hans">
 <head>
   <meta charset="UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -87,12 +87,12 @@
 <meta property="og:site_name" content="小小小青年">
 <meta property="og:description" content="OkHttpClient使用 OkHttp 我们首先需要创建并获得一个 OkHttpClient，OkHttpClient 是 OkHttp 中十分重要的一个类，官方推荐的使用方式是使用一个全局的 OkHttpClient 在多个类之间共享。因为每个 Client 都会有一个自己的连接池和线程池，复用 Client 可以减少资源的浪费。它的构建采用了 Builder 模式，提供了许多可供我们配置">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="http://yoursite.com/2020/03/18/OkHttp源码解析-二-：深入理解/OkHttp源码解析-二-：深入理解/okhttp_liucheng.png">
-<meta property="og:updated_time" content="2020-03-19T07:14:54.000Z">
+<meta property="og:image" content="http://yoursite.com/2020/03/18/OkHttp源码解析-二-：深入理解/liucheng.png">
+<meta property="og:updated_time" content="2020-03-19T07:45:23.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="OkHttp源码解析(二)：深入理解">
 <meta name="twitter:description" content="OkHttpClient使用 OkHttp 我们首先需要创建并获得一个 OkHttpClient，OkHttpClient 是 OkHttp 中十分重要的一个类，官方推荐的使用方式是使用一个全局的 OkHttpClient 在多个类之间共享。因为每个 Client 都会有一个自己的连接池和线程池，复用 Client 可以减少资源的浪费。它的构建采用了 Builder 模式，提供了许多可供我们配置">
-<meta name="twitter:image" content="http://yoursite.com/2020/03/18/OkHttp源码解析-二-：深入理解/OkHttp源码解析-二-：深入理解/okhttp_liucheng.png">
+<meta name="twitter:image" content="http://yoursite.com/2020/03/18/OkHttp源码解析-二-：深入理解/liucheng.png">
 
 
 
@@ -100,7 +100,7 @@
   var NexT = window.NexT || {};
   var CONFIG = {
     root: '/',
-    scheme: 'Gemini',
+    scheme: 'Muse',
     version: '5.1.4',
     sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
     fancybox: true,
@@ -329,7 +329,7 @@
       
 
       
-        <p><img src="OkHttp源码解析-二-：深入理解/okhttp_liucheng.png" alt=" "></p>
+        <p><img src="/2020/03/18/OkHttp源码解析-二-：深入理解/liucheng.png" alt=" "></p>
 <h3 id="OkHttpClient"><a href="#OkHttpClient" class="headerlink" title="OkHttpClient"></a>OkHttpClient</h3><p>使用 OkHttp 我们首先需要创建并获得一个 OkHttpClient，OkHttpClient 是 OkHttp 中十分重要的一个类，官方推荐的使用方式是使用一个全局的 OkHttpClient 在多个类之间共享。因为每个 Client 都会有一个自己的连接池和线程池，复用 Client 可以减少资源的浪费。<br>它的构建采用了 Builder 模式，提供了许多可供我们配置的参数：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">Builder</span> </span>&#123;</span><br><span class="line">    Dispatcher dispatcher;</span><br><span class="line">    <span class="meta">@Nullable</span></span><br><span class="line">    Proxy proxy;</span><br><span class="line">    List&lt;Protocol&gt; protocols;</span><br><span class="line">    List&lt;ConnectionSpec&gt; connectionSpecs;</span><br><span class="line">    <span class="keyword">final</span> List&lt;Interceptor&gt; interceptors = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">    <span class="keyword">final</span> List&lt;Interceptor&gt; networkInterceptors = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">    EventListener.Factory eventListenerFactory;</span><br><span class="line">    ProxySelector proxySelector;</span><br><span class="line">    CookieJar cookieJar;</span><br><span class="line">    <span class="meta">@Nullable</span></span><br><span class="line">    Cache cache;</span><br><span class="line">    <span class="meta">@Nullable</span></span><br><span class="line">    InternalCache internalCache;</span><br><span class="line">    SocketFactory socketFactory;</span><br><span class="line">    <span class="meta">@Nullable</span></span><br><span class="line">    SSLSocketFactory sslSocketFactory;</span><br><span class="line">    <span class="meta">@Nullable</span></span><br><span class="line">    CertificateChainCleaner certificateChainCleaner;</span><br><span class="line">    HostnameVerifier hostnameVerifier;</span><br><span class="line">    CertificatePinner certificatePinner;</span><br><span class="line">    Authenticator proxyAuthenticator;</span><br><span class="line">    Authenticator authenticator;</span><br><span class="line">    ConnectionPool connectionPool;</span><br><span class="line">    Dns dns;</span><br><span class="line">    <span class="keyword">boolean</span> followSslRedirects;</span><br><span class="line">    <span class="keyword">boolean</span> followRedirects;</span><br><span class="line">    <span class="keyword">boolean</span> retryOnConnectionFailure;</span><br><span class="line">    <span class="keyword">int</span> callTimeout;</span><br><span class="line">    <span class="keyword">int</span> connectTimeout;</span><br><span class="line">    <span class="keyword">int</span> readTimeout;</span><br><span class="line">    <span class="keyword">int</span> writeTimeout;</span><br><span class="line">    <span class="keyword">int</span> pingInterval;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <h3 id="Request"><a href="#Request" class="headerlink" title="Request"></a>Request</h3><p>Request 所对应的就是我们 HTTP 请求中的 Request，可以对它的 url、method、header 等在 Builder 中进行配置。Request 的构建同样采用了 Builder 模式进行构建：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Builder</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Nullable</span></span><br><span class="line">    HttpUrl url;</span><br><span class="line">    String method;</span><br><span class="line">    Headers.Builder headers;</span><br><span class="line">    <span class="meta">@Nullable</span></span><br><span class="line">    RequestBody body;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>构建完 Request 后，就可以调用 OkHttpClient.newCall 方法创建对应 Call</p>
@@ -535,7 +535,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">30</span>
+                  <span class="site-state-item-count">54</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -557,7 +557,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">44</span>
+                  <span class="site-state-item-count">71</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -628,7 +628,7 @@
 
 
 
-  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
 
 
 
@@ -747,13 +747,6 @@
 
   
   
-
-
-  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
-
-  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
-
-
 
   
   <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>

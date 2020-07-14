@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="今天这篇文章，我们就来分析编译时的arouter-complier的实现，看一下映射文件是如何生成的。 基础知识按照注解的处理时期，分为两种类型：运行时和编译时，运行时注解处理会引起性能问题，编译时注解依赖APT(Annotation Processing Tools)实现，其原理是在类、函数、字段上添加注解，在编译时，编译器会去检查AbstractProcessor的子类，并调用它实现的proc">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ARouter源码解析：complier">
+<meta property="og:url" content="http://yoursite.com/2020/04/10/ARouter源码解析：complier/index.html">
+<meta property="og:site_name" content="小小小青年">
+<meta property="og:description" content="今天这篇文章，我们就来分析编译时的arouter-complier的实现，看一下映射文件是如何生成的。 基础知识按照注解的处理时期，分为两种类型：运行时和编译时，运行时注解处理会引起性能问题，编译时注解依赖APT(Annotation Processing Tools)实现，其原理是在类、函数、字段上添加注解，在编译时，编译器会去检查AbstractProcessor的子类，并调用它实现的proc">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/2020/04/10/ARouter源码解析：complier/element.png">
+<meta property="og:image" content="http://yoursite.com/2020/04/10/ARouter源码解析：complier/element2.png">
+<meta property="og:image" content="http://yoursite.com/2020/04/10/ARouter源码解析：complier/file.png">
+<meta property="og:image" content="http://yoursite.com/2020/04/10/ARouter源码解析：complier/interceptor.png">
+<meta property="og:updated_time" content="2020-04-10T03:32:29.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ARouter源码解析：complier">
+<meta name="twitter:description" content="今天这篇文章，我们就来分析编译时的arouter-complier的实现，看一下映射文件是如何生成的。 基础知识按照注解的处理时期，分为两种类型：运行时和编译时，运行时注解处理会引起性能问题，编译时注解依赖APT(Annotation Processing Tools)实现，其原理是在类、函数、字段上添加注解，在编译时，编译器会去检查AbstractProcessor的子类，并调用它实现的proc">
+<meta name="twitter:image" content="http://yoursite.com/2020/04/10/ARouter源码解析：complier/element.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/04/10/ARouter源码解析：complier/"/>
+
+
+
+
+
+  <title>ARouter源码解析：complier | 小小小青年</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">小小小青年</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/04/10/ARouter源码解析：complier/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="chuangWu">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/head.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="小小小青年">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">ARouter源码解析：complier</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-04-10T11:17:21+08:00">
+                2020-04-10
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv">本文总阅读量
+            <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>次
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>今天这篇文章，我们就来分析编译时的arouter-complier的实现，看一下映射文件是如何生成的。</p>
+<h2 id="基础知识"><a href="#基础知识" class="headerlink" title="基础知识"></a>基础知识</h2><p>按照注解的处理时期，分为两种类型：运行时和编译时，运行时注解处理会引起性能问题，编译时注解依赖APT(Annotation Processing Tools)实现，其原理是在类、函数、字段上添加注解，在编译时，编译器会去检查AbstractProcessor的子类，并调用它实现的process函数，然后将添加了注解的所有元素都传递到process函数中，使得开发人员可以在编译期进行处理，主要就是生成新的Java类。</p>
+<h3 id="ProcessingEnvironment"><a href="#ProcessingEnvironment" class="headerlink" title="ProcessingEnvironment"></a>ProcessingEnvironment</h3><p>用于提供实用的工具类，主要是Elements、Types和Filer这三个。</p>
+<h3 id="Elements"><a href="#Elements" class="headerlink" title="Elements"></a>Elements</h3><p>用来处理Element的工具类，源码中的每个部分都是Element的一个特定类型，其代码程序中的元素，例如包、类、方法，每一个元素代表一个静态的，语言级别的结构，Element是一个interface。<br><img src="/2020/04/10/ARouter源码解析：complier/element.png" alt=" "><br>根据类、成员变量等不同，有如下的继承接口 &amp; 实现类：<br><img src="/2020/04/10/ARouter源码解析：complier/element2.png" alt=" "></p>
+<h3 id="Types"><a href="#Types" class="headerlink" title="Types"></a>Types</h3><p>用来处理TypeMirror的工具类。从Element的实现类中，例如TypeElement，我们可以获取类的名称，但你不能获取类的信息，可以通过element.asType()来获取一个Element的TypeMirror，然后获取类的信息。</p>
+<h3 id="Filer"><a href="#Filer" class="headerlink" title="Filer"></a>Filer</h3><p>用来创建文件。<br>我们在 创建映射文件 的时候，包括以下几步，后一步的结果依赖于前一步：</p>
+<ul>
+<li>函数形参的类型，使用ParameterizedTypeName。</li>
+<li>函数形参的类型 &amp; 名称，使用ParameterSpec。</li>
+<li>函数的声明，使用MethodSpec.Builder。</li>
+<li>类的声明，使用JavaFile.builder，最后调用JavaFile的writeTo(mFiler)方法写入到磁盘当中，这里的mFiler就是通过ProcessingEnvironment获取到的。</li>
+</ul>
+<h2 id="Route-注解的解析"><a href="#Route-注解的解析" class="headerlink" title="@Route 注解的解析"></a>@Route 注解的解析</h2><p>下面是对于RouteProcessor的 解析，详细的可以看注释里面的说明。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br><span class="line">273</span><br><span class="line">274</span><br><span class="line">275</span><br><span class="line">276</span><br><span class="line">277</span><br><span class="line">278</span><br><span class="line">279</span><br><span class="line">280</span><br><span class="line">281</span><br><span class="line">282</span><br><span class="line">283</span><br><span class="line">284</span><br><span class="line">285</span><br><span class="line">286</span><br><span class="line">287</span><br><span class="line">288</span><br><span class="line">289</span><br><span class="line">290</span><br><span class="line">291</span><br><span class="line">292</span><br><span class="line">293</span><br><span class="line">294</span><br><span class="line">295</span><br><span class="line">296</span><br><span class="line">297</span><br><span class="line">298</span><br><span class="line">299</span><br><span class="line">300</span><br><span class="line">301</span><br><span class="line">302</span><br><span class="line">303</span><br><span class="line">304</span><br><span class="line">305</span><br><span class="line">306</span><br><span class="line">307</span><br><span class="line">308</span><br><span class="line">309</span><br><span class="line">310</span><br><span class="line">311</span><br><span class="line">312</span><br><span class="line">313</span><br><span class="line">314</span><br><span class="line">315</span><br><span class="line">316</span><br><span class="line">317</span><br><span class="line">318</span><br><span class="line">319</span><br><span class="line">320</span><br><span class="line">321</span><br><span class="line">322</span><br><span class="line">323</span><br><span class="line">324</span><br><span class="line">325</span><br><span class="line">326</span><br><span class="line">327</span><br><span class="line">328</span><br><span class="line">329</span><br><span class="line">330</span><br><span class="line">331</span><br><span class="line">332</span><br><span class="line">333</span><br><span class="line">334</span><br><span class="line">335</span><br><span class="line">336</span><br><span class="line">337</span><br><span class="line">338</span><br><span class="line">339</span><br><span class="line">340</span><br><span class="line">341</span><br><span class="line">342</span><br><span class="line">343</span><br><span class="line">344</span><br><span class="line">345</span><br><span class="line">346</span><br><span class="line">347</span><br><span class="line">348</span><br><span class="line">349</span><br><span class="line">350</span><br><span class="line">351</span><br><span class="line">352</span><br><span class="line">353</span><br><span class="line">354</span><br><span class="line">355</span><br><span class="line">356</span><br><span class="line">357</span><br><span class="line">358</span><br><span class="line">359</span><br><span class="line">360</span><br><span class="line">361</span><br><span class="line">362</span><br><span class="line">363</span><br><span class="line">364</span><br><span class="line">365</span><br><span class="line">366</span><br><span class="line">367</span><br><span class="line">368</span><br><span class="line">369</span><br><span class="line">370</span><br><span class="line">371</span><br><span class="line">372</span><br><span class="line">373</span><br><span class="line">374</span><br><span class="line">375</span><br><span class="line">376</span><br><span class="line">377</span><br><span class="line">378</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * A processor used for find route.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> Alex &lt;a href="mailto:zhilong.liu@aliyun.com"&gt;Contact me.&lt;/a&gt;</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@version</span> 1.0</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@since</span> 16/8/15 下午10:08</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@AutoService</span>(Processor.class)</span><br><span class="line"><span class="meta">@SupportedOptions</span>(KEY_MODULE_NAME)</span><br><span class="line"><span class="meta">@SupportedSourceVersion</span>(SourceVersion.RELEASE_7)</span><br><span class="line"><span class="meta">@SupportedAnnotationTypes</span>(&#123;ANNOTATION_TYPE_ROUTE, ANNOTATION_TYPE_AUTOWIRED&#125;)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RouteProcessor</span> <span class="keyword">extends</span> <span class="title">AbstractProcessor</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 以组为 key，value 对应于该组下解析出的所有注解信息，Set 的实现为 TreeSet，会根据 path 来进行排序。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> Map&lt;String, Set&lt;RouteMeta&gt;&gt; groupMap = <span class="keyword">new</span> HashMap&lt;&gt;();</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 以根节点为 key，value 对应于创建的文件。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> Map&lt;String, String&gt; rootMap = <span class="keyword">new</span> TreeMap&lt;&gt;();</span><br><span class="line">    <span class="keyword">private</span> Filer mFiler;</span><br><span class="line">    <span class="keyword">private</span> Logger logger;</span><br><span class="line">    <span class="keyword">private</span> Types types;</span><br><span class="line">    <span class="keyword">private</span> Elements elements;</span><br><span class="line">    <span class="keyword">private</span> TypeUtils typeUtils;</span><br><span class="line">    <span class="keyword">private</span> String moduleName = <span class="keyword">null</span>;</span><br><span class="line">    <span class="keyword">private</span> TypeMirror iProvider = <span class="keyword">null</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 通过 ProcessingEnvironment 初始化后面需要使用到的工具类，例如 Filer，Types 和 Elements。</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> processingEnv 提供解析注解所需的工具类。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">(ProcessingEnvironment processingEnv)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.init(processingEnv);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//Filer：用于创建 Java 文件的工具类。</span></span><br><span class="line">        mFiler = processingEnv.getFiler();</span><br><span class="line">        <span class="comment">//Types：用于操作类型的工具类。</span></span><br><span class="line">        types = processingEnv.getTypeUtils();</span><br><span class="line">        <span class="comment">//Elements：用于处理 Element 的工具类。</span></span><br><span class="line">        elements = processingEnv.getElementUtils();</span><br><span class="line"></span><br><span class="line">        <span class="comment">//将两个工具类进行封装。</span></span><br><span class="line">        typeUtils = <span class="keyword">new</span> TypeUtils(types, elements);</span><br><span class="line">        <span class="comment">//日志工具类。</span></span><br><span class="line">        logger = <span class="keyword">new</span> Logger(processingEnv.getMessager());</span><br><span class="line"></span><br><span class="line">        <span class="comment">//解析我们在 android 节点下配置的 moduleName，其为对应模块的名字。</span></span><br><span class="line">        Map&lt;String, String&gt; options = processingEnv.getOptions();</span><br><span class="line">        <span class="keyword">if</span> (MapUtils.isNotEmpty(options)) &#123;</span><br><span class="line">            moduleName = options.get(KEY_MODULE_NAME);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//对 moduleName 进行处理。</span></span><br><span class="line">        <span class="keyword">if</span> (StringUtils.isNotEmpty(moduleName)) &#123;</span><br><span class="line">            moduleName = moduleName.replaceAll(<span class="string">"[^0-9a-zA-Z_]+"</span>, <span class="string">""</span>);</span><br><span class="line">            logger.info(<span class="string">"The user has configuration the module name, it was ["</span> + moduleName + <span class="string">"]"</span>);</span><br><span class="line">        <span class="comment">//如果没有配置 moduleName，那么会抛出异常。</span></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            logger.error(<span class="string">"These no module name, at 'build.gradle', like :\n"</span> +</span><br><span class="line">                    <span class="string">"apt &#123;\n"</span> +</span><br><span class="line">                    <span class="string">"    arguments &#123;\n"</span> +</span><br><span class="line">                    <span class="string">"        moduleName project.getName();\n"</span> +</span><br><span class="line">                    <span class="string">"    &#125;\n"</span> +</span><br><span class="line">                    <span class="string">"&#125;\n"</span>);</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">"ARouter::Compiler &gt;&gt;&gt; No module name, for more information, look at gradle log."</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//获取 IProvider 的 TypeMirror，它包含了 IProvider 的所有信息。</span></span><br><span class="line">        iProvider = elements.getTypeElement(Consts.IPROVIDER).asType();</span><br><span class="line"></span><br><span class="line">        logger.info(<span class="string">"&gt;&gt;&gt; RouteProcessor init. &lt;&lt;&lt;"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * &#123;<span class="doctag">@inheritDoc</span>&#125;</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> annotations</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> roundEnv</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">process</span><span class="params">(Set&lt;? extends TypeElement&gt; annotations, RoundEnvironment roundEnv)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (CollectionUtils.isNotEmpty(annotations)) &#123;</span><br><span class="line">            <span class="comment">//获得所有被 @Route 注解的元素。</span></span><br><span class="line">            Set&lt;? extends Element&gt; routeElements = roundEnv.getElementsAnnotatedWith(Route.class);</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                logger.info(<span class="string">"&gt;&gt;&gt; Found routes, start... &lt;&lt;&lt;"</span>);</span><br><span class="line">                <span class="comment">//开始处理。</span></span><br><span class="line">                <span class="keyword">this</span>.parseRoutes(routeElements);</span><br><span class="line"></span><br><span class="line">            &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">                logger.error(e);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">parseRoutes</span><span class="params">(Set&lt;? extends Element&gt; routeElements)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (CollectionUtils.isNotEmpty(routeElements)) &#123;</span><br><span class="line"></span><br><span class="line">            logger.info(<span class="string">"&gt;&gt;&gt; Found routes, size is "</span> + routeElements.size() + <span class="string">" &lt;&lt;&lt;"</span>);</span><br><span class="line">            <span class="comment">//清空信息。</span></span><br><span class="line">            rootMap.clear();</span><br><span class="line"></span><br><span class="line">            <span class="comment">//1.获得 Activity、Service、Fragment 和 FragmentV4 的信息，这些是定义在 Android SDK 当中的。</span></span><br><span class="line">            TypeMirror type_Activity = elements.getTypeElement(ACTIVITY).asType();</span><br><span class="line">            TypeMirror type_Service = elements.getTypeElement(SERVICE).asType();</span><br><span class="line">            TypeMirror fragmentTm = elements.getTypeElement(FRAGMENT).asType();</span><br><span class="line">            TypeMirror fragmentTmV4 = elements.getTypeElement(Consts.FRAGMENT_V4).asType();</span><br><span class="line"></span><br><span class="line">            <span class="comment">//2.获得 IRouteGroup 和 IProviderGroup 的信息，这些接口是定义在 arouter-api 当中的模板。</span></span><br><span class="line">            TypeElement type_IRouteGroup = elements.getTypeElement(IROUTE_GROUP);</span><br><span class="line">            TypeElement type_IProviderGroup = elements.getTypeElement(IPROVIDER_GROUP);</span><br><span class="line"></span><br><span class="line">            <span class="comment">//3.RouteMeta 和 RouteType 的信息。</span></span><br><span class="line">            ClassName routeMetaCn = ClassName.get(RouteMeta.class);</span><br><span class="line">            ClassName routeTypeCn = ClassName.get(RouteType.class);</span><br><span class="line"></span><br><span class="line">            <span class="comment">//4. 定义函数形参的类型为 Map&lt;String, Class&lt;? extends IRouteGroup&gt;&gt;。</span></span><br><span class="line">            ParameterizedTypeName inputMapTypeOfRoot = ParameterizedTypeName.get(</span><br><span class="line">                    ClassName.get(Map.class),</span><br><span class="line">                    ClassName.get(String.class),</span><br><span class="line">                    ParameterizedTypeName.get(</span><br><span class="line">                            ClassName.get(Class.class),</span><br><span class="line">                            WildcardTypeName.subtypeOf(ClassName.get(type_IRouteGroup))</span><br><span class="line">                    )</span><br><span class="line">            );</span><br><span class="line"></span><br><span class="line">            <span class="comment">//5. 定义函数形参的类型为 Map&lt;String, RouteMeta&gt;。</span></span><br><span class="line">            ParameterizedTypeName inputMapTypeOfGroup = ParameterizedTypeName.get(</span><br><span class="line">                    ClassName.get(Map.class),</span><br><span class="line">                    ClassName.get(String.class),</span><br><span class="line">                    ClassName.get(RouteMeta.class)</span><br><span class="line">            );</span><br><span class="line"></span><br><span class="line">            <span class="comment">//6. 定义函数的形参类型 &amp; 形参名字。</span></span><br><span class="line">            <span class="comment">//6.1 Map&lt;String, Class&lt;? extends IRouteGroup&gt;&gt; routes</span></span><br><span class="line">            ParameterSpec rootParamSpec = ParameterSpec.builder(inputMapTypeOfRoot, <span class="string">"routes"</span>).build();</span><br><span class="line">            <span class="comment">//6.2 Map&lt;String, RouteMeta&gt; atlas</span></span><br><span class="line">            ParameterSpec groupParamSpec = ParameterSpec.builder(inputMapTypeOfGroup, <span class="string">"atlas"</span>).build();</span><br><span class="line">            <span class="comment">//6.3 Map&lt;String, RouteMeta&gt; providers</span></span><br><span class="line">            ParameterSpec providerParamSpec = ParameterSpec.builder(inputMapTypeOfGroup, <span class="string">"providers"</span>).build();</span><br><span class="line"></span><br><span class="line">            <span class="comment">//7.定义函数的声明为 public void loadInto(Map&lt;String, Class&lt;? extends IRouteGroup&gt;&gt; routes)。</span></span><br><span class="line">            MethodSpec.Builder loadIntoMethodOfRootBuilder = MethodSpec.methodBuilder(METHOD_LOAD_INTO)</span><br><span class="line">                    .addAnnotation(Override.class)</span><br><span class="line">                    .addModifiers(PUBLIC)</span><br><span class="line">                    .addParameter(rootParamSpec);</span><br><span class="line"></span><br><span class="line">            <span class="comment">//8.遍历所有的被 @Route 注解的 Element</span></span><br><span class="line">            <span class="keyword">for</span> (Element element : routeElements) &#123;</span><br><span class="line">                <span class="comment">//获得该元素的类型信息。</span></span><br><span class="line">                TypeMirror tm = element.asType();</span><br><span class="line">                <span class="comment">//获得该元素的注解。</span></span><br><span class="line">                Route route = element.getAnnotation(Route.class);</span><br><span class="line">                RouteMeta routeMeta = <span class="keyword">null</span>;</span><br><span class="line">                <span class="comment">//Activity 的子类。</span></span><br><span class="line">                <span class="keyword">if</span> (types.isSubtype(tm, type_Activity)) &#123;</span><br><span class="line">                    logger.info(<span class="string">"&gt;&gt;&gt; Found activity route: "</span> + tm.toString() + <span class="string">" &lt;&lt;&lt;"</span>);</span><br><span class="line">                    Map&lt;String, Integer&gt; paramsType = <span class="keyword">new</span> HashMap&lt;&gt;();</span><br><span class="line">                    <span class="comment">//获得其所有被 @Autowired 注解的成员变量。</span></span><br><span class="line">                    <span class="keyword">for</span> (Element field : element.getEnclosedElements()) &#123;</span><br><span class="line">                        <span class="comment">//不处理 IProvider 的子类。</span></span><br><span class="line">                        <span class="keyword">if</span> (field.getKind().isField() &amp;&amp; field.getAnnotation(Autowired.class) != <span class="keyword">null</span> &amp;&amp; !types.isSubtype(field.asType(), iProvider)) &#123;</span><br><span class="line">                            Autowired paramConfig = field.getAnnotation(Autowired.class);</span><br><span class="line">                            <span class="comment">//将所有被 @Autowired 注解的相关信息放到 map 当中。</span></span><br><span class="line">                            paramsType.put(StringUtils.isEmpty(paramConfig.name()) ? field.getSimpleName().toString() : paramConfig.name(), typeUtils.typeExchange(field));</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                    routeMeta = <span class="keyword">new</span> RouteMeta(route, element, RouteType.ACTIVITY, paramsType);</span><br><span class="line">                <span class="comment">//IProvider 的子类。</span></span><br><span class="line">                &#125; <span class="keyword">else</span> <span class="keyword">if</span> (types.isSubtype(tm, iProvider)) &#123;</span><br><span class="line">                    logger.info(<span class="string">"&gt;&gt;&gt; Found provider route: "</span> + tm.toString() + <span class="string">" &lt;&lt;&lt;"</span>);</span><br><span class="line">                    routeMeta = <span class="keyword">new</span> RouteMeta(route, element, RouteType.PROVIDER, <span class="keyword">null</span>);</span><br><span class="line">                <span class="comment">//Service 的子类。</span></span><br><span class="line">                &#125; <span class="keyword">else</span> <span class="keyword">if</span> (types.isSubtype(tm, type_Service)) &#123;</span><br><span class="line">                    logger.info(<span class="string">"&gt;&gt;&gt; Found service route: "</span> + tm.toString() + <span class="string">" &lt;&lt;&lt;"</span>);</span><br><span class="line">                    routeMeta = <span class="keyword">new</span> RouteMeta(route, element, RouteType.parse(SERVICE), <span class="keyword">null</span>);</span><br><span class="line">                <span class="comment">//Fragment 或者 FragmentV4 的子类。</span></span><br><span class="line">                &#125; <span class="keyword">else</span> <span class="keyword">if</span> (types.isSubtype(tm, fragmentTm) || types.isSubtype(tm, fragmentTmV4)) &#123;</span><br><span class="line">                    logger.info(<span class="string">"&gt;&gt;&gt; Found fragment route: "</span> + tm.toString() + <span class="string">" &lt;&lt;&lt;"</span>);</span><br><span class="line">                    routeMeta = <span class="keyword">new</span> RouteMeta(route, element, RouteType.parse(FRAGMENT), <span class="keyword">null</span>);</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">"ARouter::Compiler &gt;&gt;&gt; Found unsupported class type, type = ["</span> + types.toString() + <span class="string">"]."</span>);</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="comment">//对其按 group 进行分组。</span></span><br><span class="line">                categories(routeMeta);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">//9. 定义函数的声明为 public void loadInto(Map&lt;String, RouteMeta&gt; providers)。</span></span><br><span class="line">            MethodSpec.Builder loadIntoMethodOfProviderBuilder = MethodSpec.methodBuilder(METHOD_LOAD_INTO)</span><br><span class="line">                    .addAnnotation(Override.class)</span><br><span class="line">                    .addModifiers(PUBLIC)</span><br><span class="line">                    .addParameter(providerParamSpec);</span><br><span class="line"></span><br><span class="line">            <span class="comment">//10. 创建 Java 源代码，遍历所有的 group。</span></span><br><span class="line">            <span class="keyword">for</span> (Map.Entry&lt;String, Set&lt;RouteMeta&gt;&gt; entry : groupMap.entrySet()) &#123;</span><br><span class="line">                String groupName = entry.getKey();</span><br><span class="line"></span><br><span class="line">                <span class="comment">//定义函数的声明为 public void loadInto(Map&lt;String, RouteMeta&gt; atlas)。</span></span><br><span class="line">                MethodSpec.Builder loadIntoMethodOfGroupBuilder = MethodSpec.methodBuilder(METHOD_LOAD_INTO)</span><br><span class="line">                        .addAnnotation(Override.class)</span><br><span class="line">                        .addModifiers(PUBLIC)</span><br><span class="line">                        .addParameter(groupParamSpec);</span><br><span class="line"></span><br><span class="line">                <span class="comment">//遍历该 group 下所有的 RouteMeta。</span></span><br><span class="line">                Set&lt;RouteMeta&gt; groupData = entry.getValue();</span><br><span class="line"></span><br><span class="line">                <span class="keyword">for</span> (RouteMeta routeMeta : groupData) &#123;</span><br><span class="line">                    <span class="keyword">switch</span> (routeMeta.getType()) &#123;</span><br><span class="line">                        <span class="comment">//填充函数体。</span></span><br><span class="line">                        <span class="keyword">case</span> PROVIDER:</span><br><span class="line">                            List&lt;? extends TypeMirror&gt; interfaces = ((TypeElement) routeMeta.getRawType()).getInterfaces();</span><br><span class="line">                            <span class="keyword">for</span> (TypeMirror tm : interfaces) &#123;</span><br><span class="line">                                <span class="comment">//IProvider。</span></span><br><span class="line">                                <span class="keyword">if</span> (types.isSameType(tm, iProvider)) &#123;</span><br><span class="line">                                    <span class="comment">//添加 providers.put(..) 函数体。</span></span><br><span class="line">                                    loadIntoMethodOfProviderBuilder.addStatement(</span><br><span class="line">                                            <span class="string">"providers.put($S, $T.build($T."</span> + routeMeta.getType() + <span class="string">", $T.class, $S, $S, null, "</span> + routeMeta.getPriority() + <span class="string">", "</span> + routeMeta.getExtra() + <span class="string">"))"</span>,</span><br><span class="line">                                            (routeMeta.getRawType()).toString(),</span><br><span class="line">                                            routeMetaCn,</span><br><span class="line">                                            routeTypeCn,</span><br><span class="line">                                            ClassName.get((TypeElement) routeMeta.getRawType()),</span><br><span class="line">                                            routeMeta.getPath(),</span><br><span class="line">                                            routeMeta.getGroup());</span><br><span class="line">                                <span class="comment">//IProvider 的子类。</span></span><br><span class="line">                                &#125; <span class="keyword">else</span> <span class="keyword">if</span> (types.isSubtype(tm, iProvider)) &#123;</span><br><span class="line">                                    <span class="comment">//添加 providers.put(..) 函数体。</span></span><br><span class="line">                                    loadIntoMethodOfProviderBuilder.addStatement(</span><br><span class="line">                                            <span class="string">"providers.put($S, $T.build($T."</span> + routeMeta.getType() + <span class="string">", $T.class, $S, $S, null, "</span> + routeMeta.getPriority() + <span class="string">", "</span> + routeMeta.getExtra() + <span class="string">"))"</span>,</span><br><span class="line">                                            tm.toString(),</span><br><span class="line">                                            routeMetaCn,</span><br><span class="line">                                            routeTypeCn,</span><br><span class="line">                                            ClassName.get((TypeElement) routeMeta.getRawType()),</span><br><span class="line">                                            routeMeta.getPath(),</span><br><span class="line">                                            routeMeta.getGroup());</span><br><span class="line">                                &#125;</span><br><span class="line">                            &#125;</span><br><span class="line">                            <span class="keyword">break</span>;</span><br><span class="line">                        <span class="keyword">default</span>:</span><br><span class="line">                            <span class="keyword">break</span>;</span><br><span class="line">                    &#125;</span><br><span class="line"></span><br><span class="line">                    StringBuilder mapBodyBuilder = <span class="keyword">new</span> StringBuilder();</span><br><span class="line">                    Map&lt;String, Integer&gt; paramsType = routeMeta.getParamsType();</span><br><span class="line">                    <span class="keyword">if</span> (MapUtils.isNotEmpty(paramsType)) &#123;</span><br><span class="line">                        <span class="keyword">for</span> (Map.Entry&lt;String, Integer&gt; types : paramsType.entrySet()) &#123;</span><br><span class="line">                            mapBodyBuilder.append(<span class="string">"put(\""</span>).append(types.getKey()).append(<span class="string">"\", "</span>).append(types.getValue()).append(<span class="string">"); "</span>);</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                    String mapBody = mapBodyBuilder.toString();</span><br><span class="line">                    <span class="comment">//填充函数体。</span></span><br><span class="line">                    loadIntoMethodOfGroupBuilder.addStatement(</span><br><span class="line">                            <span class="string">"atlas.put($S, $T.build($T."</span> + routeMeta.getType() + <span class="string">", $T.class, $S, $S, "</span> + (StringUtils.isEmpty(mapBody) ? <span class="keyword">null</span> : (<span class="string">"new java.util.HashMap&lt;String, Integer&gt;()&#123;&#123;"</span> + mapBodyBuilder.toString() + <span class="string">"&#125;&#125;"</span>)) + <span class="string">", "</span> + routeMeta.getPriority() + <span class="string">", "</span> + routeMeta.getExtra() + <span class="string">"))"</span>,</span><br><span class="line">                            routeMeta.getPath(),</span><br><span class="line">                            routeMetaCn,</span><br><span class="line">                            routeTypeCn,</span><br><span class="line">                            ClassName.get((TypeElement) routeMeta.getRawType()),</span><br><span class="line">                            routeMeta.getPath().toLowerCase(),</span><br><span class="line">                            routeMeta.getGroup().toLowerCase());</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="comment">//关键点1：每一个 group 创建一个 Java 文件，其类名为 Arouter$$Group$$组名，函数名为 public void loadInto(Map&lt;String, RouteMeta&gt; atlas)</span></span><br><span class="line">                String groupFileName = NAME_OF_GROUP + groupName;</span><br><span class="line">                JavaFile.builder(PACKAGE_OF_GENERATE_FILE,</span><br><span class="line">                        TypeSpec.classBuilder(groupFileName)</span><br><span class="line">                                .addJavadoc(WARNING_TIPS)</span><br><span class="line">                                .addSuperinterface(ClassName.get(type_IRouteGroup))</span><br><span class="line">                                .addModifiers(PUBLIC)</span><br><span class="line">                                .addMethod(loadIntoMethodOfGroupBuilder.build())</span><br><span class="line">                                .build()</span><br><span class="line">                ).build().writeTo(mFiler);</span><br><span class="line"></span><br><span class="line">                logger.info(<span class="string">"&gt;&gt;&gt; Generated group: "</span> + groupName + <span class="string">"&lt;&lt;&lt;"</span>);</span><br><span class="line">                rootMap.put(groupName, groupFileName);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (MapUtils.isNotEmpty(rootMap)) &#123;</span><br><span class="line">                <span class="keyword">for</span> (Map.Entry&lt;String, String&gt; entry : rootMap.entrySet()) &#123;</span><br><span class="line">                    loadIntoMethodOfRootBuilder.addStatement(<span class="string">"routes.put($S, $T.class)"</span>, entry.getKey(), ClassName.get(PACKAGE_OF_GENERATE_FILE, entry.getValue()));</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">//关键点2：创建 Java 文件，类名为 Arouter$$Providers$$moduleName，函数名为 public void loadInto(Map&lt;String, RouteMeta&gt; providers)，存放 PROVIDER 类型的节点。</span></span><br><span class="line">            String providerMapFileName = NAME_OF_PROVIDER + SEPARATOR + moduleName;</span><br><span class="line">            JavaFile.builder(PACKAGE_OF_GENERATE_FILE,</span><br><span class="line">                    TypeSpec.classBuilder(providerMapFileName)</span><br><span class="line">                            .addJavadoc(WARNING_TIPS)</span><br><span class="line">                            .addSuperinterface(ClassName.get(type_IProviderGroup))</span><br><span class="line">                            .addModifiers(PUBLIC)</span><br><span class="line">                            .addMethod(loadIntoMethodOfProviderBuilder.build())</span><br><span class="line">                            .build()</span><br><span class="line">            ).build().writeTo(mFiler);</span><br><span class="line"></span><br><span class="line">            logger.info(<span class="string">"&gt;&gt;&gt; Generated provider map, name is "</span> + providerMapFileName + <span class="string">" &lt;&lt;&lt;"</span>);</span><br><span class="line"></span><br><span class="line">            <span class="comment">//关键点3：创建 Java 文件，类名为 Arouter$$Root$$moduleName，函数名为 public void loadInto(Map&lt;String, Class&lt;? extends IRouteGroup&gt;&gt; routes)</span></span><br><span class="line">            String rootFileName = NAME_OF_ROOT + SEPARATOR + moduleName;</span><br><span class="line">            JavaFile.builder(PACKAGE_OF_GENERATE_FILE,</span><br><span class="line">                    TypeSpec.classBuilder(rootFileName)</span><br><span class="line">                            .addJavadoc(WARNING_TIPS)</span><br><span class="line">                            .addSuperinterface(ClassName.get(elements.getTypeElement(ITROUTE_ROOT)))</span><br><span class="line">                            .addModifiers(PUBLIC)</span><br><span class="line">                            .addMethod(loadIntoMethodOfRootBuilder.build())</span><br><span class="line">                            .build()</span><br><span class="line">            ).build().writeTo(mFiler);</span><br><span class="line"></span><br><span class="line">            logger.info(<span class="string">"&gt;&gt;&gt; Generated root, name is "</span> + rootFileName + <span class="string">" &lt;&lt;&lt;"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 对 <span class="doctag">@Route</span> 注解的类进行分类。</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> routeMete</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">categories</span><span class="params">(RouteMeta routeMete)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (routeVerify(routeMete)) &#123;</span><br><span class="line">            logger.info(<span class="string">"&gt;&gt;&gt; Start categories, group = "</span> + routeMete.getGroup() + <span class="string">", path = "</span> + routeMete.getPath() + <span class="string">" &lt;&lt;&lt;"</span>);</span><br><span class="line">            Set&lt;RouteMeta&gt; routeMetas = groupMap.get(routeMete.getGroup());</span><br><span class="line">            <span class="keyword">if</span> (CollectionUtils.isEmpty(routeMetas)) &#123;</span><br><span class="line">                Set&lt;RouteMeta&gt; routeMetaSet = <span class="keyword">new</span> TreeSet&lt;&gt;(<span class="keyword">new</span> Comparator&lt;RouteMeta&gt;() &#123;</span><br><span class="line">                    <span class="meta">@Override</span></span><br><span class="line">                    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">compare</span><span class="params">(RouteMeta r1, RouteMeta r2)</span> </span>&#123;</span><br><span class="line">                        <span class="keyword">try</span> &#123;</span><br><span class="line">                            <span class="keyword">return</span> r1.getPath().compareTo(r2.getPath());</span><br><span class="line">                        &#125; <span class="keyword">catch</span> (NullPointerException npe) &#123;</span><br><span class="line">                            logger.error(npe.getMessage());</span><br><span class="line">                            <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;);</span><br><span class="line">                routeMetaSet.add(routeMete);</span><br><span class="line">                groupMap.put(routeMete.getGroup(), routeMetaSet);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                routeMetas.add(routeMete);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            logger.warning(<span class="string">"&gt;&gt;&gt; Route meta verify error, group is "</span> + routeMete.getGroup() + <span class="string">" &lt;&lt;&lt;"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 验证 RouteMeta，要求 <span class="doctag">@Route</span> 指定的 name 不为空，并且要使用 / 作为开头。</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * 并解析 RouteMeta 中的 group，默认是使用 / 后的第一个字段，如果指定了 group，那么就使用 group 的值。</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> meta</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 验证正确。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">routeVerify</span><span class="params">(RouteMeta meta)</span> </span>&#123;</span><br><span class="line">        String path = meta.getPath();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (StringUtils.isEmpty(path) || !path.startsWith(<span class="string">"/"</span>)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (StringUtils.isEmpty(meta.getGroup())) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                String defaultGroup = path.substring(<span class="number">1</span>, path.indexOf(<span class="string">"/"</span>, <span class="number">1</span>));</span><br><span class="line">                <span class="keyword">if</span> (StringUtils.isEmpty(defaultGroup)) &#123;</span><br><span class="line">                    <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                meta.setGroup(defaultGroup);</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">            &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">                logger.error(<span class="string">"Failed to extract default group! "</span> + e.getMessage());</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>大家注意看上面的三个关键点，其最终目的就是创建三个Java文件，对于第一章中的module-other，就是创建了下面三个文件：<br><img src="/2020/04/10/ARouter源码解析：complier/file.png" alt=" "></p>
+<ul>
+<li>ARouter$$Root$$ + 模块名，由于Arouter对于一个模块下的所有组件都是 采用分组加载 的机制，因此该文件存储的是组名，对应的value为该组下所有的组件。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * DO NOT EDIT THIS FILE!!! IT WAS GENERATED BY AROUTER. */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ARouter</span>$$<span class="title">Root</span>$$<span class="title">moduleother</span> <span class="keyword">implements</span> <span class="title">IRouteRoot</span> </span>&#123;</span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">loadInto</span><span class="params">(Map&lt;String, Class&lt;? extends IRouteGroup&gt;&gt; routes)</span> </span>&#123;</span><br><span class="line">    routes.put(<span class="string">"other"</span>, ARouter$$Group$$other.class);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>ARouter$$Group$$ + 组名：对应该组下所有的组件，可以看到这里面包含了@Route中的path对应的组件的映射，这些信息都保存在RouteMeta当中。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * DO NOT EDIT THIS FILE!!! IT WAS GENERATED BY AROUTER. */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ARouter</span>$$<span class="title">Group</span>$$<span class="title">other</span> <span class="keyword">implements</span> <span class="title">IRouteGroup</span> </span>&#123;</span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">loadInto</span><span class="params">(Map&lt;String, RouteMeta&gt; atlas)</span> </span>&#123;</span><br><span class="line">    atlas.put(<span class="string">"/other/event_bus"</span>, RouteMeta.build(RouteType.ACTIVITY, EventBusActivity.class, <span class="string">"/other/event_bus"</span>, <span class="string">"other"</span>, <span class="keyword">null</span>, -<span class="number">1</span>, -<span class="number">2147483648</span>));</span><br><span class="line">    atlas.put(<span class="string">"/other/inject"</span>, RouteMeta.build(RouteType.ACTIVITY, InjectActivity.class, <span class="string">"/other/inject"</span>, <span class="string">"other"</span>, <span class="keyword">new</span> java.util.HashMap&lt;String, Integer&gt;()&#123;&#123;put(<span class="string">"inject_object"</span>, <span class="number">10</span>); put(<span class="string">"inject_age"</span>, <span class="number">3</span>); &#125;&#125;, -<span class="number">1</span>, -<span class="number">2147483648</span>));</span><br><span class="line">    atlas.put(<span class="string">"/other/inter_middle"</span>, RouteMeta.build(RouteType.ACTIVITY, InterMiddleActivity.class, <span class="string">"/other/inter_middle"</span>, <span class="string">"other"</span>, <span class="keyword">null</span>, -<span class="number">1</span>, -<span class="number">2147483648</span>));</span><br><span class="line">    atlas.put(<span class="string">"/other/inter_target"</span>, RouteMeta.build(RouteType.ACTIVITY, InterTargetActivity.class, <span class="string">"/other/inter_target"</span>, <span class="string">"other"</span>, <span class="keyword">null</span>, -<span class="number">1</span>, <span class="number">2</span>));</span><br><span class="line">    atlas.put(<span class="string">"/other/no_result"</span>, RouteMeta.build(RouteType.ACTIVITY, NoResultActivity.class, <span class="string">"/other/no_result"</span>, <span class="string">"other"</span>, <span class="keyword">null</span>, -<span class="number">1</span>, -<span class="number">2147483648</span>));</span><br><span class="line">    atlas.put(<span class="string">"/other/result_server"</span>, RouteMeta.build(RouteType.ACTIVITY, ResultServerActivity.class, <span class="string">"/other/result_server"</span>, <span class="string">"other"</span>, <span class="keyword">null</span>, -<span class="number">1</span>, -<span class="number">2147483648</span>));</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>Arouter$$Providers$$ + 模块名：对应于该模块下所有IProvider的子类。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * DO NOT EDIT THIS FILE!!! IT WAS GENERATED BY AROUTER. */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ARouter</span>$$<span class="title">Providers</span>$$<span class="title">moduleother</span> <span class="keyword">implements</span> <span class="title">IProviderGroup</span> </span>&#123;</span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">loadInto</span><span class="params">(Map&lt;String, RouteMeta&gt; providers)</span> </span>&#123;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="Interceptor-注解的解析"><a href="#Interceptor-注解的解析" class="headerlink" title="@Interceptor 注解的解析"></a>@Interceptor 注解的解析</h2><p>@Interceptor注解的解析是通过InterceptorProcessor处理的，其说明如下面代码的注释，原理和2.2中@Route相同，最终的目标也是创建Java文件。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@AutoService</span>(Processor.class)</span><br><span class="line"><span class="meta">@SupportedOptions</span>(KEY_MODULE_NAME)</span><br><span class="line"><span class="meta">@SupportedSourceVersion</span>(SourceVersion.RELEASE_7)</span><br><span class="line"><span class="meta">@SupportedAnnotationTypes</span>(ANNOTATION_TYPE_INTECEPTOR)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">InterceptorProcessor</span> <span class="keyword">extends</span> <span class="title">AbstractProcessor</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Map&lt;Integer, Element&gt; interceptors = <span class="keyword">new</span> TreeMap&lt;&gt;();</span><br><span class="line">    <span class="keyword">private</span> Filer mFiler;       <span class="comment">// File util, write class file into disk.</span></span><br><span class="line">    <span class="keyword">private</span> Logger logger;</span><br><span class="line">    <span class="keyword">private</span> Elements elementUtil;</span><br><span class="line">    <span class="keyword">private</span> String moduleName = <span class="keyword">null</span>;   <span class="comment">// Module name, maybe its 'app' or others</span></span><br><span class="line">    <span class="keyword">private</span> TypeMirror iInterceptor = <span class="keyword">null</span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">(ProcessingEnvironment processingEnv)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.init(processingEnv);</span><br><span class="line">        </span><br><span class="line">        <span class="comment">//工具类。</span></span><br><span class="line">        mFiler = processingEnv.getFiler();                  <span class="comment">// Generate class.</span></span><br><span class="line">        elementUtil = processingEnv.getElementUtils();      <span class="comment">// Get class meta.</span></span><br><span class="line">        logger = <span class="keyword">new</span> Logger(processingEnv.getMessager());   <span class="comment">// Package the log utils.</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">//获取模块名。</span></span><br><span class="line">        Map&lt;String, String&gt; options = processingEnv.getOptions();</span><br><span class="line">        <span class="keyword">if</span> (MapUtils.isNotEmpty(options)) &#123;</span><br><span class="line">            moduleName = options.get(KEY_MODULE_NAME);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (StringUtils.isNotEmpty(moduleName)) &#123;</span><br><span class="line">            moduleName = moduleName.replaceAll(<span class="string">"[^0-9a-zA-Z_]+"</span>, <span class="string">""</span>);</span><br><span class="line">            logger.info(<span class="string">"The user has configuration the module name, it was ["</span> + moduleName + <span class="string">"]"</span>);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            logger.error(<span class="string">"These no module name, at 'build.gradle', like :\n"</span> +</span><br><span class="line">                    <span class="string">"apt &#123;\n"</span> +</span><br><span class="line">                    <span class="string">"    arguments &#123;\n"</span> +</span><br><span class="line">                    <span class="string">"        moduleName project.getName();\n"</span> +</span><br><span class="line">                    <span class="string">"    &#125;\n"</span> +</span><br><span class="line">                    <span class="string">"&#125;\n"</span>);</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">"ARouter::Compiler &gt;&gt;&gt; No module name, for more information, look at gradle log."</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">//获得 IInterceptor 的类信息。</span></span><br><span class="line">        iInterceptor = elementUtil.getTypeElement(Consts.IINTERCEPTOR).asType();</span><br><span class="line"></span><br><span class="line">        logger.info(<span class="string">"&gt;&gt;&gt; InterceptorProcessor init. &lt;&lt;&lt;"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 系统调用的处理类。</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> annotations 所有被注解的元素。</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> roundEnv 运行时环境。</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 是否成功处理。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">process</span><span class="params">(Set&lt;? extends TypeElement&gt; annotations, RoundEnvironment roundEnv)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (CollectionUtils.isNotEmpty(annotations)) &#123;</span><br><span class="line">            Set&lt;? extends Element&gt; elements = roundEnv.getElementsAnnotatedWith(Interceptor.class);</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                parseInterceptors(elements);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">                logger.error(e);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 解析注解，创建 JavaFile</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> elements 所有被 <span class="doctag">@Interceptor</span> 注解的元素。</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> IOException 抛出异常。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">parseInterceptors</span><span class="params">(Set&lt;? extends Element&gt; elements)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (CollectionUtils.isNotEmpty(elements)) &#123;</span><br><span class="line">            logger.info(<span class="string">"&gt;&gt;&gt; Found interceptors, size is "</span> + elements.size() + <span class="string">" &lt;&lt;&lt;"</span>);</span><br><span class="line"></span><br><span class="line">            <span class="comment">//1.遍历所有被 @Interceptor 注解的元素。</span></span><br><span class="line">            <span class="keyword">for</span> (Element element : elements) &#123;</span><br><span class="line">                <span class="comment">//必须要实现 IInterceptor 接口。</span></span><br><span class="line">                <span class="keyword">if</span> (verify(element)) &#123;</span><br><span class="line">                    logger.info(<span class="string">"A interceptor verify over, its "</span> + element.asType());</span><br><span class="line">                    Interceptor interceptor = element.getAnnotation(Interceptor.class);</span><br><span class="line">                    <span class="comment">//按照优先级作为 key，存储到 map 当中，必须要保证一个模块内的优先级不会重复，否则会抛出异常。</span></span><br><span class="line">                    Element lastInterceptor = interceptors.get(interceptor.priority());</span><br><span class="line">                    <span class="keyword">if</span> (<span class="keyword">null</span> != lastInterceptor) &#123; <span class="comment">// Added, throw exceptions</span></span><br><span class="line">                        <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(</span><br><span class="line">                                String.format(Locale.getDefault(), <span class="string">"More than one interceptors use same priority [%d], They are [%s] and [%s]."</span>,</span><br><span class="line">                                        interceptor.priority(),</span><br><span class="line">                                        lastInterceptor.getSimpleName(),</span><br><span class="line">                                        element.getSimpleName())</span><br><span class="line">                        );</span><br><span class="line">                    &#125;</span><br><span class="line"></span><br><span class="line">                    interceptors.put(interceptor.priority(), element);</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    logger.error(<span class="string">"A interceptor verify failed, its "</span> + element.asType());</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            </span><br><span class="line">            TypeElement type_ITollgate = elementUtil.getTypeElement(IINTERCEPTOR);</span><br><span class="line">            TypeElement type_ITollgateGroup = elementUtil.getTypeElement(IINTERCEPTOR_GROUP);</span><br><span class="line"></span><br><span class="line">            <span class="comment">//2.函数形参的类型为 Map&lt;Integer, Class&lt;? extends IInterceptor&gt;&gt;</span></span><br><span class="line">            ParameterizedTypeName inputMapTypeOfTollgate = ParameterizedTypeName.get(</span><br><span class="line">                    ClassName.get(Map.class),</span><br><span class="line">                    ClassName.get(Integer.class),</span><br><span class="line">                    ParameterizedTypeName.get(</span><br><span class="line">                            ClassName.get(Class.class),</span><br><span class="line">                            WildcardTypeName.subtypeOf(ClassName.get(type_ITollgate))</span><br><span class="line">                    )</span><br><span class="line">            );</span><br><span class="line"></span><br><span class="line">            <span class="comment">//3.函数形参的类型 &amp; 名字为 Map&lt;Integer, Class&lt;? extends IInterceptor&gt;&gt; interceptors</span></span><br><span class="line">            ParameterSpec tollgateParamSpec = ParameterSpec.builder(inputMapTypeOfTollgate, <span class="string">"interceptors"</span>).build();</span><br><span class="line"></span><br><span class="line">            <span class="comment">//4.函数名为 loadInto</span></span><br><span class="line">            MethodSpec.Builder loadIntoMethodOfTollgateBuilder = MethodSpec.methodBuilder(METHOD_LOAD_INTO)</span><br><span class="line">                    .addAnnotation(Override.class)</span><br><span class="line">                    .addModifiers(PUBLIC)</span><br><span class="line">                    .addParameter(tollgateParamSpec);</span><br><span class="line"></span><br><span class="line">            <span class="comment">//5.利用前面遍历出来的列表，填充函数体。</span></span><br><span class="line">            <span class="keyword">if</span> (<span class="keyword">null</span> != interceptors &amp;&amp; interceptors.size() &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="comment">// Build method body</span></span><br><span class="line">                <span class="keyword">for</span> (Map.Entry&lt;Integer, Element&gt; entry : interceptors.entrySet()) &#123;</span><br><span class="line">                    loadIntoMethodOfTollgateBuilder.addStatement(<span class="string">"interceptors.put("</span> + entry.getKey() + <span class="string">", $T.class)"</span>, ClassName.get((TypeElement) entry.getValue()));</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">//6.关键点：写入 JavaFile，类名为 Arouter$$Interceptors$$moduleName</span></span><br><span class="line">            JavaFile.builder(PACKAGE_OF_GENERATE_FILE,</span><br><span class="line">                    TypeSpec.classBuilder(NAME_OF_INTERCEPTOR + SEPARATOR + moduleName)</span><br><span class="line">                            .addModifiers(PUBLIC)</span><br><span class="line">                            .addJavadoc(WARNING_TIPS)</span><br><span class="line">                            .addMethod(loadIntoMethodOfTollgateBuilder.build())</span><br><span class="line">                            .addSuperinterface(ClassName.get(type_ITollgateGroup))</span><br><span class="line">                            .build()</span><br><span class="line">            ).build().writeTo(mFiler);</span><br><span class="line"></span><br><span class="line">            logger.info(<span class="string">"&gt;&gt;&gt; Interceptor group write over. &lt;&lt;&lt;"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 验证，必须要保证实现了 IInterceptor 接口。</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> element 元素。</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 验证陈宫。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">verify</span><span class="params">(Element element)</span> </span>&#123;</span><br><span class="line">        Interceptor interceptor = element.getAnnotation(Interceptor.class);</span><br><span class="line">        <span class="comment">// It must be implement the interface IInterceptor and marked with annotation Interceptor.</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span> != interceptor &amp;&amp; ((TypeElement) element).getInterfaces().contains(iInterceptor);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>最终会创建Java文件。<br><img src="/2020/04/10/ARouter源码解析：complier/interceptor.png" alt=" "><br>其命名的规则为：Arouter$$Interceptors + 模块名。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * DO NOT EDIT THIS FILE!!! IT WAS GENERATED BY AROUTER. */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ARouter</span>$$<span class="title">Interceptors</span>$$<span class="title">libbase</span> <span class="keyword">implements</span> <span class="title">IInterceptorGroup</span> </span>&#123;</span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">loadInto</span><span class="params">(Map&lt;Integer, Class&lt;? extends IInterceptor&gt;&gt; interceptors)</span> </span>&#123;</span><br><span class="line">    interceptors.put(<span class="number">1</span>, BaseInterceptor.class);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="Autowired-注解的解析"><a href="#Autowired-注解的解析" class="headerlink" title="@Autowired 注解的解析"></a>@Autowired 注解的解析</h2><p>@Autowired注解的解析依赖于AutowiredProcessor，它的原理和上面类似，都是最终创建一个JavaFile：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@AutoService</span>(Processor.class)</span><br><span class="line"><span class="meta">@SupportedOptions</span>(KEY_MODULE_NAME)</span><br><span class="line"><span class="meta">@SupportedSourceVersion</span>(SourceVersion.RELEASE_7)</span><br><span class="line"><span class="meta">@SupportedAnnotationTypes</span>(&#123;ANNOTATION_TYPE_AUTOWIRED&#125;)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AutowiredProcessor</span> <span class="keyword">extends</span> <span class="title">AbstractProcessor</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Filer mFiler;       <span class="comment">// File util, write class file into disk.</span></span><br><span class="line">    <span class="keyword">private</span> Logger logger;</span><br><span class="line">    <span class="keyword">private</span> Types types;</span><br><span class="line">    <span class="keyword">private</span> TypeUtils typeUtils;</span><br><span class="line">    <span class="keyword">private</span> Elements elements;</span><br><span class="line">    <span class="keyword">private</span> Map&lt;TypeElement, List&lt;Element&gt;&gt; parentAndChild = <span class="keyword">new</span> HashMap&lt;&gt;();   <span class="comment">// Contain field need autowired and his super class.</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> ClassName ARouterClass = ClassName.get(<span class="string">"com.alibaba.android.arouter.launcher"</span>, <span class="string">"ARouter"</span>);</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> ClassName AndroidLog = ClassName.get(<span class="string">"android.util"</span>, <span class="string">"Log"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">(ProcessingEnvironment processingEnvironment)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.init(processingEnvironment);</span><br><span class="line"></span><br><span class="line">        mFiler = processingEnv.getFiler();                  <span class="comment">// Generate class.</span></span><br><span class="line">        types = processingEnv.getTypeUtils();            <span class="comment">// Get type utils.</span></span><br><span class="line">        elements = processingEnv.getElementUtils();      <span class="comment">// Get class meta.</span></span><br><span class="line"></span><br><span class="line">        typeUtils = <span class="keyword">new</span> TypeUtils(types, elements);</span><br><span class="line"></span><br><span class="line">        logger = <span class="keyword">new</span> Logger(processingEnv.getMessager());   <span class="comment">// Package the log utils.</span></span><br><span class="line"></span><br><span class="line">        logger.info(<span class="string">"&gt;&gt;&gt; AutowiredProcessor init. &lt;&lt;&lt;"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">process</span><span class="params">(Set&lt;? extends TypeElement&gt; set, RoundEnvironment roundEnvironment)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (CollectionUtils.isNotEmpty(set)) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                logger.info(<span class="string">"&gt;&gt;&gt; Found autowired field, start... &lt;&lt;&lt;"</span>);</span><br><span class="line">                categories(roundEnvironment.getElementsAnnotatedWith(Autowired.class));</span><br><span class="line">                generateHelper();</span><br><span class="line"></span><br><span class="line">            &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">                logger.error(e);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 开始进行解析。</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> IOException IO 异常。</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> IllegalAccessException 不满足状态的异常。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">generateHelper</span><span class="params">()</span> <span class="keyword">throws</span> IOException, IllegalAccessException </span>&#123;</span><br><span class="line">        TypeElement type_ISyringe = elements.getTypeElement(ISYRINGE);</span><br><span class="line">        TypeElement type_JsonService = elements.getTypeElement(JSON_SERVICE);</span><br><span class="line">        TypeMirror iProvider = elements.getTypeElement(Consts.IPROVIDER).asType();</span><br><span class="line">        TypeMirror activityTm = elements.getTypeElement(Consts.ACTIVITY).asType();</span><br><span class="line">        TypeMirror fragmentTm = elements.getTypeElement(Consts.FRAGMENT).asType();</span><br><span class="line">        TypeMirror fragmentTmV4 = elements.getTypeElement(Consts.FRAGMENT_V4).asType();</span><br><span class="line"></span><br><span class="line">        <span class="comment">//1. 函数的形参类型为 Object，形参名为 target。</span></span><br><span class="line">        ParameterSpec objectParamSpec = ParameterSpec.builder(TypeName.OBJECT, <span class="string">"target"</span>).build();</span><br><span class="line"></span><br><span class="line">        <span class="comment">//2.遍历所有拥有 @Autowired 注解的元素。</span></span><br><span class="line">        <span class="keyword">if</span> (MapUtils.isNotEmpty(parentAndChild)) &#123;</span><br><span class="line">            <span class="keyword">for</span> (Map.Entry&lt;TypeElement, List&lt;Element&gt;&gt; entry : parentAndChild.entrySet()) &#123;</span><br><span class="line">                <span class="comment">//2.1 方法名为 inject</span></span><br><span class="line">                MethodSpec.Builder injectMethodBuilder = MethodSpec.methodBuilder(METHOD_INJECT)</span><br><span class="line">                        .addAnnotation(Override.class)</span><br><span class="line">                        .addModifiers(PUBLIC)</span><br><span class="line">                        .addParameter(objectParamSpec);</span><br><span class="line"></span><br><span class="line">                TypeElement parent = entry.getKey();</span><br><span class="line">                List&lt;Element&gt; childs = entry.getValue();</span><br><span class="line"></span><br><span class="line">                String qualifiedName = parent.getQualifiedName().toString();</span><br><span class="line">                String packageName = qualifiedName.substring(<span class="number">0</span>, qualifiedName.lastIndexOf(<span class="string">"."</span>));</span><br><span class="line">                String fileName = parent.getSimpleName() + NAME_OF_AUTOWIRED;</span><br><span class="line"></span><br><span class="line">                logger.info(<span class="string">"&gt;&gt;&gt; Start process "</span> + childs.size() + <span class="string">" field in "</span> + parent.getSimpleName() + <span class="string">" ... &lt;&lt;&lt;"</span>);</span><br><span class="line">                <span class="comment">//2.2 类继承于 ISyringe。</span></span><br><span class="line">                TypeSpec.Builder helper = TypeSpec.classBuilder(fileName)</span><br><span class="line">                        .addJavadoc(WARNING_TIPS)</span><br><span class="line">                        .addSuperinterface(ClassName.get(type_ISyringe))</span><br><span class="line">                        .addModifiers(PUBLIC);</span><br><span class="line"></span><br><span class="line">                <span class="comment">//2.3 类中包含一个类型为 SerializationService，名称为 serializationService 的成员变量。</span></span><br><span class="line">                FieldSpec jsonServiceField = FieldSpec.builder(TypeName.get(type_JsonService.asType()), <span class="string">"serializationService"</span>, Modifier.PRIVATE).build();</span><br><span class="line">                helper.addField(jsonServiceField);</span><br><span class="line">                </span><br><span class="line">                <span class="comment">//2.4 对 Object 类型的形参进行强制转型。</span></span><br><span class="line">                injectMethodBuilder.addStatement(<span class="string">"serializationService = $T.getInstance().navigation($T.class)"</span>, ARouterClass, ClassName.get(type_JsonService));</span><br><span class="line">                injectMethodBuilder.addStatement(<span class="string">"$T substitute = ($T)target"</span>, ClassName.get(parent), ClassName.get(parent));</span><br><span class="line"></span><br><span class="line">                <span class="comment">//2.5 开始对成员变量遍历进行赋值。</span></span><br><span class="line">                <span class="keyword">for</span> (Element element : childs) &#123;</span><br><span class="line">                    Autowired fieldConfig = element.getAnnotation(Autowired.class);</span><br><span class="line">                    String fieldName = element.getSimpleName().toString();</span><br><span class="line">                    <span class="comment">//2.5.1 如果是 IProvider 的子类，那么需要获取服务。</span></span><br><span class="line">                    <span class="keyword">if</span> (types.isSubtype(element.asType(), iProvider)) &#123; </span><br><span class="line">                        <span class="comment">//没有指定名称，通过类型来获取。</span></span><br><span class="line">                        <span class="keyword">if</span> (<span class="string">""</span>.equals(fieldConfig.name())) &#123;</span><br><span class="line"></span><br><span class="line">                            <span class="comment">// Getter</span></span><br><span class="line">                            injectMethodBuilder.addStatement(</span><br><span class="line">                                    <span class="string">"substitute."</span> + fieldName + <span class="string">" = $T.getInstance().navigation($T.class)"</span>,</span><br><span class="line">                                    ARouterClass,</span><br><span class="line">                                    ClassName.get(element.asType())</span><br><span class="line">                            );</span><br><span class="line">                        <span class="comment">//指定了名称，通过名称来获取。    </span></span><br><span class="line">                        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                            injectMethodBuilder.addStatement(</span><br><span class="line">                                    <span class="string">"substitute."</span> + fieldName + <span class="string">" = ($T)$T.getInstance().build($S).navigation();"</span>,</span><br><span class="line">                                    ClassName.get(element.asType()),</span><br><span class="line">                                    ARouterClass,</span><br><span class="line">                                    fieldConfig.name()</span><br><span class="line">                            );</span><br><span class="line">                        &#125;</span><br><span class="line"></span><br><span class="line">                        <span class="comment">//异常情况处理。</span></span><br><span class="line">                        <span class="keyword">if</span> (fieldConfig.required()) &#123;</span><br><span class="line">                            injectMethodBuilder.beginControlFlow(<span class="string">"if (substitute."</span> + fieldName + <span class="string">" == null)"</span>);</span><br><span class="line">                            injectMethodBuilder.addStatement(</span><br><span class="line">                                    <span class="string">"throw new RuntimeException(\"The field '"</span> + fieldName + <span class="string">"' is null, in class '\" + $T.class.getName() + \"!\")"</span>, ClassName.get(parent));</span><br><span class="line">                            injectMethodBuilder.endControlFlow();</span><br><span class="line">                        &#125;</span><br><span class="line">                    <span class="comment">//2.5.2 普通的成员变量。    </span></span><br><span class="line">                    &#125; <span class="keyword">else</span> &#123; </span><br><span class="line">                        String originalValue = <span class="string">"substitute."</span> + fieldName;</span><br><span class="line">                        String statement = <span class="string">"substitute."</span> + fieldName + <span class="string">" = substitute."</span>;</span><br><span class="line">                        <span class="keyword">boolean</span> isActivity = <span class="keyword">false</span>;</span><br><span class="line">                        <span class="comment">//对 Activity 和 Fragment 进行不同的处理，分别使用 getIntent 和 getArguments 来获取参数。</span></span><br><span class="line">                        <span class="keyword">if</span> (types.isSubtype(parent.asType(), activityTm)) &#123;  <span class="comment">// Activity, then use getIntent()</span></span><br><span class="line">                            isActivity = <span class="keyword">true</span>;</span><br><span class="line">                            statement += <span class="string">"getIntent()."</span>;</span><br><span class="line">                        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (types.isSubtype(parent.asType(), fragmentTm) || types.isSubtype(parent.asType(), fragmentTmV4)) &#123;   <span class="comment">// Fragment, then use getArguments()</span></span><br><span class="line">                            statement += <span class="string">"getArguments()."</span>;</span><br><span class="line">                        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalAccessException(<span class="string">"The field ["</span> + fieldName + <span class="string">"] need autowired from intent, its parent must be activity or fragment!"</span>);</span><br><span class="line">                        &#125;</span><br><span class="line"></span><br><span class="line">                        statement = buildStatement(originalValue, statement, typeUtils.typeExchange(element), isActivity);</span><br><span class="line">                        <span class="comment">//需要通过序列化进行赋值的对象。</span></span><br><span class="line">                        <span class="keyword">if</span> (statement.startsWith(<span class="string">"serializationService."</span>)) &#123;   <span class="comment">// Not mortals</span></span><br><span class="line">                            injectMethodBuilder.beginControlFlow(<span class="string">"if (null != serializationService)"</span>);</span><br><span class="line">                            injectMethodBuilder.addStatement(</span><br><span class="line">                                    <span class="string">"substitute."</span> + fieldName + <span class="string">" = "</span> + statement,</span><br><span class="line">                                    (StringUtils.isEmpty(fieldConfig.name()) ? fieldName : fieldConfig.name()),</span><br><span class="line">                                    ClassName.get(element.asType())</span><br><span class="line">                            );</span><br><span class="line">                            injectMethodBuilder.nextControlFlow(<span class="string">"else"</span>);</span><br><span class="line">                            injectMethodBuilder.addStatement(</span><br><span class="line">                                    <span class="string">"$T.e(\""</span> + Consts.TAG + <span class="string">"\", \"You want automatic inject the field '"</span> + fieldName + <span class="string">"' in class '$T' , then you should implement 'SerializationService' to support object auto inject!\")"</span>, AndroidLog, ClassName.get(parent));</span><br><span class="line">                            injectMethodBuilder.endControlFlow();</span><br><span class="line">                        <span class="comment">//普通赋值的对象。    </span></span><br><span class="line">                        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                            injectMethodBuilder.addStatement(statement, StringUtils.isEmpty(fieldConfig.name()) ? fieldName : fieldConfig.name());</span><br><span class="line">                        &#125;</span><br><span class="line"></span><br><span class="line">                        <span class="comment">//异常情况。</span></span><br><span class="line">                        <span class="keyword">if</span> (fieldConfig.required() &amp;&amp; !element.asType().getKind().isPrimitive()) &#123;  <span class="comment">// Primitive wont be check.</span></span><br><span class="line">                            injectMethodBuilder.beginControlFlow(<span class="string">"if (null == substitute."</span> + fieldName + <span class="string">")"</span>);</span><br><span class="line">                            injectMethodBuilder.addStatement(</span><br><span class="line">                                    <span class="string">"$T.e(\""</span> + Consts.TAG + <span class="string">"\", \"The field '"</span> + fieldName + <span class="string">"' is null, in class '\" + $T.class.getName() + \"!\")"</span>, AndroidLog, ClassName.get(parent));</span><br><span class="line">                            injectMethodBuilder.endControlFlow();</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                helper.addMethod(injectMethodBuilder.build());</span><br><span class="line"></span><br><span class="line">                <span class="comment">//2.6 写入文件。</span></span><br><span class="line">                JavaFile.builder(packageName, helper.build()).build().writeTo(mFiler);</span><br><span class="line"></span><br><span class="line">                logger.info(<span class="string">"&gt;&gt;&gt; "</span> + parent.getSimpleName() + <span class="string">" has been processed, "</span> + fileName + <span class="string">" has been generated. &lt;&lt;&lt;"</span>);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            logger.info(<span class="string">"&gt;&gt;&gt; Autowired processor stop. &lt;&lt;&lt;"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 根据成员变量的类型进行区分。</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> originalValue</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> statement</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> type</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> isActivity</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> String <span class="title">buildStatement</span><span class="params">(String originalValue, String statement, <span class="keyword">int</span> type, <span class="keyword">boolean</span> isActivity)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (type == TypeKind.BOOLEAN.ordinal()) &#123;</span><br><span class="line">            statement += (isActivity ? (<span class="string">"getBooleanExtra($S, "</span> + originalValue + <span class="string">")"</span>) : (<span class="string">"getBoolean($S)"</span>));</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (type == TypeKind.BYTE.ordinal()) &#123;</span><br><span class="line">            statement += (isActivity ? (<span class="string">"getByteExtra($S, "</span> + originalValue + <span class="string">""</span>) : (<span class="string">"getByte($S)"</span>));</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (type == TypeKind.SHORT.ordinal()) &#123;</span><br><span class="line">            statement += (isActivity ? (<span class="string">"getShortExtra($S, "</span> + originalValue + <span class="string">")"</span>) : (<span class="string">"getShort($S)"</span>));</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (type == TypeKind.INT.ordinal()) &#123;</span><br><span class="line">            statement += (isActivity ? (<span class="string">"getIntExtra($S, "</span> + originalValue + <span class="string">")"</span>) : (<span class="string">"getInt($S)"</span>));</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (type == TypeKind.LONG.ordinal()) &#123;</span><br><span class="line">            statement += (isActivity ? (<span class="string">"getLongExtra($S, "</span> + originalValue + <span class="string">")"</span>) : (<span class="string">"getLong($S)"</span>));</span><br><span class="line">        &#125;<span class="keyword">else</span> <span class="keyword">if</span>(type == TypeKind.CHAR.ordinal())&#123;</span><br><span class="line">            statement += (isActivity ? (<span class="string">"getCharExtra($S, "</span> + originalValue + <span class="string">")"</span>) : (<span class="string">"getChar($S)"</span>));</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (type == TypeKind.FLOAT.ordinal()) &#123;</span><br><span class="line">            statement += (isActivity ? (<span class="string">"getFloatExtra($S, "</span> + originalValue + <span class="string">")"</span>) : (<span class="string">"getFloat($S)"</span>));</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (type == TypeKind.DOUBLE.ordinal()) &#123;</span><br><span class="line">            statement += (isActivity ? (<span class="string">"getDoubleExtra($S, "</span> + originalValue + <span class="string">")"</span>) : (<span class="string">"getDouble($S)"</span>));</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (type == TypeKind.STRING.ordinal()) &#123;</span><br><span class="line">            statement += (isActivity ? (<span class="string">"getStringExtra($S)"</span>) : (<span class="string">"getString($S)"</span>));</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (type == TypeKind.PARCELABLE.ordinal()) &#123;</span><br><span class="line">            statement += (isActivity ? (<span class="string">"getParcelableExtra($S)"</span>) : (<span class="string">"getParcelable($S)"</span>));</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (type == TypeKind.OBJECT.ordinal()) &#123;</span><br><span class="line">            statement = <span class="string">"serializationService.parseObject(substitute."</span> + (isActivity ? <span class="string">"getIntent()."</span> : <span class="string">"getArguments()."</span>) + (isActivity ? <span class="string">"getStringExtra($S)"</span> : <span class="string">"getString($S)"</span>) + <span class="string">", new com.alibaba.android.arouter.facade.model.TypeWrapper&lt;$T&gt;()&#123;&#125;.getType())"</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> statement;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 进行分类处理。</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> elements</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> IllegalAccessException</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">categories</span><span class="params">(Set&lt;? extends Element&gt; elements)</span> <span class="keyword">throws</span> IllegalAccessException </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (CollectionUtils.isNotEmpty(elements)) &#123;</span><br><span class="line">            <span class="keyword">for</span> (Element element : elements) &#123;</span><br><span class="line">                TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();</span><br><span class="line">                <span class="comment">//不允许声明为 private。</span></span><br><span class="line">                <span class="keyword">if</span> (element.getModifiers().contains(Modifier.PRIVATE)) &#123;</span><br><span class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> IllegalAccessException(<span class="string">"The inject fields CAN NOT BE 'private'!!! please check field ["</span></span><br><span class="line">                            + element.getSimpleName() + <span class="string">"] in class ["</span> + enclosingElement.getQualifiedName() + <span class="string">"]"</span>);</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span> (parentAndChild.containsKey(enclosingElement)) &#123;</span><br><span class="line">                    parentAndChild.get(enclosingElement).add(element);</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    List&lt;Element&gt; childs = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">                    childs.add(element);</span><br><span class="line">                    parentAndChild.put(enclosingElement, childs);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            logger.info(<span class="string">"categories finished."</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">ARouter.getInstance().inject(<span class="keyword">this</span>);</span><br></pre></td></tr></table></figure></p>
+<p>最终创建的文件，其命名规则为 要注入的 Activity/Fragment + $$ARouter$$Autowired，以module-other的InjectActivity为例，最终生成的文件为：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * DO NOT EDIT THIS FILE!!! IT WAS GENERATED BY AROUTER. */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">InjectActivity</span>$$<span class="title">ARouter</span>$$<span class="title">Autowired</span> <span class="keyword">implements</span> <span class="title">ISyringe</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> SerializationService serializationService;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">inject</span><span class="params">(Object target)</span> </span>&#123;</span><br><span class="line">    serializationService = ARouter.getInstance().navigation(SerializationService.class);</span><br><span class="line">    InjectActivity substitute = (InjectActivity)target;</span><br><span class="line">    substitute.age = substitute.getIntent().getIntExtra(<span class="string">"inject_age"</span>, substitute.age);</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">null</span> != serializationService) &#123;</span><br><span class="line">      substitute.bean = serializationService.parseObject(substitute.getIntent().getStringExtra(<span class="string">"inject_object"</span>), <span class="keyword">new</span> com.alibaba.android.arouter.facade.model.TypeWrapper&lt;SerialBean&gt;()&#123;&#125;.getType());</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      Log.e(<span class="string">"ARouter::"</span>, <span class="string">"You want automatic inject the field 'bean' in class 'InjectActivity' , then you should implement 'SerializationService' to support object auto inject!"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当我们调用下面的方法时，就会通过反射创建该类的一个对象，然后调用它的inject方法，依次对各成员变量进行赋值。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ARouter.getInstance().inject(<span class="keyword">this</span>);</span><br></pre></td></tr></table></figure></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>以上就是对于Arouter的编译时SDK的分析，这篇文章理解起来可能比较难，因为要求对编译期注解的处理有一定的了解。</p>
+<p>通过分析源码，我们学习到了如何在编译期处理注解，并了解到了Arouter分组加载，拦截器以及依赖注入在编译期处理的原理，了解了这些，是我们之后学习Arouter的运行时SDK的基础，也可以借此机会学习它的思想，以后我们有遇到需要在编译期做一些事情的时候，可以拿出来参考。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>您的支持是我原创的动力</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechatpay.jpg" alt="chuangWu 微信支付"/>
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/images/alipay.jpg" alt="chuangWu 支付宝"/>
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+
+<div>  
+     
+ 
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+      <strong>本文作者：</strong>chuangWu
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="/2020/04/10/ARouter源码解析：complier/" title="ARouter源码解析：complier">2020/04/10/ARouter源码解析：complier/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权： </strong>
+    本站文章均采用 <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0 CN</a> 许可协议，请勿用于商业，转载注明出处！
+  </li>
+</ul>
+
+</div>
+
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/04/09/ARouter源码解析/" rel="next" title="ARouter源码解析">
+                <i class="fa fa-chevron-left"></i> ARouter源码解析
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/04/16/阿里云运行服务端程序/" rel="prev" title="阿里云运行服务端程序">
+                阿里云运行服务端程序 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+      <div>    
+      
+
+
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/head.png"
+                alt="chuangWu" />
+            
+              <p class="site-author-name" itemprop="name">chuangWu</p>
+              <p class="site-description motion-element" itemprop="description">选择大于努力</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">54</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">71</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#基础知识"><span class="nav-number">1.</span> <span class="nav-text">基础知识</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#ProcessingEnvironment"><span class="nav-number">1.1.</span> <span class="nav-text">ProcessingEnvironment</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Elements"><span class="nav-number">1.2.</span> <span class="nav-text">Elements</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Types"><span class="nav-number">1.3.</span> <span class="nav-text">Types</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Filer"><span class="nav-number">1.4.</span> <span class="nav-text">Filer</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Route-注解的解析"><span class="nav-number">2.</span> <span class="nav-text">@Route 注解的解析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Interceptor-注解的解析"><span class="nav-number">3.</span> <span class="nav-text">@Interceptor 注解的解析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Autowired-注解的解析"><span class="nav-number">4.</span> <span class="nav-text">@Autowired 注解的解析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">chuangWu</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      本站访客数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      人次
+    </span>
+  
+
+  
+    <span class="site-pv">
+      本站总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

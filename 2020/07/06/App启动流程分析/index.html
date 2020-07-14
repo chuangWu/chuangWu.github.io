@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="app,启动流程,源码," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="简介  1.点击桌面App图标，Launcher进程采用Binder IPC向system_server进程发起startActivity请求； 2.system_server进程接收到请求后，向zygote进程发送创建进程的请求； 3.Zygote进程fork出新的子进程，即App进程； 4.App进程，通过Binder IPC向sytem_server进程发起attachApplication">
+<meta name="keywords" content="app,启动流程,源码">
+<meta property="og:type" content="article">
+<meta property="og:title" content="App启动流程分析">
+<meta property="og:url" content="http://yoursite.com/2020/07/06/App启动流程分析/index.html">
+<meta property="og:site_name" content="小小小青年">
+<meta property="og:description" content="简介  1.点击桌面App图标，Launcher进程采用Binder IPC向system_server进程发起startActivity请求； 2.system_server进程接收到请求后，向zygote进程发送创建进程的请求； 3.Zygote进程fork出新的子进程，即App进程； 4.App进程，通过Binder IPC向sytem_server进程发起attachApplication">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/2020/07/06/App启动流程分析/app_start_flow.jpg">
+<meta property="og:image" content="http://yoursite.com/2020/07/06/App启动流程分析/client_and_server.jpg">
+<meta property="og:image" content="http://yoursite.com/2020/07/06/App启动流程分析/create_process.jpg">
+<meta property="og:image" content="http://yoursite.com/2020/07/06/App启动流程分析/create_process_2.jpg">
+<meta property="og:image" content="http://yoursite.com/2020/07/06/App启动流程分析/attch_application.jpg">
+<meta property="og:image" content="http://yoursite.com/2020/07/06/App启动流程分析/attach_application_2.jpg">
+<meta property="og:image" content="http://yoursite.com/2020/07/06/App启动流程分析/show_activity.jpg">
+<meta property="og:image" content="http://yoursite.com/2020/07/06/App启动流程分析/show_activity_2.jpg">
+<meta property="og:image" content="http://yoursite.com/2020/07/06/App启动流程分析/bind.jpg">
+<meta property="og:updated_time" content="2020-07-06T09:02:05.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="App启动流程分析">
+<meta name="twitter:description" content="简介  1.点击桌面App图标，Launcher进程采用Binder IPC向system_server进程发起startActivity请求； 2.system_server进程接收到请求后，向zygote进程发送创建进程的请求； 3.Zygote进程fork出新的子进程，即App进程； 4.App进程，通过Binder IPC向sytem_server进程发起attachApplication">
+<meta name="twitter:image" content="http://yoursite.com/2020/07/06/App启动流程分析/app_start_flow.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/07/06/App启动流程分析/"/>
+
+
+
+
+
+  <title>App启动流程分析 | 小小小青年</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">小小小青年</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/07/06/App启动流程分析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="chuangWu">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/head.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="小小小青年">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">App启动流程分析</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-07-06T10:31:50+08:00">
+                2020-07-06
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv">本文总阅读量
+            <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>次
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p><img src="/2020/07/06/App启动流程分析/app_start_flow.jpg" alt=""></p>
+<ul>
+<li>1.点击桌面App图标，Launcher进程采用Binder IPC向system_server进程发起startActivity请求；</li>
+<li>2.system_server进程接收到请求后，向zygote进程发送创建进程的请求；</li>
+<li>3.Zygote进程fork出新的子进程，即App进程；</li>
+<li>4.App进程，通过Binder IPC向sytem_server进程发起attachApplication请求；</li>
+<li>5.system_server进程在收到请求后，进行一系列准备工作后，再通过binder IPC向App进程发送scheduleLaunchActivity请求；</li>
+<li>6.App进程的binder线程（ApplicationThread）在收到请求后，通过handler向主线程发送LAUNCH_ACTIVITY消息；</li>
+<li>7.主线程在收到Message后，通过发射机制创建目标Activity，并回调Activity.onCreate()等方法。</li>
+<li>8.到此，App便正式启动，开始进入Activity生命周期，执行完onCreate/onStart/onResume方法，UI渲染结束后便可以看到App的主界面。</li>
+</ul>
+<h2 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h2><h3 id="zygote"><a href="#zygote" class="headerlink" title="zygote"></a>zygote</h3><p>在Android系统里面，zygote是一个进程的名字。Android是基于Linux System的，当你的手机开机的时候，Linux的内核加载完成之后就会启动一个叫“init“的进程。在Linux System里面，所有的进程都是由init进程fork出来的，我们的zygote进程也不例外。</p>
+<p>我们都知道，每一个APP其实都是一个单独的dalvik虚拟机，一个单独的进程，所以当系统里面的第一个zygote进程运行之后，如果在启动APP，为了实现资源共用和更快的速度，Android系统开启新进程的方式，是通过fork第一个zygote进程实现的。</p>
+<h3 id="system-server"><a href="#system-server" class="headerlink" title="system_server"></a>system_server</h3><p>也是一个进程，而且是由zygote进程fork出来的。这个进程非常的重要，因为系统里面的重要的服务都是在这个进程里面开启的，比如<br>AMS、PMS、WMS等等。</p>
+<h3 id="ActivityManagerService"><a href="#ActivityManagerService" class="headerlink" title="ActivityManagerService"></a>ActivityManagerService</h3><p>简称AMS，服务端对象，负责系统中所有Activity的生命周期。ActivityManagerService是在system_server进程开启的时候，就会初始化的。</p>
+<h3 id="Android系统的服务端和客户端"><a href="#Android系统的服务端和客户端" class="headerlink" title="Android系统的服务端和客户端"></a>Android系统的服务端和客户端</h3><p>服务端指的是所有APP共用的系统服务，比如AMS、PMS、WMS。当你需要打开一个APP时，需要包名MainActivity的类名就可以打开了。这个打开的过程就是服务端提供的。</p>
+<p>服务端的设计涉及到三个进程的通信，zygote、system_server和app进程。其中app进程与AMS通过Binder进行IPC通信。AMS与zygote是通过socket进行IPC通信。</p>
+<p>在Android系统中，任何一个Activity的启动都是由AMS和应用程序进程（主要是ActivityThread）相互配合来完成的。AMS服务统一调度系统中所有进程的Activity启动，而每个Activity的启动过程则由其所属的进程具体来完成。</p>
+<h3 id="Launcher"><a href="#Launcher" class="headerlink" title="Launcher"></a>Launcher</h3><p>本质就是一个APP<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">Launcher</span> <span class="keyword">extends</span> <span class="title">Activity</span></span></span><br><span class="line"><span class="class">        <span class="keyword">implements</span> <span class="title">View</span>.<span class="title">OnClickListener</span>, <span class="title">OnLongClickListener</span>, <span class="title">LauncherModel</span>.<span class="title">Callbacks</span>,</span></span><br><span class="line"><span class="class">                   <span class="title">View</span>.<span class="title">OnTouchListener</span> </span>&#123;</span><br><span class="line">                   &#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="Instrumentation和ActivityThread"><a href="#Instrumentation和ActivityThread" class="headerlink" title="Instrumentation和ActivityThread"></a>Instrumentation和ActivityThread</h3><p>每个Activity都持有Instrumentation对象的一个引用，但是整个进程只会存在一个Instrumentation对象。这个类就是完成对Application和Activity初始化和生命周期的工具类。</p>
+<p>ActivityThread，依赖于UI线程。App和AMS是通过Binder传递信息的，那么ActivityThread就是专门与AMS的外交工作的。</p>
+<h3 id="ApplicationThread"><a href="#ApplicationThread" class="headerlink" title="ApplicationThread"></a>ApplicationThread</h3><p>App的启动以及Activity的显示都需要AMS的控制，那么我们便需要和服务端的沟通，而这个沟通是双向的。<br><img src="/2020/07/06/App启动流程分析/client_and_server.jpg" alt=""></p>
+<h4 id="客户端–-gt-服务端"><a href="#客户端–-gt-服务端" class="headerlink" title="客户端–&gt;服务端"></a>客户端–&gt;服务端</h4><p>而且由于继承了同样的公共接口类，ActivityManagerProxy提供了与ActivityManagerService一样的函数原型，使用户感觉不出Server是运行在本地还是远端，从而可以更加方便的调用这些重要的系统服务。</p>
+<h4 id="服务端–-gt-客户端"><a href="#服务端–-gt-客户端" class="headerlink" title="服务端–&gt;客户端"></a>服务端–&gt;客户端</h4><p>还是通过Binder通信，不过是换了另外一对，换成了ApplicationThread和ApplicationThreadProxy。<br>他们也都实现了相同的接口IApplicationThread<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">ApplicationThread</span> <span class="keyword">extends</span> <span class="title">ApplicationThreadNative</span> </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">ApplicationThreadNative</span> <span class="keyword">extends</span> <span class="title">Binder</span> <span class="keyword">implements</span> <span class="title">IApplicationThread</span></span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">  <span class="class"><span class="keyword">class</span> <span class="title">ApplicationThreadProxy</span> <span class="keyword">implements</span> <span class="title">IApplicationThread</span> </span>&#123;&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="流程分析"><a href="#流程分析" class="headerlink" title="流程分析"></a>流程分析</h2><h3 id="创建进程"><a href="#创建进程" class="headerlink" title="创建进程"></a>创建进程</h3><ol>
+<li>先从Launcher的startActivity()方法，通过Binder通信，调用ActivityManagerService的startActivity方法。</li>
+<li>一系列折腾，最后调用startProcessLocked()方法来创建新的进程。</li>
+<li>该方法会通过前面讲到的socket通道传递参数给Zygote进程。Zygote孵化自身。调用ZygoteInit.main()方法来实例化ActivityThread对象并最终返回新进程的pid。</li>
+<li>调用ActivityThread.main()方法，ActivityThread随后依次调用Looper.prepareLoop()和Looper.loop()来开启消息循环。<br><img src="/2020/07/06/App启动流程分析/create_process.jpg" alt=""></li>
+</ol>
+<p>更简化的流程为：<br><img src="/2020/07/06/App启动流程分析/create_process_2.jpg" alt=""></p>
+<ol>
+<li>App发起进程：当从桌面启动应用，则发起进程便是Launcher所在进程；当从某App内启动远程进程，则发送进程便是该App所在进程。发起进程先通过binder发送消息给system_server进程；</li>
+<li>system_server进程：调用Process.start()方法，通过socket向zygote进程发送创建新进程的请求；</li>
+<li>zygote进程：在执行ZygoteInit.main()后便进入runSelectLoop()循环体内，当有客户端连接时便会执行ZygoteConnection.runOnce()方法，再经过层层调用后fork出新的应用进程；</li>
+<li>新进程：执行handleChildProc方法，最后调用ActivityThread.main()方法。</li>
+</ol>
+<h3 id="绑定Application"><a href="#绑定Application" class="headerlink" title="绑定Application"></a>绑定Application</h3><p>上面创建进程后，执行ActivityThread.main()方法，随后调用attach()方法。</p>
+<p>将进程和指定的Application绑定起来。这个是通过上节的ActivityThread对象中调用bindApplication()方法完成的。该方法发送一个BIND_APPLICATION的消息到消息队列中, 最终通过handleBindApplication()方法处理该消息. 然后调用makeApplication()方法来加载App的classes到内存中。</p>
+<p>方法调用流程图如下：</p>
+<p><img src="/2020/07/06/App启动流程分析/attch_application.jpg" alt=""></p>
+<p>更简化的流程为：</p>
+<p><img src="/2020/07/06/App启动流程分析/attach_application_2.jpg" alt=""></p>
+<h3 id="显示Activity界面"><a href="#显示Activity界面" class="headerlink" title="显示Activity界面"></a>显示Activity界面</h3><p>经过前两个步骤之后, 系统已经拥有了该application的进程。 后面的调用顺序就是普通的从一个已经存在的进程中启动一个新进程的activity了。</p>
+<p>实际调用方法是realStartActivity(), 它会调用application线程对象中的scheduleLaunchActivity()发送一个LAUNCH_ACTIVITY消息到消息队列中, 通过 handleLaunchActivity()来处理该消息。在 handleLaunchActivity()通过performLaunchActiivty()方法回调Activity的onCreate()方法和onStart()方法，然后通过handleResumeActivity()方法，回调Activity的onResume()方法，最终显示Activity界面。</p>
+<p><img src="/2020/07/06/App启动流程分析/show_activity.jpg" alt=""></p>
+<p>更简化的流程为：</p>
+<p><img src="/2020/07/06/App启动流程分析/show_activity_2.jpg" alt=""></p>
+<h2 id="Binder通信"><a href="#Binder通信" class="headerlink" title="Binder通信"></a>Binder通信</h2><p><img src="/2020/07/06/App启动流程分析/bind.jpg" alt=""><br><strong>ATP:</strong> ApplicationThreadProxy<br><strong>AT:</strong> ApplicationThread<br><strong>AMP:</strong> ActivityManagerProxy<br><strong>AMS:</strong> ActivityManagerService</p>
+<ol>
+<li>system_server进程中调用startProcessLocked方法,该方法最终通过socket方式,将需要创建新进程的消息告知Zygote进程,并阻塞等待Socket返回新创建进程的pid;</li>
+<li>Zygote进程接收到system_server发送过来的消息, 则通过fork的方法，将zygote自身进程复制生成新的进程，并将ActivityThread相关的资源加载到新进程app process,这个进程可能是用于承载activity等组件</li>
+<li>在新进程app process向servicemanager查询system_server进程中binder服务端AMS, 获取相对应的Client端,也就是AMP. 有了这一对binder c/s对, 那么app process便可以通过binder向跨进程system_server发送请求,即attachApplication()</li>
+<li>system_server进程接收到相应binder操作后,经过多次调用,利用ATP向app process发送binder请求, 即bindApplication. system_server拥有ATP/AMS, 每一个新创建的进程都会有一个相应的AT/AMP,从而可以跨进程 进行相互通信. 这便是进程创建过程的完整生态链</li>
+</ol>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>您的支持是我原创的动力</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechatpay.jpg" alt="chuangWu 微信支付"/>
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/images/alipay.jpg" alt="chuangWu 支付宝"/>
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+
+<div>  
+     
+ 
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+      <strong>本文作者：</strong>chuangWu
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="/2020/07/06/App启动流程分析/" title="App启动流程分析">2020/07/06/App启动流程分析/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权： </strong>
+    本站文章均采用 <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0 CN</a> 许可协议，请勿用于商业，转载注明出处！
+  </li>
+</ul>
+
+</div>
+
+      
+        <div class="post-tags">
+          
+            <a href="/tags/app/" rel="tag"># app</a>
+          
+            <a href="/tags/启动流程/" rel="tag"># 启动流程</a>
+          
+            <a href="/tags/源码/" rel="tag"># 源码</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/06/24/Android-Binder机制分析/" rel="next" title="Android Binder机制分析">
+                <i class="fa fa-chevron-left"></i> Android Binder机制分析
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/07/07/LeakCanary源码解析/" rel="prev" title="LeakCanary源码解析">
+                LeakCanary源码解析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+      <div>    
+      
+
+
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/head.png"
+                alt="chuangWu" />
+            
+              <p class="site-author-name" itemprop="name">chuangWu</p>
+              <p class="site-description motion-element" itemprop="description">选择大于努力</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">54</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">71</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#简介"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#概念"><span class="nav-number">2.</span> <span class="nav-text">概念</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#zygote"><span class="nav-number">2.1.</span> <span class="nav-text">zygote</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#system-server"><span class="nav-number">2.2.</span> <span class="nav-text">system_server</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ActivityManagerService"><span class="nav-number">2.3.</span> <span class="nav-text">ActivityManagerService</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Android系统的服务端和客户端"><span class="nav-number">2.4.</span> <span class="nav-text">Android系统的服务端和客户端</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Launcher"><span class="nav-number">2.5.</span> <span class="nav-text">Launcher</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Instrumentation和ActivityThread"><span class="nav-number">2.6.</span> <span class="nav-text">Instrumentation和ActivityThread</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ApplicationThread"><span class="nav-number">2.7.</span> <span class="nav-text">ApplicationThread</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#客户端–-gt-服务端"><span class="nav-number">2.7.1.</span> <span class="nav-text">客户端–&gt;服务端</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#服务端–-gt-客户端"><span class="nav-number">2.7.2.</span> <span class="nav-text">服务端–&gt;客户端</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#流程分析"><span class="nav-number">3.</span> <span class="nav-text">流程分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#创建进程"><span class="nav-number">3.1.</span> <span class="nav-text">创建进程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#绑定Application"><span class="nav-number">3.2.</span> <span class="nav-text">绑定Application</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#显示Activity界面"><span class="nav-number">3.3.</span> <span class="nav-text">显示Activity界面</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Binder通信"><span class="nav-number">4.</span> <span class="nav-text">Binder通信</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">chuangWu</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      本站访客数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      人次
+    </span>
+  
+
+  
+    <span class="site-pv">
+      本站总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

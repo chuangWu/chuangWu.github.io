@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="android,系统启动流程,init,zygote," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="简介架构图一 架构图二 架构解析 Linux内核层：包含Linux内核和驱动模块（比如USB、Camera、蓝牙等）。 Libraries层：这一层提供动态库、android运行时库、虚拟机，这一层大部分都是C/C++写的，还有一些三方库比如SQLite, WebKit。 硬件抽象层 (HAL)：硬件抽象层 (HAL) 提供标准接口，HAL包含多个库模块，其中每个模块都为特定类型的硬件组件实现一组">
+<meta name="keywords" content="android,系统启动流程,init,zygote">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android 系统启动流程">
+<meta property="og:url" content="http://yoursite.com/2020/07/14/Android-系统启动流程/index.html">
+<meta property="og:site_name" content="小小小青年">
+<meta property="og:description" content="简介架构图一 架构图二 架构解析 Linux内核层：包含Linux内核和驱动模块（比如USB、Camera、蓝牙等）。 Libraries层：这一层提供动态库、android运行时库、虚拟机，这一层大部分都是C/C++写的，还有一些三方库比如SQLite, WebKit。 硬件抽象层 (HAL)：硬件抽象层 (HAL) 提供标准接口，HAL包含多个库模块，其中每个模块都为特定类型的硬件组件实现一组">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/2020/07/14/Android-系统启动流程/sys_framework.png">
+<meta property="og:image" content="http://yoursite.com/2020/07/14/Android-系统启动流程/sys_framework2.png">
+<meta property="og:image" content="http://yoursite.com/2020/07/14/Android-系统启动流程/sys_boot_loader.png">
+<meta property="og:image" content="http://yoursite.com/2020/07/14/Android-系统启动流程/sys_servicemanager.png">
+<meta property="og:image" content="http://yoursite.com/2020/07/14/Android-系统启动流程/sys_zygote.png">
+<meta property="og:image" content="http://yoursite.com/2020/07/14/Android-系统启动流程/sys_system_server.png">
+<meta property="og:image" content="http://yoursite.com/2020/07/14/Android-系统启动流程/sys_final.png">
+<meta property="og:updated_time" content="2020-07-14T09:51:11.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android 系统启动流程">
+<meta name="twitter:description" content="简介架构图一 架构图二 架构解析 Linux内核层：包含Linux内核和驱动模块（比如USB、Camera、蓝牙等）。 Libraries层：这一层提供动态库、android运行时库、虚拟机，这一层大部分都是C/C++写的，还有一些三方库比如SQLite, WebKit。 硬件抽象层 (HAL)：硬件抽象层 (HAL) 提供标准接口，HAL包含多个库模块，其中每个模块都为特定类型的硬件组件实现一组">
+<meta name="twitter:image" content="http://yoursite.com/2020/07/14/Android-系统启动流程/sys_framework.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/07/14/Android-系统启动流程/"/>
+
+
+
+
+
+  <title>Android 系统启动流程 | 小小小青年</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">小小小青年</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/07/14/Android-系统启动流程/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="chuangWu">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/head.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="小小小青年">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Android 系统启动流程</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-07-14T13:40:55+08:00">
+                2020-07-14
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv">本文总阅读量
+            <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>次
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><h3 id="架构图一"><a href="#架构图一" class="headerlink" title="架构图一"></a>架构图一</h3><p><img src="/2020/07/14/Android-系统启动流程/sys_framework.png" alt=""></p>
+<h3 id="架构图二"><a href="#架构图二" class="headerlink" title="架构图二"></a>架构图二</h3><p><img src="/2020/07/14/Android-系统启动流程/sys_framework2.png" alt=""></p>
+<h3 id="架构解析"><a href="#架构解析" class="headerlink" title="架构解析"></a>架构解析</h3><ul>
+<li>Linux内核层：包含Linux内核和驱动模块（比如USB、Camera、蓝牙等）。</li>
+<li>Libraries层：这一层提供动态库、android运行时库、虚拟机，这一层大部分都是C/C++写的，还有一些三方库比如SQLite, WebKit。</li>
+<li>硬件抽象层 (HAL)：硬件抽象层 (HAL) 提供标准接口，HAL包含多个库模块，其中每个模块都为特定类型的硬件组件实现一组接口，比如WIFI/蓝牙模块，当框架API请求访问设备硬件时，Android系统将为该硬件加载相应的库模块。</li>
+<li>FrameWork层：它是android平台上Java世界的基石，这一层大部分用Java写的，包括系统服务和四大组件。</li>
+<li>Applications层：我们开发的就是应用层，不仅包括通话短信联系人这种系统级的应用，还包括用户自己安装的一些第三方应用。</li>
+</ul>
+<h2 id="系统编译"><a href="#系统编译" class="headerlink" title="系统编译"></a>系统编译</h2><ul>
+<li>下载源码</li>
+<li>查看源码(Source Insight)</li>
+<li>编译源码(Ubuntu/Mac OS)</li>
+<li>系统</li>
+</ul>
+<h2 id="系统启动"><a href="#系统启动" class="headerlink" title="系统启动"></a>系统启动</h2><h3 id="Bootloader"><a href="#Bootloader" class="headerlink" title="Bootloader"></a>Bootloader</h3><p>当按下电源键（加电）或者系统重启（复位）的时候，引导芯片会从 ROM（这里一般指 Flash ROM，即闪存）中预定义的位置将 Bootloader 载入到 RAM 中，接着，Bootloader 将会把 Linux 内核载入到 RAM 中并启动。</p>
+<p><img src="/2020/07/14/Android-系统启动流程/sys_boot_loader.png" alt=""><br>Bootloader 是在系统内核运行之前运行的一段小程序，也是系统运行的第一个程序，它的主要作用是</p>
+<ul>
+<li>初始化 RAM（一般指内存）</li>
+<li>初始化硬件设备</li>
+<li>加载内核和内存空间影像图</li>
+<li>跳转到内核</li>
+</ul>
+<h3 id="init"><a href="#init" class="headerlink" title="init"></a>init</h3><p>Linux 内核启动过程中会创建 init 进程，init 进程是用户空间的第一个进程（pid=1），对应的可执行程序的源文件文件为 /system/core/init/Init.cpp，它的 main 方法如下：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span>** argv)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (!<span class="built_in">strcmp</span>(basename(argv[<span class="number">0</span>]), <span class="string">"ueventd"</span>)) &#123;</span><br><span class="line">        <span class="keyword">return</span> ueventd_main(argc, argv);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (!<span class="built_in">strcmp</span>(basename(argv[<span class="number">0</span>]), <span class="string">"watchdogd"</span>)) &#123;</span><br><span class="line">        <span class="keyword">return</span> watchdogd_main(argc, argv);</span><br><span class="line">    &#125;</span><br><span class="line">    umask(<span class="number">0</span>);</span><br><span class="line">    add_environment(<span class="string">"PATH"</span>, _PATH_DEFPATH);</span><br><span class="line">    <span class="keyword">bool</span> is_first_stage = (argc == <span class="number">1</span>) || (<span class="built_in">strcmp</span>(argv[<span class="number">1</span>], <span class="string">"--second-stage"</span>) != <span class="number">0</span>);</span><br><span class="line">    <span class="comment">// 创建文件并挂载</span></span><br><span class="line">    <span class="keyword">if</span> (is_first_stage) &#123;</span><br><span class="line">        mount(<span class="string">"tmpfs"</span>, <span class="string">"/dev"</span>, <span class="string">"tmpfs"</span>, MS_NOSUID, <span class="string">"mode=0755"</span>);</span><br><span class="line">        mkdir(<span class="string">"/dev/pts"</span>, <span class="number">0755</span>);</span><br><span class="line">        mkdir(<span class="string">"/dev/socket"</span>, <span class="number">0755</span>);</span><br><span class="line">        mount(<span class="string">"devpts"</span>, <span class="string">"/dev/pts"</span>, <span class="string">"devpts"</span>, <span class="number">0</span>, <span class="literal">NULL</span>);</span><br><span class="line">        <span class="meta">#<span class="meta-keyword">define</span> MAKE_STR(x) __STRING(x)</span></span><br><span class="line">        mount(<span class="string">"proc"</span>, <span class="string">"/proc"</span>, <span class="string">"proc"</span>, <span class="number">0</span>, <span class="string">"hidepid=2,gid="</span> MAKE_STR(AID_READPROC));</span><br><span class="line">        mount(<span class="string">"sysfs"</span>, <span class="string">"/sys"</span>, <span class="string">"sysfs"</span>, <span class="number">0</span>, <span class="literal">NULL</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    open_devnull_stdio();</span><br><span class="line">    klog_init();</span><br><span class="line">    klog_set_level(KLOG_NOTICE_LEVEL);</span><br><span class="line">    NOTICE(<span class="string">"init %s started!\n"</span>, is_first_stage ? <span class="string">"first stage"</span> : <span class="string">"second stage"</span>);</span><br><span class="line">    <span class="keyword">if</span> (!is_first_stage) &#123;</span><br><span class="line">        <span class="comment">// Indicate that booting is in progress to background fw loaders, etc.</span></span><br><span class="line">        close(open(<span class="string">"/dev/.booting"</span>, O_WRONLY | O_CREAT | O_CLOEXEC, <span class="number">0000</span>));</span><br><span class="line">        <span class="comment">// 初始化属性相关资源</span></span><br><span class="line">        property_init();</span><br><span class="line">        process_kernel_dt();</span><br><span class="line">        process_kernel_cmdline();</span><br><span class="line">        export_kernel_boot_props();</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">    <span class="comment">// 启动属性服务</span></span><br><span class="line">    start_property_service();</span><br><span class="line">    <span class="keyword">const</span> BuiltinFunctionMap function_map;</span><br><span class="line">    Action::set_function_map(&amp;function_map);</span><br><span class="line">    Parser&amp; parser = Parser::GetInstance();</span><br><span class="line">    parser.AddSectionParser(<span class="string">"service"</span>,<span class="built_in">std</span>::make_unique&lt;ServiceParser&gt;());</span><br><span class="line">    parser.AddSectionParser(<span class="string">"on"</span>, <span class="built_in">std</span>::make_unique&lt;ActionParser&gt;());</span><br><span class="line">    parser.AddSectionParser(<span class="string">"import"</span>, <span class="built_in">std</span>::make_unique&lt;ImportParser&gt;());</span><br><span class="line">    <span class="comment">// 解析init.rc配置文件</span></span><br><span class="line">    parser.ParseConfig(<span class="string">"/init.rc"</span>);</span><br><span class="line">    ...   </span><br><span class="line">    <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (!waiting_for_exec) &#123;</span><br><span class="line">            am.ExecuteOneCommand();</span><br><span class="line">            restart_processes();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">int</span> timeout = <span class="number">-1</span>;</span><br><span class="line">        <span class="keyword">if</span> (process_needs_restart) &#123;</span><br><span class="line">            timeout = (process_needs_restart - gettime()) * <span class="number">1000</span>;</span><br><span class="line">            <span class="keyword">if</span> (timeout &lt; <span class="number">0</span>)</span><br><span class="line">                timeout = <span class="number">0</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (am.HasMoreCommands()) &#123;</span><br><span class="line">            timeout = <span class="number">0</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        bootchart_sample(&amp;timeout);</span><br><span class="line">        epoll_event ev;</span><br><span class="line">        <span class="keyword">int</span> nr = TEMP_FAILURE_RETRY(epoll_wait(epoll_fd, &amp;ev, <span class="number">1</span>, timeout));</span><br><span class="line">        <span class="keyword">if</span> (nr == <span class="number">-1</span>) &#123;</span><br><span class="line">            ERROR(<span class="string">"epoll_wait failed: %s\n"</span>, strerror(errno));</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (nr == <span class="number">1</span>) &#123;</span><br><span class="line">            ((<span class="keyword">void</span> (*)()) ev.data.ptr)();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="解析和运行所有-init-rc-文件"><a href="#解析和运行所有-init-rc-文件" class="headerlink" title="解析和运行所有 init.rc 文件"></a>解析和运行所有 init.rc 文件</h3><p>rc 文件由 Android 初始化语言编写，rc 文件主要包含 Action、Service、Command、Options 等，这些操作都由特殊的命令组成。<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> /init.environ.rc</span><br><span class="line"><span class="keyword">import</span> /init.usb.rc</span><br><span class="line"><span class="keyword">import</span> /init.$&#123;ro.hardware&#125;.rc</span><br><span class="line"><span class="keyword">import</span> /init.usb.configfs.rc</span><br><span class="line"><span class="keyword">import</span> /init.$&#123;ro.zygote&#125;.rc</span><br><span class="line"></span><br><span class="line">on early-init</span><br><span class="line">    # Set init <span class="keyword">and</span> its forked children's oom_adj.</span><br><span class="line">    write /proc/<span class="number">1</span>/oom_score_adj <span class="number">-1000</span></span><br><span class="line">    # Disable sysrq from keyboard</span><br><span class="line">    write /proc/sys/kernel/sysrq <span class="number">0</span></span><br><span class="line">    # Set the security context of /adb_keys <span class="keyword">if</span> present.</span><br><span class="line">    restorecon /adb_keys</span><br><span class="line">    # Shouldn't be necessary, but sdcard won't start without it. http:<span class="comment">//b/22568628.</span></span><br><span class="line">    mkdir /mnt <span class="number">0775</span> root system</span><br><span class="line">    # Set the security context of /postinstall <span class="keyword">if</span> present.</span><br><span class="line">    restorecon /postinstall</span><br><span class="line">    start ueventd</span><br><span class="line">    </span><br><span class="line">...(省略)...</span><br><span class="line"></span><br><span class="line">service flash_recovery /system/bin/install-recovery.sh</span><br><span class="line">    <span class="class"><span class="keyword">class</span> <span class="title">main</span></span></span><br><span class="line"><span class="class">    <span class="title">oneshot</span></span></span><br></pre></td></tr></table></figure></p>
+<p>在开头几行代码中，import 导入了几个 rc 文件，事实上，在 system/core/rootdir 目录下，有多个 init.XXX.rc 文件，在不同的硬件环境下，相应的 init.XXX.rc 文件会被导入，比如在 64 位操作系统中，init.zygote64.rc 文件将会被导入，它的内容如下：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">service zygote /system/bin/app_process64 -Xzygote /system/bin --zygote --start-system-server</span><br><span class="line">    <span class="class"><span class="keyword">class</span> <span class="title">main</span></span></span><br><span class="line"><span class="class">    <span class="title">socket</span> <span class="title">zygote</span> <span class="title">stream</span> 660 <span class="title">root</span> <span class="title">system</span></span></span><br><span class="line"><span class="class">    <span class="title">onrestart</span> <span class="title">write</span> /<span class="title">sys</span>/<span class="title">android_power</span>/<span class="title">request_state</span> <span class="title">wake</span></span></span><br><span class="line"><span class="class">    <span class="title">onrestart</span> <span class="title">write</span> /<span class="title">sys</span>/<span class="title">power</span>/<span class="title">state</span> <span class="title">on</span></span></span><br><span class="line"><span class="class">    <span class="title">onrestart</span> <span class="title">restart</span> <span class="title">audioserver</span></span></span><br><span class="line"><span class="class">    <span class="title">onrestart</span> <span class="title">restart</span> <span class="title">cameraserver</span></span></span><br><span class="line"><span class="class">    <span class="title">onrestart</span> <span class="title">restart</span> <span class="title">media</span></span></span><br><span class="line"><span class="class">    <span class="title">onrestart</span> <span class="title">restart</span> <span class="title">netd</span></span></span><br><span class="line"><span class="class">    <span class="title">writepid</span> /<span class="title">dev</span>/<span class="title">cpuset</span>/<span class="title">foreground</span>/<span class="title">tasks</span> /<span class="title">dev</span>/<span class="title">stune</span>/<span class="title">foreground</span>/<span class="title">tasks</span></span></span><br></pre></td></tr></table></figure></p>
+<p>这几行代码表示启动一个名字为 zygote、 执行文件路径为 /system/bin/app_process64、参数为 -Xzygote /system/bin –zygote –start-system-server 的进程。<br>除了 zygote 进程，还有许多关键进程都是由 init 进程通过读取相应的 rc 文件进行启动的，如 servicemanager、surfaceflinger 和 mediaserver 进程等等，这些进程都是保证系统运行必不可少的。</p>
+<h3 id="servicemanager进程-Binder-服务的总管"><a href="#servicemanager进程-Binder-服务的总管" class="headerlink" title="servicemanager进程- Binder 服务的总管"></a>servicemanager进程- Binder 服务的总管</h3><p>Binder 通信模型和通信过程”的时候提到过 ServerManager，它是 Binder IPC 的核心，是上下文的管理者，Binder 服务端必须先向 ServerManager 注册才能够为客户端提供服务，Binder 客户端在与服务端通信之前需要从 ServerManager 中查找并获取 Binder 服务端的引用。</p>
+<p>servicemanager 进程是通过解析 servicemanager.rc 文件来启动的，对应的代码如下：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">service servicemanager /system/bin/servicemanager</span><br><span class="line">    <span class="class"><span class="keyword">class</span> <span class="title">core</span></span></span><br><span class="line"><span class="class">    <span class="title">user</span> <span class="title">system</span></span></span><br><span class="line"><span class="class">    <span class="title">group</span> <span class="title">system</span> <span class="title">readproc</span></span></span><br><span class="line"><span class="class">    <span class="title">critical</span></span></span><br><span class="line"><span class="class">    <span class="title">onrestart</span> <span class="title">restart</span> <span class="title">healthd</span></span></span><br><span class="line"><span class="class">    <span class="title">onrestart</span> <span class="title">restart</span> <span class="title">zygote</span></span></span><br><span class="line"><span class="class">    <span class="title">onrestart</span> <span class="title">restart</span> <span class="title">audioserver</span></span></span><br><span class="line"><span class="class">    <span class="title">onrestart</span> <span class="title">restart</span> <span class="title">media</span></span></span><br><span class="line"><span class="class">    <span class="title">onrestart</span> <span class="title">restart</span> <span class="title">surfaceflinger</span></span></span><br><span class="line"><span class="class">    <span class="title">onrestart</span> <span class="title">restart</span> <span class="title">inputflinger</span></span></span><br><span class="line"><span class="class">    <span class="title">onrestart</span> <span class="title">restart</span> <span class="title">drm</span></span></span><br><span class="line"><span class="class">    <span class="title">onrestart</span> <span class="title">restart</span> <span class="title">cameraserver</span></span></span><br><span class="line"><span class="class">    <span class="title">writepid</span> /<span class="title">dev</span>/<span class="title">cpuset</span>/<span class="title">system</span>-<span class="title">background</span>/<span class="title">tasks</span></span></span><br></pre></td></tr></table></figure></p>
+<p>servicemanager 进程对应可执行程序的源文件为<br>framework/native/cmds/servicemanager/service_manager.c，简化后的代码如下：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> **argv)</span> </span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">binder_state</span> *<span class="title">bs</span>;</span></span><br><span class="line">    <span class="comment">// 打开binder驱动，申请 128k 字节大小的内存空间</span></span><br><span class="line">    bs = binder_open(<span class="number">128</span>*<span class="number">1024</span>);</span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 成为上下文管理者</span></span><br><span class="line">    <span class="keyword">if</span> (binder_become_context_manager(bs)) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 验证 selinux 权限，判断进程是否有权注册或查看指定服务</span></span><br><span class="line">    selinux_enabled = is_selinux_enabled();</span><br><span class="line">    sehandle = selinux_android_service_context_handle();</span><br><span class="line">    selinux_status_open(<span class="literal">true</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (selinux_enabled &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (sehandle == <span class="literal">NULL</span>) &#123;  </span><br><span class="line">            <span class="built_in">abort</span>();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (getcon(&amp;service_manager_context) != <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="built_in">abort</span>();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 进入无限循环，处理 client 端发来的请求 </span></span><br><span class="line">    binder_loop(bs, svcmgr_handler);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>servicemanager 进程在启动过程的工作内容如下：</li>
+<li>调用 binder_open 方法打开 Binder 驱动，并申请分配一块 128k 的内存空间</li>
+<li>调用 binder_become_context_manager 方法发送 BINDER_SET_CONTEXT_MGR 给 Binder 驱动，使自己成为上下文管理者</li>
+<li>验证 selinux 权限，判断进程是否有注册或查看指定服务的权限</li>
+<li>调用 binder_loop 方法进入循环状态，等待 Client 请求</li>
+<li>根据服务名称注册服务·</li>
+<li>接收 Binder 死亡通知</li>
+</ul>
+<p><img src="/2020/07/14/Android-系统启动流程/sys_servicemanager.png" alt=""></p>
+<h3 id="zygote进程-Java-进程的始祖"><a href="#zygote进程-Java-进程的始祖" class="headerlink" title="zygote进程- Java 进程的始祖"></a>zygote进程- Java 进程的始祖</h3><p>通过解析 init.rc 文件， zygote 进程对应的可执行程序的源文件为 frameworks/base/cmds/app_process/App_main.cpp，它的 main 方法如下：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span>* <span class="keyword">const</span> argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    AppRuntime runtime(argv[0], computeArgBlockSize(argc, argv));</span><br><span class="line">    ...</span><br><span class="line">    Vector&lt;String8&gt; args;</span><br><span class="line">    <span class="keyword">if</span> (!className.isEmpty()) &#123;</span><br><span class="line">        args.add(application ? String8(<span class="string">"application"</span>) : String8(<span class="string">"tool"</span>));</span><br><span class="line">        runtime.setClassNameAndArgs(className, argc - i, argv + i);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        maybeCreateDalvikCache();</span><br><span class="line">        <span class="keyword">if</span> (startSystemServer) &#123;</span><br><span class="line">            args.add(String8(<span class="string">"start-system-server"</span>));</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">char</span> prop[PROP_VALUE_MAX];</span><br><span class="line">        <span class="keyword">if</span> (property_get(ABI_LIST_PROPERTY, prop, <span class="literal">NULL</span>) == <span class="number">0</span>) &#123;</span><br><span class="line">            LOG_ALWAYS_FATAL(<span class="string">"app_process: Unable to determine ABI list from property %s."</span>,</span><br><span class="line">                ABI_LIST_PROPERTY);</span><br><span class="line">            <span class="keyword">return</span> <span class="number">11</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="function">String8 <span class="title">abiFlag</span><span class="params">(<span class="string">"--abi-list="</span>)</span></span>;</span><br><span class="line">        abiFlag.append(prop);</span><br><span class="line">        args.add(abiFlag);</span><br><span class="line">        <span class="keyword">for</span> (; i &lt; argc; ++i) &#123;</span><br><span class="line">            args.add(String8(argv[i]));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (!niceName.isEmpty()) &#123;</span><br><span class="line">        runtime.setArgv0(niceName.<span class="built_in">string</span>());</span><br><span class="line">        set_process_name(niceName.<span class="built_in">string</span>());</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (zygote) &#123;</span><br><span class="line">        <span class="comment">// 调用 AppRuntime 父类 AndroidRuntime 的 start 方法创建 zygote 进程</span></span><br><span class="line">        runtime.start(<span class="string">"com.android.internal.os.ZygoteInit"</span>, args, zygote);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (className) &#123;</span><br><span class="line">        runtime.start(<span class="string">"com.android.internal.os.RuntimeInit"</span>, args, zygote);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">"Error: no class name or --zygote supplied.\n"</span>);</span><br><span class="line">        app_usage();</span><br><span class="line">        LOG_ALWAYS_FATAL(<span class="string">"app_process: no class name or --zygote supplied."</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">10</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>调用 frameworks/base/core/jni/AndroidRuntime.cpp 的 start 方法：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> AndroidRuntime::start(<span class="keyword">const</span> <span class="keyword">char</span>* className, <span class="keyword">const</span> Vector&lt;String8&gt;&amp; options, <span class="keyword">bool</span> zygote)</span><br><span class="line">&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="comment">/* start the virtual machine */</span></span><br><span class="line">    JniInvocation jni_invocation;</span><br><span class="line">    jni_invocation.Init(<span class="literal">NULL</span>);</span><br><span class="line">    JNIEnv* env;</span><br><span class="line">    <span class="comment">// 启动 DVM</span></span><br><span class="line">    <span class="keyword">if</span> (startVm(&amp;mJavaVM, &amp;env, zygote) != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    onVmCreated(env);</span><br><span class="line">    <span class="comment">// 注册 JNI 方法</span></span><br><span class="line">    <span class="keyword">if</span> (startReg(env) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        ALOGE(<span class="string">"Unable to register all android natives\n"</span>);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    jclass stringClass;</span><br><span class="line">    jobjectArray strArray;</span><br><span class="line">    jstring classNameStr;</span><br><span class="line"></span><br><span class="line">    stringClass = env-&gt;FindClass(<span class="string">"java/lang/String"</span>);</span><br><span class="line">    assert(stringClass != <span class="literal">NULL</span>);</span><br><span class="line">    <span class="comment">// 创建数组</span></span><br><span class="line">    strArray = env-&gt;NewObjectArray(options.size() + <span class="number">1</span>, stringClass, <span class="literal">NULL</span>);</span><br><span class="line">    assert(strArray != <span class="literal">NULL</span>);</span><br><span class="line">    <span class="comment">// 从 app_main 的 main 函数得知 className 为 com.android.internal.os.ZygoteInit</span></span><br><span class="line">    classNameStr = env-&gt;NewStringUTF(className);</span><br><span class="line">    assert(classNameStr != <span class="literal">NULL</span>);</span><br><span class="line">    env-&gt;SetObjectArrayElement(strArray, <span class="number">0</span>, classNameStr);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">size_t</span> i = <span class="number">0</span>; i &lt; options.size(); ++i) &#123;</span><br><span class="line">        jstring optionsStr = env-&gt;NewStringUTF(options.itemAt(i).<span class="built_in">string</span>());</span><br><span class="line">        assert(optionsStr != <span class="literal">NULL</span>);</span><br><span class="line">        env-&gt;SetObjectArrayElement(strArray, i + <span class="number">1</span>, optionsStr);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">char</span>* slashClassName = toSlashClassName(className);</span><br><span class="line">    jclass startClass = env-&gt;FindClass(slashClassName);</span><br><span class="line">    <span class="keyword">if</span> (startClass == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        ALOGE(<span class="string">"JavaVM unable to locate class '%s'\n"</span>, slashClassName);</span><br><span class="line">        <span class="comment">/* keep going */</span></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// 找到 ZygoteInit 的 main 函数</span></span><br><span class="line">        jmethodID startMeth = env-&gt;GetStaticMethodID(startClass, <span class="string">"main"</span>,</span><br><span class="line">            <span class="string">"([Ljava/lang/String;)V"</span>);</span><br><span class="line">        <span class="keyword">if</span> (startMeth == <span class="literal">NULL</span>) &#123;</span><br><span class="line">            ALOGE(<span class="string">"JavaVM unable to find main() in '%s'\n"</span>, className);</span><br><span class="line">            <span class="comment">/* keep going */</span></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// 通过 JNI 调用 ZygoteInit 的 main 函数</span></span><br><span class="line">            env-&gt;CallStaticVoidMethod(startClass, startMeth, strArray);</span><br><span class="line">            <span class="keyword">if</span> (env-&gt;ExceptionCheck())</span><br><span class="line">                threadExitUncaughtException(env);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>通过 JNI 的方式进入 frameworks/base/core/java/com/android/internal/os/ZygoteInit.java：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String argv[])</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        ...       </span><br><span class="line">        <span class="comment">// 注册Zygote用的Socket</span></span><br><span class="line">        registerZygoteSocket(socketName);</span><br><span class="line">        ...</span><br><span class="line">        <span class="comment">// 预加载类和资源</span></span><br><span class="line">        preload();<span class="comment">//2</span></span><br><span class="line">        ...</span><br><span class="line">        <span class="keyword">if</span> (startSystemServer) &#123;</span><br><span class="line">            <span class="comment">// 启动SystemServer进程</span></span><br><span class="line">            startSystemServer(abiList, socketName);</span><br><span class="line">        &#125;</span><br><span class="line">        Log.i(TAG, <span class="string">"Accepting command socket connections"</span>);</span><br><span class="line">        <span class="comment">// 等待客户端请求</span></span><br><span class="line">        runSelectLoop(abiList);</span><br><span class="line">        closeServerSocket();</span><br><span class="line">    &#125; <span class="keyword">catch</span> (MethodAndArgsCaller caller) &#123;</span><br><span class="line">        caller.run();</span><br><span class="line">    &#125; <span class="keyword">catch</span> (RuntimeException ex) &#123;</span><br><span class="line">        Log.e(TAG, <span class="string">"Zygote died with exception"</span>, ex);</span><br><span class="line">        closeServerSocket();</span><br><span class="line">        <span class="keyword">throw</span> ex;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>ZygoteInit.java 的 registerZygoteSocket 方法：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">registerZygoteSocket</span><span class="params">(String socketName)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (sServerSocket == <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="keyword">int</span> fileDesc;</span><br><span class="line">        <span class="keyword">final</span> String fullSocketName = ANDROID_SOCKET_PREFIX + socketName;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            String env = System.getenv(fullSocketName);</span><br><span class="line">            fileDesc = Integer.parseInt(env);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (RuntimeException ex) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(fullSocketName + <span class="string">" unset or invalid"</span>, ex);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            FileDescriptor fd = <span class="keyword">new</span> FileDescriptor();</span><br><span class="line">            fd.setInt$(fileDesc);</span><br><span class="line">            <span class="comment">// 创建 Socket 客户端</span></span><br><span class="line">            sServerSocket = <span class="keyword">new</span> LocalServerSocket(fd);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException ex) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(</span><br><span class="line">                <span class="string">"Error binding to local socket '"</span> + fileDesc + <span class="string">"'"</span>, ex);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>ZygoteInit.java 的 startSystemServer 方法：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">boolean</span> <span class="title">startSystemServer</span><span class="params">(String abiList, String socketName)</span></span></span><br><span class="line"><span class="function">            <span class="keyword">throws</span> MethodAndArgsCaller, RuntimeException </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="comment">/* Hardcoded command line to start the system server */</span></span><br><span class="line">    <span class="comment">// SystemServer 启动参数</span></span><br><span class="line">    String args[] = &#123;</span><br><span class="line">        <span class="string">"--setuid=1000"</span>,</span><br><span class="line">        <span class="string">"--setgid=1000"</span>,</span><br><span class="line">        <span class="string">"--setgroups=1001,1002,1003,1004,1005,1006,1007,1008,1009,1010,1018,1021,1032,3001,3002,3003,3006,3007,3009,3010"</span>,</span><br><span class="line">        <span class="string">"--capabilities="</span> + capabilities + <span class="string">","</span> + capabilities,</span><br><span class="line">        <span class="string">"--nice-name=system_server"</span>,</span><br><span class="line">        <span class="string">"--runtime-args"</span>,</span><br><span class="line">        <span class="string">"com.android.server.SystemServer"</span>,</span><br><span class="line">    &#125;;</span><br><span class="line">    ZygoteConnection.Arguments parsedArgs = <span class="keyword">null</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> pid;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        parsedArgs = <span class="keyword">new</span> ZygoteConnection.Arguments(args);</span><br><span class="line">        ZygoteConnection.applyDebuggerSystemProperty(parsedArgs);</span><br><span class="line">        ZygoteConnection.applyInvokeWithSystemProperty(parsedArgs);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 调用 Zygote.java fock 出新线程，名字叫 system_server</span></span><br><span class="line">        pid = Zygote.forkSystemServer(</span><br><span class="line">                parsedArgs.uid, parsedArgs.gid,</span><br><span class="line">                parsedArgs.gids,</span><br><span class="line">                parsedArgs.debugFlags,</span><br><span class="line">                <span class="keyword">null</span>,</span><br><span class="line">                parsedArgs.permittedCapabilities,</span><br><span class="line">                parsedArgs.effectiveCapabilities);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (IllegalArgumentException ex) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(ex);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// pid 为 0 则为 fock 出来的子线程</span></span><br><span class="line">    <span class="keyword">if</span> (pid == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (hasSecondZygote(abiList)) &#123;</span><br><span class="line">            waitForSecondaryZygote(socketName);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 启动 SystemServer 进程</span></span><br><span class="line">        handleSystemServerProcess(parsedArgs);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><img src="/2020/07/14/Android-系统启动流程/sys_zygote.png" alt=""></p>
+<p>可以看到，这个过程中 zygote 首先启动了 AndroidRuntime 并通过它反射调用了 ZygoteInit.main() 方法，由此进入了 Java 的世界，因此 zygote 是 Java 层的第一个进程，也是其他 Java 进程的始祖，其他 Java 进程的创建必须依赖 zygote。<br>zygote 进程的任务分别是：</p>
+<ul>
+<li>1.创建 AppRuntime（继承自 AndroidRuntime）， 并调用它的 start 方法</li>
+<li>2.调用 AndroidRuntime 的 startVM() 方法创建 DVM（Dalvik Virtual Machine），并调用 startReg() 方法为 DVM 注册 JNI</li>
+<li>3.通过 JNI 调用 ZygoteInit.main() 方法，第一次进入 Java 的世界</li>
+<li>4.调用 registerZygoteSocket() 函数建立 Socket 通道，使 zygote 进程成为 Socket 服务端，并通过 runSelectLoop() 函数等待 ActivityManagerService 发送请求创建新的应用程序进程</li>
+<li>5.调用 startSystemServer() 函数 fock 出 system_server 进程</li>
+</ul>
+<h3 id="system-server进程-—-承载-framework-层核心业务"><a href="#system-server进程-—-承载-framework-层核心业务" class="headerlink" title="system_server进程 — 承载 framework 层核心业务"></a>system_server进程 — 承载 framework 层核心业务</h3><p>zygote 进程在启动的过程中会通过 startSystemServer 方法 fock 出了一个叫 system_server 的进程，然后再该方法内执行了 handleSystemServerProcess 方法：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">handleSystemServerProcess</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">          ZygoteConnection.Arguments parsedArgs)</span></span></span><br><span class="line"><span class="function">          <span class="keyword">throws</span> ZygoteInit.MethodAndArgsCaller </span>&#123;</span><br><span class="line">    <span class="comment">/** 由于 fock 出来的 system_server 进程会复制 zygote 进程的地址空间，因此它也得到了 zygote</span></span><br><span class="line"><span class="comment">    进程中的 Socket，这个 Socket 对它来说并无用处，这里将其关闭 **/</span></span><br><span class="line">    closeServerSocket();</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">if</span> (parsedArgs.invokeWith != <span class="keyword">null</span>) &#123;</span><br><span class="line">        ...</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        ClassLoader cl = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">if</span> (systemServerClasspath != <span class="keyword">null</span>) &#123;</span><br><span class="line">            cl = createSystemServerClassLoader(systemServerClasspath, parsedArgs.targetSdkVersion);</span><br><span class="line">            Thread.currentThread().setContextClassLoader(cl);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 出现新的类 RuntimeInit，调用了它的 zygoteInit 方法</span></span><br><span class="line">        RuntimeInit.zygoteInit(parsedArgs.targetSdkVersion, parsedArgs.remainingArgs, cl);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>RuntimeInit.java 的 zygoteInit 方法：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">zygoteInit</span><span class="params">(<span class="keyword">int</span> targetSdkVersion, String[] argv, ClassLoader classLoader)</span></span></span><br><span class="line"><span class="function">            <span class="keyword">throws</span> ZygoteInit.MethodAndArgsCaller </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (DEBUG) Slog.d(TAG, <span class="string">"RuntimeInit: Starting application from zygote"</span>);</span><br><span class="line">    Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, <span class="string">"RuntimeInit"</span>);</span><br><span class="line">    redirectLogStreams();</span><br><span class="line">    commonInit();</span><br><span class="line">    <span class="comment">/** 通过 Native 层中 AndroidRuntime.cpp 的 JNI 方法最终调用 app_main.cpp 的 onZygoteInit 方法</span></span><br><span class="line"><span class="comment">    启动 Binder 线程池， 使 system_server 进程可以使用 Binder 与其他进程通信 **/</span></span><br><span class="line">    nativeZygoteInit();</span><br><span class="line">    <span class="comment">// 继续往下调用</span></span><br><span class="line">    applicationInit(targetSdkVersion, argv, classLoader);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>RuntimeInit 的 applicationInit 方法：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">applicationInit</span><span class="params">(<span class="keyword">int</span> targetSdkVersion, String[] argv, ClassLoader classLoader)</span></span></span><br><span class="line"><span class="function">            <span class="keyword">throws</span> ZygoteInit.MethodAndArgsCaller </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    invokeStaticMain(args.startClass, args.startArgs, classLoader);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>RuntimeInit 的 invokeStaticMain 方法：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">invokeStaticMain</span><span class="params">(String className, String[] argv, ClassLoader classLoader)</span></span></span><br><span class="line"><span class="function">         <span class="keyword">throws</span> ZygoteInit.MethodAndArgsCaller </span>&#123;</span><br><span class="line">    Class&lt;?&gt; cl;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">/** className 为 ZygoteInit.java 中 startSystemServer 方法</span></span><br><span class="line"><span class="comment">        传递过来的 "com.android.server.SystemServer"，这里通过反射得到 SystemServer 类 **/</span></span><br><span class="line">        cl = Class.forName(className, <span class="keyword">true</span>, classLoader);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (ClassNotFoundException ex) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(</span><br><span class="line">            <span class="string">"Missing class when invoking static main "</span> + className, ex);</span><br><span class="line">    &#125;</span><br><span class="line">    Method m;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// 找到 SystemServer 类的 main 方法</span></span><br><span class="line">        m = cl.getMethod(<span class="string">"main"</span>, <span class="keyword">new</span> Class[] &#123; String[].class &#125;);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (NoSuchMethodException ex) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(</span><br><span class="line">            <span class="string">"Missing static main on "</span> + className, ex);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (SecurityException ex) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(</span><br><span class="line">            <span class="string">"Problem getting static main on "</span> + className, ex);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">int</span> modifiers = m.getModifiers();</span><br><span class="line">    <span class="keyword">if</span> (! (Modifier.isStatic(modifiers) &amp;&amp; Modifier.isPublic(modifiers))) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(</span><br><span class="line">            <span class="string">"Main method is not public and static on "</span> + className);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/** 将 main 方法包装在 ZygoteInit.MethodAndArgsCaller 类中并作为异常抛出</span></span><br><span class="line"><span class="comment">    捕获异常的地方在上一小节中 ZygoteInit.java 的 main 方法 **/</span></span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> ZygoteInit.MethodAndArgsCaller(m, argv);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>ZygoteInit.java 的 main 方法：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String argv[])</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    closeServerSocket();</span><br><span class="line">    &#125; <span class="keyword">catch</span> (MethodAndArgsCaller caller) &#123;</span><br><span class="line">        <span class="comment">// 接收到 caller 对象后调用它的 run 方法</span></span><br><span class="line">        caller.run();</span><br><span class="line">    &#125; <span class="keyword">catch</span> (RuntimeException ex) &#123;</span><br><span class="line">        Log.e(TAG, <span class="string">"Zygote died with exception"</span>, ex);</span><br><span class="line">        closeServerSocket();</span><br><span class="line">        <span class="keyword">throw</span> ex;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>ZygoteInit 的 MethodAndArgsCaller 类是一个 Exception 类，同时也实现了 Runnable 接口：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">MethodAndArgsCaller</span> <span class="keyword">extends</span> <span class="title">Exception</span></span></span><br><span class="line"><span class="class">        <span class="keyword">implements</span> <span class="title">Runnable</span> </span>&#123;</span><br><span class="line">        </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Method mMethod;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> String[] mArgs;</span><br><span class="line">        </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">MethodAndArgsCaller</span><span class="params">(Method method, String[] args)</span> </span>&#123;</span><br><span class="line">        mMethod = method;</span><br><span class="line">        mArgs = args;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// 调用传递过来的 mMethod</span></span><br><span class="line">            mMethod.invoke(<span class="keyword">null</span>, <span class="keyword">new</span> Object[] &#123; mArgs &#125;);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IllegalAccessException ex) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(ex);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InvocationTargetException ex) &#123;</span><br><span class="line">            ...</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这样，system_server 进程便启动起来并进入了 SystemServer.java 的 main 方法。</p>
+<h3 id="system-server-进程的执行过程"><a href="#system-server-进程的执行过程" class="headerlink" title="system_server 进程的执行过程"></a>system_server 进程的执行过程</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * The main entry point from zygote.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 调用 run 方法</span></span><br><span class="line">    <span class="keyword">new</span> SystemServer().run();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="comment">// 加载 libandroid_servers.so</span></span><br><span class="line">    System.loadLibrary(<span class="string">"android_servers"</span>);</span><br><span class="line">    ...</span><br><span class="line">    <span class="comment">// 创建 SystemServiceManager</span></span><br><span class="line">    mSystemServiceManager = <span class="keyword">new</span> SystemServiceManager(mSystemContext);</span><br><span class="line">    LocalServices.addService(SystemServiceManager.class, mSystemServiceManager);</span><br><span class="line">    ...    </span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        Trace.traceBegin(Trace.TRACE_TAG_SYSTEM_SERVER, <span class="string">"StartServices"</span>);</span><br><span class="line">        <span class="comment">// 启动引导服务</span></span><br><span class="line">        startBootstrapServices();</span><br><span class="line">        <span class="comment">// 启动核心服务</span></span><br><span class="line">        startCoreServices();</span><br><span class="line">        <span class="comment">// 启动其他服务</span></span><br><span class="line">        startOtherServices();</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Throwable ex) &#123;</span><br><span class="line">        ...</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        Trace.traceEnd(Trace.TRACE_TAG_SYSTEM_SERVER);</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到，在 run 方法中，主要执行了启动引导服务、核心服务和其他服务的任务，这些服务加起来一共有 80 多个，它们对应这个各种不同的功能，比如常用的ActivityManagerService、PowerManagerService、PackageManagerService、CameraService等等。</p>
+<h3 id="Launcher-——-Android-系统的“桌面”"><a href="#Launcher-——-Android-系统的“桌面”" class="headerlink" title="Launcher —— Android 系统的“桌面”"></a>Launcher —— Android 系统的“桌面”</h3><p>SystemServer.java 的 main 方法中，有一句：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">startOtherServices</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="comment">// 调用 AMS 的 systemReady 方法</span></span><br><span class="line">    mActivityManagerService.systemReady(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            ...</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>继续跟踪：ActivityManagerService.java：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">systemReady</span><span class="params">(<span class="keyword">final</span> Runnable goingCallback)</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">synchronized</span> (<span class="keyword">this</span>) &#123;</span><br><span class="line">        ...</span><br><span class="line">        <span class="comment">// 调用 ActivityStackSupervisor 的 resumeFocusedStackTopActivityLocked 方法</span></span><br><span class="line">        mStackSupervisor.resumeFocusedStackTopActivityLocked();</span><br><span class="line">        mUserController.sendUserSwitchBroadcastsLocked(-<span class="number">1</span>, currentUserId);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>继续跟踪：ActivityStackSupervisor.java：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">boolean</span> <span class="title">resumeFocusedStackTopActivityLocked</span><span class="params">(ActivityStack targetStack, ActivityRecord target,</span></span></span><br><span class="line"><span class="function"><span class="params">        ActivityOptions targetOptions)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (targetStack != <span class="keyword">null</span> &amp;&amp; isFocusedStack(targetStack)) &#123;</span><br><span class="line">        <span class="comment">// 调用 ActivityStack 的 resumeTopActivityUncheckedLocked 方法</span></span><br><span class="line">        <span class="keyword">return</span> targetStack.resumeTopActivityUncheckedLocked(target, targetOptions);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">final</span> ActivityRecord r = mFocusedStack.topRunningActivityLocked();</span><br><span class="line">    <span class="keyword">if</span> (r == <span class="keyword">null</span> || r.state != RESUMED) &#123;</span><br><span class="line">        mFocusedStack.resumeTopActivityUncheckedLocked(<span class="keyword">null</span>, <span class="keyword">null</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>继续跟踪：ActivityStack：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">boolean</span> <span class="title">resumeTopActivityUncheckedLocked</span><span class="params">(ActivityRecord prev, ActivityOptions options)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (mStackSupervisor.inResumeTopActivity) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">boolean</span> result = <span class="keyword">false</span>;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// Protect against recursion.</span></span><br><span class="line">        mStackSupervisor.inResumeTopActivity = <span class="keyword">true</span>;</span><br><span class="line">        <span class="keyword">if</span> (mService.mLockScreenShown == ActivityManagerService.LOCK_SCREEN_LEAVING) &#123;</span><br><span class="line">            mService.mLockScreenShown = ActivityManagerService.LOCK_SCREEN_HIDDEN;</span><br><span class="line">            mService.updateSleepIfNeededLocked();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 调用 resumeTopActivityInnerLocked 方法</span></span><br><span class="line">        result = resumeTopActivityInnerLocked(prev, options);</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        mStackSupervisor.inResumeTopActivity = <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">resumeTopActivityInnerLocked</span><span class="params">(ActivityRecord prev, ActivityOptions options)</span> </span>&#123;</span><br><span class="line">   ...</span><br><span class="line">   <span class="comment">// 回到 ActivityStackSupervisor 的 resumeHomeStackTask 方法</span></span><br><span class="line">   <span class="keyword">return</span> isOnHomeDisplay() &amp;&amp; mStackSupervisor.resumeHomeStackTask(returnTaskType, prev, <span class="string">"prevFinished"</span>);</span><br><span class="line">   ...                 </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>继续跟踪：ActivityStackSupervisor：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">boolean</span> <span class="title">resumeHomeStackTask</span><span class="params">(<span class="keyword">int</span> homeStackTaskType, ActivityRecord prev, String reason)</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">if</span> (r != <span class="keyword">null</span> &amp;&amp; !r.finishing) &#123;</span><br><span class="line">        mService.setFocusedActivityLocked(r, myReason);</span><br><span class="line">        <span class="keyword">return</span> resumeFocusedStackTopActivityLocked(mHomeStack, prev, <span class="keyword">null</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 再次回到 AMS 的 startHomeActivityLocked 方法</span></span><br><span class="line">    <span class="keyword">return</span> mService.startHomeActivityLocked(mCurrentUser, myReason);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">boolean</span> <span class="title">startHomeActivityLocked</span><span class="params">(<span class="keyword">int</span> userId, String reason)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (mFactoryTest == FactoryTest.FACTORY_TEST_LOW_LEVEL</span><br><span class="line">            &amp;&amp; mTopAction == <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 获取 Intent</span></span><br><span class="line">    Intent intent = getHomeIntent();</span><br><span class="line">    ActivityInfo aInfo = resolveActivityInfo(intent, STOCK_PM_FLAGS, userId);</span><br><span class="line">    <span class="keyword">if</span> (aInfo != <span class="keyword">null</span>) &#123;</span><br><span class="line">        intent.setComponent(<span class="keyword">new</span> ComponentName(aInfo.applicationInfo.packageName, aInfo.name));</span><br><span class="line">        aInfo = <span class="keyword">new</span> ActivityInfo(aInfo);</span><br><span class="line">        aInfo.applicationInfo = getAppInfoForUser(aInfo.applicationInfo, userId);</span><br><span class="line">        ProcessRecord app = getProcessRecordLocked(aInfo.processName,</span><br><span class="line">                aInfo.applicationInfo.uid, <span class="keyword">true</span>);</span><br><span class="line">        <span class="keyword">if</span> (app == <span class="keyword">null</span> || app.instrumentationClass == <span class="keyword">null</span>) &#123;</span><br><span class="line">            intent.setFlags(intent.getFlags() | Intent.FLAG_ACTIVITY_NEW_TASK);</span><br><span class="line">            <span class="comment">// 使用 mActivityStarter 启动 app，这里不再详细跟踪</span></span><br><span class="line">            mActivityStarter.startHomeActivityLocked(intent, aInfo, reason);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            Slog.wtf(TAG, <span class="string">"No home screen found for "</span> + intent, <span class="keyword">new</span> Throwable());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function">Intent <span class="title">getHomeIntent</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    Intent intent = <span class="keyword">new</span> Intent(mTopAction, mTopData != <span class="keyword">null</span> ? Uri.parse(mTopData) : <span class="keyword">null</span>);</span><br><span class="line">    intent.setComponent(mTopComponent);</span><br><span class="line">    intent.addFlags(Intent.FLAG_DEBUG_TRIAGED_MISSING);</span><br><span class="line">    <span class="keyword">if</span> (mFactoryTest != FactoryTest.FACTORY_TEST_LOW_LEVEL) &#123;</span><br><span class="line">        <span class="comment">// 添加 android.intent.category.HOME</span></span><br><span class="line">        intent.addCategory(Intent.CATEGORY_HOME);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> intent;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>最后通过一个隐式 Intent 使用 Intent.FLAG_ACTIVITY_NEW_TASK 模式启动了一个带 Intent.CATEGORY_HOME 标签的 Activity，而带有 Intent.CATEGORY_HOME 标签的 Activity 正是 Launcher App，它的 AndroidManifest 文件如下：<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">manifest</span></span></span><br><span class="line"><span class="tag">    <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">package</span>=<span class="string">"com.android.launcher3"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">uses-sdk</span> <span class="attr">android:targetSdkVersion</span>=<span class="string">"23"</span> <span class="attr">android:minSdkVersion</span>=<span class="string">"16"</span>/&gt;</span></span><br><span class="line">    </span><br><span class="line">    ...</span><br><span class="line">    </span><br><span class="line">    <span class="tag">&lt;<span class="name">application</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:allowBackup</span>=<span class="string">"@bool/enable_backup"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:backupAgent</span>=<span class="string">"com.android.launcher3.LauncherBackupAgentHelper"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:hardwareAccelerated</span>=<span class="string">"true"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:icon</span>=<span class="string">"@mipmap/ic_launcher_home"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:label</span>=<span class="string">"@string/app_name"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:largeHeap</span>=<span class="string">"@bool/config_largeHeap"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:restoreAnyVersion</span>=<span class="string">"true"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:supportsRtl</span>=<span class="string">"true"</span> &gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">activity</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:name</span>=<span class="string">"com.android.launcher3.Launcher"</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:launchMode</span>=<span class="string">"singleTask"</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:clearTaskOnLaunch</span>=<span class="string">"true"</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:stateNotNeeded</span>=<span class="string">"true"</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:theme</span>=<span class="string">"@style/Theme"</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:windowSoftInputMode</span>=<span class="string">"adjustPan"</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:screenOrientation</span>=<span class="string">"nosensor"</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:configChanges</span>=<span class="string">"keyboard|keyboardHidden|navigation"</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:resumeWhilePausing</span>=<span class="string">"true"</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:taskAffinity</span>=<span class="string">""</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:enabled</span>=<span class="string">"true"</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">intent-filter</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">action</span> <span class="attr">android:name</span>=<span class="string">"android.intent.action.MAIN"</span> /&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">category</span> <span class="attr">android:name</span>=<span class="string">"android.intent.category.HOME"</span> /&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">category</span> <span class="attr">android:name</span>=<span class="string">"android.intent.category.DEFAULT"</span> /&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">category</span> <span class="attr">android:name</span>=<span class="string">"android.intent.category.MONKEY"</span>/&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">intent-filter</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">activity</span>&gt;</span></span><br><span class="line">        </span><br><span class="line">        ...</span><br><span class="line">        </span><br><span class="line">    <span class="tag">&lt;/<span class="name">application</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">manifest</span>&gt;</span></span><br></pre></td></tr></table></figure></p>
+<p><img src="/2020/07/14/Android-系统启动流程/sys_system_server.png" alt=""></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><ul>
+<li>按下电源，固化在 ROM 中预定位置的 Bootloader 将会被加载到内存中</li>
+<li>Bootloader 初始化完软硬件环境后将 Linux 内核启动起来</li>
+<li>内核启动完成后会启动 init 进程</li>
+<li>init 进程会初始化并启动属性服务，并且解析并执行所有 init.rc 文件</li>
+<li>init 通过执行特定的 init.rc 文件启动 servermanager 进程，servermanager 被启动后会向 Binder 驱动发送命令让自己成为守护进程并管理所有上下文</li>
+<li>init 通过解析 init.rc 文件启动 zygote 进程</li>
+<li>zygote 进程启动的过程会创建 DVM 并为其注册 JNI 函数，然后创建服务端 Socket、启动 system_server 进程</li>
+<li>启动 system_server 进程的过程会创建 Binder 线程池使其具有 IPC 能力，然后启动 AMS 等各种系统服务</li>
+<li>AMS 启动 Launcher，Launcher 被启动后会将已安装应用的图标显示在界面上</li>
+</ul>
+<p><img src="/2020/07/14/Android-系统启动流程/sys_final.png" alt=""></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>您的支持是我原创的动力</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechatpay.jpg" alt="chuangWu 微信支付"/>
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/images/alipay.jpg" alt="chuangWu 支付宝"/>
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+
+<div>  
+     
+ 
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+      <strong>本文作者：</strong>chuangWu
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="/2020/07/14/Android-系统启动流程/" title="Android 系统启动流程">2020/07/14/Android-系统启动流程/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权： </strong>
+    本站文章均采用 <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0 CN</a> 许可协议，请勿用于商业，转载注明出处！
+  </li>
+</ul>
+
+</div>
+
+      
+        <div class="post-tags">
+          
+            <a href="/tags/android/" rel="tag"># android</a>
+          
+            <a href="/tags/系统启动流程/" rel="tag"># 系统启动流程</a>
+          
+            <a href="/tags/init/" rel="tag"># init</a>
+          
+            <a href="/tags/zygote/" rel="tag"># zygote</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/07/09/Android-Kotlin大全/" rel="next" title="Android Kotlin大全">
+                <i class="fa fa-chevron-left"></i> Android Kotlin大全
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+      <div>    
+      
+
+
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/head.png"
+                alt="chuangWu" />
+            
+              <p class="site-author-name" itemprop="name">chuangWu</p>
+              <p class="site-description motion-element" itemprop="description">选择大于努力</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">54</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">71</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#简介"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#架构图一"><span class="nav-number">1.1.</span> <span class="nav-text">架构图一</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#架构图二"><span class="nav-number">1.2.</span> <span class="nav-text">架构图二</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#架构解析"><span class="nav-number">1.3.</span> <span class="nav-text">架构解析</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#系统编译"><span class="nav-number">2.</span> <span class="nav-text">系统编译</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#系统启动"><span class="nav-number">3.</span> <span class="nav-text">系统启动</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Bootloader"><span class="nav-number">3.1.</span> <span class="nav-text">Bootloader</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#init"><span class="nav-number">3.2.</span> <span class="nav-text">init</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#解析和运行所有-init-rc-文件"><span class="nav-number">3.3.</span> <span class="nav-text">解析和运行所有 init.rc 文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#servicemanager进程-Binder-服务的总管"><span class="nav-number">3.4.</span> <span class="nav-text">servicemanager进程- Binder 服务的总管</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#zygote进程-Java-进程的始祖"><span class="nav-number">3.5.</span> <span class="nav-text">zygote进程- Java 进程的始祖</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#system-server进程-—-承载-framework-层核心业务"><span class="nav-number">3.6.</span> <span class="nav-text">system_server进程 — 承载 framework 层核心业务</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#system-server-进程的执行过程"><span class="nav-number">3.7.</span> <span class="nav-text">system_server 进程的执行过程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Launcher-——-Android-系统的“桌面”"><span class="nav-number">3.8.</span> <span class="nav-text">Launcher —— Android 系统的“桌面”</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">chuangWu</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      本站访客数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      人次
+    </span>
+  
+
+  
+    <span class="site-pv">
+      本站总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

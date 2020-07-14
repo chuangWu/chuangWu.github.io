@@ -5,7 +5,7 @@
   
 
 
-<html class="theme-next gemini use-motion" lang="zh-Hans">
+<html class="theme-next muse use-motion" lang="zh-Hans">
 <head>
   <meta charset="UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -96,7 +96,7 @@
   var NexT = window.NexT || {};
   var CONFIG = {
     root: '/',
-    scheme: 'Gemini',
+    scheme: 'Muse',
     version: '5.1.4',
     sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
     fancybox: true,
@@ -232,7 +232,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/16/Android框架实战：Router/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/16/Android-Architecture-Component（DataBinding）/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="chuangWu">
@@ -251,7 +251,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2020/01/16/Android框架实战：Router/" itemprop="url">Android框架实战：Router</a></h1>
+                <a class="post-title-link" href="/2020/06/16/Android-Architecture-Component（DataBinding）/" itemprop="url">Android-Architecture-Component（DataBinding）</a></h1>
         
 
         <div class="post-meta">
@@ -263,8 +263,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-01-16T18:03:38+08:00">
-                2020-01-16
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-06-16T10:27:36+08:00">
+                2020-06-16
               </time>
             
 
@@ -273,28 +273,6 @@
             
           </span>
 
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Android/" itemprop="url" rel="index">
-                    <span itemprop="name">Android</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
           
 
           
@@ -325,14 +303,12 @@
       
         
           
-          Router的定义路由，简单的来说就是映射页面直接跳转关系的。需要注意的是，这个映射关系需要在App启动的时候建立好。
-Router的优点
-解耦合：这个是最直观的。之前我们需要引入目标页面的Activity.class现在这些不需要要了。
-自由配置：这个是为了方便产品或者运维的。我们事先定义好页面的
+          简介DataBinding 是 Google 在 Jetpack 中推出的一款数据绑定的支持库，利用该库可以实现在页面组件中直接绑定应用程序的数据源。使其维护起来更加方便，架构更明确简介。
+如何使用启用 DataBinding首先设置使用 Databinding，在 app module 的 bui
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2020/01/16/Android框架实战：Router/#more" rel="contents">
+            <a class="btn" href="/2020/06/16/Android-Architecture-Component（DataBinding）/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -393,7 +369,7 @@ Router的优点
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/16/Glide源码解析-一-：简介/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/16/Android-Architecture-Component（LiveData）/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="chuangWu">
@@ -412,7 +388,7 @@ Router的优点
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2020/01/16/Glide源码解析-一-：简介/" itemprop="url">Glide源码解析(一)：简介</a></h1>
+                <a class="post-title-link" href="/2020/06/16/Android-Architecture-Component（LiveData）/" itemprop="url">Android-Architecture-Component（LiveData）</a></h1>
         
 
         <div class="post-meta">
@@ -424,8 +400,8 @@ Router的优点
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-01-16T18:00:31+08:00">
-                2020-01-16
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-06-16T10:27:15+08:00">
+                2020-06-16
               </time>
             
 
@@ -434,28 +410,6 @@ Router的优点
             
           </span>
 
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Android/" itemprop="url" rel="index">
-                    <span itemprop="name">Android</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
           
 
           
@@ -486,12 +440,18 @@ Router的优点
       
         
           
-          介绍下android开发中常用的图片框架，以及对比他们的优缺点。
-UILUIL 是一个老牌的图片加载框架，旨在提供一个强大的、灵活的和高度可定制的工具，以实现图像加载、缓存和显示功能。UIL 支持多线程图片加载，支持占位图和错误图、支持图片下载进度的监听，支持缓存不同尺寸图片，支持图片内存缓存和硬盘
+          简介简单地说，LiveData是一个数据持有类。它具有以下特点：
+
+数据可以被观察者订阅
+能够感知组件（Fragment、Activity、Service）的生命周期
+只有在组件出于激活状态（STARTED、RESUMED）才会通知观察者有数据更新
+
+优点
+能够保证数据和UI统一这个和LiveDat
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2020/01/16/Glide源码解析-一-：简介/#more" rel="contents">
+            <a class="btn" href="/2020/06/16/Android-Architecture-Component（LiveData）/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -552,7 +512,7 @@ UILUIL 是一个老牌的图片加载框架，旨在提供一个强大的、灵�
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/16/Android屏幕适配/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/16/Android-Architecture-Component（ViewModel）/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="chuangWu">
@@ -571,7 +531,7 @@ UILUIL 是一个老牌的图片加载框架，旨在提供一个强大的、灵�
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2020/01/16/Android屏幕适配/" itemprop="url">Android屏幕适配</a></h1>
+                <a class="post-title-link" href="/2020/06/16/Android-Architecture-Component（ViewModel）/" itemprop="url">Android-Architecture-Component（ViewModel）</a></h1>
         
 
         <div class="post-meta">
@@ -583,8 +543,8 @@ UILUIL 是一个老牌的图片加载框架，旨在提供一个强大的、灵�
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-01-16T17:57:00+08:00">
-                2020-01-16
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-06-16T10:27:01+08:00">
+                2020-06-16
               </time>
             
 
@@ -593,28 +553,6 @@ UILUIL 是一个老牌的图片加载框架，旨在提供一个强大的、灵�
             
           </span>
 
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Android/" itemprop="url" rel="index">
-                    <span itemprop="name">Android</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
           
 
           
@@ -645,12 +583,12 @@ UILUIL 是一个老牌的图片加载框架，旨在提供一个强大的、灵�
       
         
           
-          在Android开发中，由于Android碎片化严重，屏幕分辨率千奇百怪，而想要在各种分辨率的设备上显示基本一致的效果，适配成本越来越高。虽然Android官方提供了dp单位来适配，但其在各种奇怪分辨率下表现却不尽如人意，因此下面探索一种简单且低侵入的适配方式。
-传统dp适配方式的缺点android
+          简介ViewModel类是被设计用来以可感知生命周期的方式存储和管理 UI 相关数据，ViewModel中数据会一直存活即使 activity configuration发生变化，比如横竖屏切换的时候。
+数据持久化我们知道在屏幕旋转的 时候 会经历 activity 的销毁与重新创建，这里就涉及到数
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2020/01/16/Android屏幕适配/#more" rel="contents">
+            <a class="btn" href="/2020/06/16/Android-Architecture-Component（ViewModel）/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -711,7 +649,7 @@ UILUIL 是一个老牌的图片加载框架，旨在提供一个强大的、灵�
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/16/Android性能优化-一-：内存泄漏/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/05/28/Android-Architecture-Component（Lifecycle）/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="chuangWu">
@@ -730,7 +668,7 @@ UILUIL 是一个老牌的图片加载框架，旨在提供一个强大的、灵�
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2020/01/16/Android性能优化-一-：内存泄漏/" itemprop="url">Android性能优化(一)：内存泄漏</a></h1>
+                <a class="post-title-link" href="/2020/05/28/Android-Architecture-Component（Lifecycle）/" itemprop="url">Android Architecture Component（Lifecycle）</a></h1>
         
 
         <div class="post-meta">
@@ -742,8 +680,8 @@ UILUIL 是一个老牌的图片加载框架，旨在提供一个强大的、灵�
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-01-16T17:53:40+08:00">
-                2020-01-16
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-05-28T17:17:57+08:00">
+                2020-05-28
               </time>
             
 
@@ -752,28 +690,6 @@ UILUIL 是一个老牌的图片加载框架，旨在提供一个强大的、灵�
             
           </span>
 
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Android/" itemprop="url" rel="index">
-                    <span itemprop="name">Android</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
           
 
           
@@ -804,11 +720,12 @@ UILUIL 是一个老牌的图片加载框架，旨在提供一个强大的、灵�
       
         
           
-          内存泄漏场景Handler的错误使用Handler是开发中异步处理最常使用到的工具之一，但是如果错误地使用Handler 也极容易产生内存泄漏。123456789101112131415161718192021public class MainActivity extends AppCompatAc
+          简介Lifecycle，顾名思义，声明周期，简单的说就是将任何java对象都可以感知Activity声明周期。目的是为了减少耦合性。
+LifecycleLifecycleOwner先来看 LifecycleOwner 接口，这个接口定义就说明了某样东西是具有生命周期的。getLifecycle() 
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2020/01/16/Android性能优化-一-：内存泄漏/#more" rel="contents">
+            <a class="btn" href="/2020/05/28/Android-Architecture-Component（Lifecycle）/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -869,7 +786,7 @@ UILUIL 是一个老牌的图片加载框架，旨在提供一个强大的、灵�
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/16/Retrofit源码解析/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/04/16/阿里云运行服务端程序/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="chuangWu">
@@ -888,7 +805,7 @@ UILUIL 是一个老牌的图片加载框架，旨在提供一个强大的、灵�
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2020/01/16/Retrofit源码解析/" itemprop="url">Retrofit源码解析</a></h1>
+                <a class="post-title-link" href="/2020/04/16/阿里云运行服务端程序/" itemprop="url">阿里云运行服务端程序</a></h1>
         
 
         <div class="post-meta">
@@ -900,8 +817,8 @@ UILUIL 是一个老牌的图片加载框架，旨在提供一个强大的、灵�
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-01-16T17:50:24+08:00">
-                2020-01-16
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-04-16T16:05:39+08:00">
+                2020-04-16
               </time>
             
 
@@ -910,28 +827,6 @@ UILUIL 是一个老牌的图片加载框架，旨在提供一个强大的、灵�
             
           </span>
 
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Android/" itemprop="url" rel="index">
-                    <span itemprop="name">Android</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
           
 
           
@@ -962,16 +857,14 @@ UILUIL 是一个老牌的图片加载框架，旨在提供一个强大的、灵�
       
         
           
-          
-简介Retrofit 是一个 RESTful 的 HTTP 网络请求框架的封装。网络请求的工作本质上是 OkHttp 完成，而 Retrofit 仅负责 网络请求接口层的封装(请求参数、Header、Url 等信息)。
-流程
-源码分析
-创建Retrofit实例
-创建 网络请求接口实例 并 配置网络
+          安装JDK12# yum search java|grep jdk# yum install java-1.8.0-openjdk
+配置环境变量好像已经配置好了    
+https://www.jianshu.com/p/9e38b1a8b693
+https://www.cnblogs.com/mz
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2020/01/16/Retrofit源码解析/#more" rel="contents">
+            <a class="btn" href="/2020/04/16/阿里云运行服务端程序/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1032,7 +925,7 @@ UILUIL 是一个老牌的图片加载框架，旨在提供一个强大的、灵�
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/16/Android基础：布局重绘/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/04/10/ARouter源码解析：complier/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="chuangWu">
@@ -1051,7 +944,7 @@ UILUIL 是一个老牌的图片加载框架，旨在提供一个强大的、灵�
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2020/01/16/Android基础：布局重绘/" itemprop="url">Android基础：布局重绘</a></h1>
+                <a class="post-title-link" href="/2020/04/10/ARouter源码解析：complier/" itemprop="url">ARouter源码解析：complier</a></h1>
         
 
         <div class="post-meta">
@@ -1063,8 +956,8 @@ UILUIL 是一个老牌的图片加载框架，旨在提供一个强大的、灵�
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-01-16T17:32:33+08:00">
-                2020-01-16
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-04-10T11:17:21+08:00">
+                2020-04-10
               </time>
             
 
@@ -1073,28 +966,6 @@ UILUIL 是一个老牌的图片加载框架，旨在提供一个强大的、灵�
             
           </span>
 
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Android/" itemprop="url" rel="index">
-                    <span itemprop="name">Android</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
           
 
           
@@ -1125,16 +996,12 @@ UILUIL 是一个老牌的图片加载框架，旨在提供一个强大的、灵�
       
         
           
-          区别
-invalidate 在UI线程中使用。
-postInvalidate 在非UI线程中通知重绘。
-View 确定自身已经不适合现有区域时,调用requestLayout(),通知父View重新测量和绘制此View的位置。当View的LayoutParams发生改变时,也应该调用这个方法。
-
-r
+          今天这篇文章，我们就来分析编译时的arouter-complier的实现，看一下映射文件是如何生成的。
+基础知识按照注解的处理时期，分为两种类型：运行时和编译时，运行时注解处理会引起性能问题，编译时注解依赖APT(Annotation Processing Tools)实现，其原理是在类、函数、字段
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2020/01/16/Android基础：布局重绘/#more" rel="contents">
+            <a class="btn" href="/2020/04/10/ARouter源码解析：complier/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1195,7 +1062,7 @@ r
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/16/闲谈微信小程序开发/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/04/09/ARouter源码解析/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="chuangWu">
@@ -1214,7 +1081,7 @@ r
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2020/01/16/闲谈微信小程序开发/" itemprop="url">闲谈微信小程序开发</a></h1>
+                <a class="post-title-link" href="/2020/04/09/ARouter源码解析/" itemprop="url">ARouter源码解析</a></h1>
         
 
         <div class="post-meta">
@@ -1226,8 +1093,8 @@ r
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-01-16T17:27:56+08:00">
-                2020-01-16
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-04-09T17:30:02+08:00">
+                2020-04-09
               </time>
             
 
@@ -1236,28 +1103,6 @@ r
             
           </span>
 
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/wechat小程序/" itemprop="url" rel="index">
-                    <span itemprop="name">wechat小程序</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
           
 
           
@@ -1288,15 +1133,11 @@ r
       
         
           
-          
-什么是小程序微信创始人张小龙说：小程序是一种不需要下载安装即可使用的应用，它实现了应用“触手可及”的梦想，用户扫一扫后者搜一下即可打开应用。也提现了“用完即走”的理念，用户不用关系是否安装太多应用的问题。应用将无处不在，随时可用，担又无需安装卸载。
-了解小程序相关文档微信公众平台
-
-分为服务号、订
+          初始化使用 ARouter 的时候，都需要初始化，官方建议在Application的onCreate方法中进行初始化。12345if (isDebug()) &#123;              ARouter.openLog();    ARouter.openDebug();&#125;ARo
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2020/01/16/闲谈微信小程序开发/#more" rel="contents">
+            <a class="btn" href="/2020/04/09/ARouter源码解析/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1357,7 +1198,7 @@ r
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/16/Maven私有仓库搭建/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/20/EventBus源码解析/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="chuangWu">
@@ -1376,7 +1217,7 @@ r
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2020/01/16/Maven私有仓库搭建/" itemprop="url">Maven私有仓库搭建</a></h1>
+                <a class="post-title-link" href="/2020/03/20/EventBus源码解析/" itemprop="url">EventBus源码解析</a></h1>
         
 
         <div class="post-meta">
@@ -1388,8 +1229,8 @@ r
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-01-16T17:10:11+08:00">
-                2020-01-16
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-03-20T16:04:54+08:00">
+                2020-03-20
               </time>
             
 
@@ -1398,28 +1239,6 @@ r
             
           </span>
 
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Maven/" itemprop="url" rel="index">
-                    <span itemprop="name">Maven</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
           
 
           
@@ -1450,11 +1269,14 @@ r
       
         
           
-          前言私有服务器，是公司内部 Maven 项目经常需要的。通常会将公司自己内部通用的代码封装成类库，上传到内网服务器中。Nexus 是常用的私用 Maven 服务器， Nexus 被超过10万个开发团队所使用。本次搭建私有仓库用的是阿里云服务器，系统是 centos 7，Android Studio 
+          简介EventBus是一款由GreenRebot开发的事件发布-订阅总线，它简化了组件之间通信的复杂度。
+三个角色
+Event：事件，它可以是任意类型，EventBus会根据事件的类型，进行全局的事件分发。
+Subsciber：事件订阅者，在EventBus3.0之前，我们必须定义以onEvent开
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2020/01/16/Maven私有仓库搭建/#more" rel="contents">
+            <a class="btn" href="/2020/03/20/EventBus源码解析/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1515,7 +1337,7 @@ r
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/16/Weex基础：安装/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/20/Android性能优化-五-：体积优化/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="chuangWu">
@@ -1534,7 +1356,7 @@ r
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2020/01/16/Weex基础：安装/" itemprop="url">Weex基础：安装</a></h1>
+                <a class="post-title-link" href="/2020/03/20/Android性能优化-五-：体积优化/" itemprop="url">Android性能优化(五)：体积优化</a></h1>
         
 
         <div class="post-meta">
@@ -1546,8 +1368,8 @@ r
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-01-16T17:07:19+08:00">
-                2020-01-16
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-03-20T16:04:15+08:00">
+                2020-03-20
               </time>
             
 
@@ -1556,28 +1378,6 @@ r
             
           </span>
 
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Weex/" itemprop="url" rel="index">
-                    <span itemprop="name">Weex</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
           
 
           
@@ -1608,17 +1408,12 @@ r
       
         
           
-          安装Node环境点击进入Node.js官网
-
-安装完成可通过npm version查看对应版本
-
-安装weex-toolkit1npm install -g weex-toolkit
-安装weexpack1npm install -g weexpack
-创建工程1weexpack create ap
+          APK 瘦身优化的原因下载转化率包体积越小，用户下载等待的时间也会越短，所以下载转换成功率也就越高。现在很多大型的 App 一般都会有一个 Lite 版本的 App，这个也是出于下载转化率方面的考虑。
+应用市场Google Play 应用市场强制要求超过 100MB 的应用只能使用 APK 扩展文件
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2020/01/16/Weex基础：安装/#more" rel="contents">
+            <a class="btn" href="/2020/03/20/Android性能优化-五-：体积优化/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1679,7 +1474,7 @@ r
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/16/Gradle插件开发：基础篇/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/20/Android性能优化-四-：启动优化/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="chuangWu">
@@ -1698,7 +1493,7 @@ r
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2020/01/16/Gradle插件开发：基础篇/" itemprop="url">Gradle插件开发：基础篇</a></h1>
+                <a class="post-title-link" href="/2020/03/20/Android性能优化-四-：启动优化/" itemprop="url">Android性能优化(四)：启动优化</a></h1>
         
 
         <div class="post-meta">
@@ -1710,8 +1505,8 @@ r
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-01-16T16:59:35+08:00">
-                2020-01-16
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-03-20T16:04:08+08:00">
+                2020-03-20
               </time>
             
 
@@ -1720,28 +1515,6 @@ r
             
           </span>
 
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Gradle/" itemprop="url" rel="index">
-                    <span itemprop="name">Gradle</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
           
 
           
@@ -1772,17 +1545,11 @@ r
       
         
           
-          运行环境
-Android Studio 3.0.1
-classpath ‘com.android.tools.build:gradle:3.0.1’
-
-准备开始
-通过New Module，新建一个Java Library或者Android Library项目，名称为plugin
-重命名java目录为
-          ...
+          
+          
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2020/01/16/Gradle插件开发：基础篇/#more" rel="contents">
+            <a class="btn" href="/2020/03/20/Android性能优化-四-：启动优化/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1834,7 +1601,7 @@ classpath ‘com.android.tools.build:gradle:3.0.1’
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right"></i></a>
+    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -1884,7 +1651,7 @@ classpath ‘com.android.tools.build:gradle:3.0.1’
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">30</span>
+                  <span class="site-state-item-count">54</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -1906,7 +1673,7 @@ classpath ‘com.android.tools.build:gradle:3.0.1’
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">44</span>
+                  <span class="site-state-item-count">71</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -1961,7 +1728,7 @@ classpath ‘com.android.tools.build:gradle:3.0.1’
 
 
 
-  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
 
 
 
@@ -2080,13 +1847,6 @@ classpath ‘com.android.tools.build:gradle:3.0.1’
 
   
   
-
-
-  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
-
-  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
-
-
 
   
 

@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="android,源码解析,LeakCanary," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="基本原理在开始LeakCanary源码分析前，先来了解下Refercence及ReferenceQueue，它们是LeakCanary实现内存泄漏监听的核心。 ReferenceReference即引用，是一个泛型抽象类。Android中的SoftReference(软引用)、WeakReference(弱引用)、PhantomReference(虚引用)都是继承自Reference。来看下Ref">
+<meta name="keywords" content="android,源码解析,LeakCanary">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LeakCanary源码解析">
+<meta property="og:url" content="http://yoursite.com/2020/07/07/LeakCanary源码解析/index.html">
+<meta property="og:site_name" content="小小小青年">
+<meta property="og:description" content="基本原理在开始LeakCanary源码分析前，先来了解下Refercence及ReferenceQueue，它们是LeakCanary实现内存泄漏监听的核心。 ReferenceReference即引用，是一个泛型抽象类。Android中的SoftReference(软引用)、WeakReference(弱引用)、PhantomReference(虚引用)都是继承自Reference。来看下Ref">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/2020/07/07/LeakCanary源码解析/leak_canary.jpg">
+<meta property="og:updated_time" content="2020-07-08T05:48:14.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="LeakCanary源码解析">
+<meta name="twitter:description" content="基本原理在开始LeakCanary源码分析前，先来了解下Refercence及ReferenceQueue，它们是LeakCanary实现内存泄漏监听的核心。 ReferenceReference即引用，是一个泛型抽象类。Android中的SoftReference(软引用)、WeakReference(弱引用)、PhantomReference(虚引用)都是继承自Reference。来看下Ref">
+<meta name="twitter:image" content="http://yoursite.com/2020/07/07/LeakCanary源码解析/leak_canary.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/07/07/LeakCanary源码解析/"/>
+
+
+
+
+
+  <title>LeakCanary源码解析 | 小小小青年</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">小小小青年</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/07/07/LeakCanary源码解析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="chuangWu">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/head.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="小小小青年">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">LeakCanary源码解析</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-07-07T17:03:04+08:00">
+                2020-07-07
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv">本文总阅读量
+            <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>次
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="基本原理"><a href="#基本原理" class="headerlink" title="基本原理"></a>基本原理</h2><p>在开始LeakCanary源码分析前，先来了解下Refercence及ReferenceQueue，它们是LeakCanary实现内存泄漏监听的核心。</p>
+<h3 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h3><p>Reference即引用，是一个泛型抽象类。Android中的SoftReference(软引用)、WeakReference(弱引用)、PhantomReference(虚引用)都是继承自Reference。来看下Reference的几个主要成员变量。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">Reference</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 引用对象，被回收时置null</span></span><br><span class="line">    <span class="keyword">volatile</span> T referent;</span><br><span class="line">    <span class="comment">//保存即将被回收的reference对象</span></span><br><span class="line">    <span class="keyword">final</span> ReferenceQueue&lt;? <span class="keyword">super</span> T&gt; queue;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//在Enqueued状态下即引用加入队列时，指向下一个待处理Reference对象,默认为null</span></span><br><span class="line">    Reference queueNext;</span><br><span class="line">    <span class="comment">//在Pending状态下，待入列引用，默认为null</span></span><br><span class="line">    Reference&lt;?&gt; pendingNext;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>Reference有四种状态：Active、Pending、Enqueued、Inactive。声明的时候默认Active状态，四种状态的切换关系：</p>
+<ul>
+<li>queue不为空时:<br>GC回收referent时，将referent置为null，并将该Reference对象放入clear队列，状态变为Pending，此时queueNext为空，pendingNext不为空。<br>–&gt;GC会唤醒ReferenceQueueDaemon线程处理clear队列，将Reference对象放入queue队列，状态变为Enqueued，此时queueNext不为空，pendingNext为该Reference)。<br>–&gt;当queue调用poll()将该Reference对象出列后，状态变为Inactive，此时queueNext为一个新建虚引用(虚引用get返回null)，pendingNext为该Reference</li>
+<li>queue为空:<br>GC回收referent时，将referent置为null，状态变为Inactive，此时queueNext、pendingNext都为null</li>
+</ul>
+<h3 id="ReferenceQueue"><a href="#ReferenceQueue" class="headerlink" title="ReferenceQueue"></a>ReferenceQueue</h3><p>ReferenceQueue则是一个单向链表实现的队列数据结构，存储的是Reference对象。包含了入列enqueue、出列poll和移除remove操作</p>
+<h3 id="对象回收监听"><a href="#对象回收监听" class="headerlink" title="对象回收监听"></a>对象回收监听</h3><p>Reference配合ReferenceQueue就可以实现对象回收监听了，先通过一个示例来看看是怎么实现的。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//创建一个引用队列</span></span><br><span class="line">ReferenceQueue queue = <span class="keyword">new</span> ReferenceQueue();</span><br><span class="line"><span class="comment">//创建弱引用，并关联引用队列queue</span></span><br><span class="line">WeakReference reference = <span class="keyword">new</span> WeakReference(<span class="keyword">new</span> Object(),queue);</span><br><span class="line">System.out.println(reference);</span><br><span class="line">System.gc();</span><br><span class="line"><span class="comment">//当reference被成功回收后，可以从queue中获取到该引用</span></span><br><span class="line">System.out.println(queue.remove());</span><br></pre></td></tr></table></figure></p>
+<p>示例中的对象当然是可以正常回收的，所以回收后可以在关联的引用队列queue中获取到该引用。反之，若某个应该被回收的对象，GC结束后在queue中未找到该引用，则表明该引用存在内存泄漏风险，这也就是LeakCanary的基本原理了。</p>
+<h2 id="源码分析"><a href="#源码分析" class="headerlink" title="源码分析"></a>源码分析</h2><h3 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h3><p>2.0之前的版本接入过程除了在build.gradle中引入项目外，还需要调用LeakCanary.install(this);来进行初始化工作。在2.0之后的版本只需要在build.gradle引入项目就完事了。那么问题来了：2.0之后的版本初始化工作是在哪里完成的呢？<br>  找了许久，终于在项目工程：leakcanary-object-watcher-android的manifest文件中发现了秘密：<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">application</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">provider</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:name</span>=<span class="string">"leakcanary.internal.AppWatcherInstaller$MainProcess"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:authorities</span>=<span class="string">"$&#123;applicationId&#125;.leakcanary-installer"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:enabled</span>=<span class="string">"@bool/leak_canary_watcher_auto_install"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:exported</span>=<span class="string">"false"</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">application</span>&gt;</span></span><br></pre></td></tr></table></figure></p>
+<p>这里注册了一个继承自ContentProvider的AppWatcherInstaller。我们知道在app启动时，会先调用注册的ContentProvider的onCreate完成初始化，在AppWatcherInstaller.onCreate中果然找到了熟悉的install方法：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">override fun <span class="title">onCreate</span><span class="params">()</span>: Boolean </span>&#123;</span><br><span class="line">    val application = context!!.applicationContext as Application</span><br><span class="line">    AppWatcher.manualInstall(application)</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">true</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>调用链：AppWatcher.manualInstall–&gt;InternalAppWatcher.install。具体的初始化逻辑是在InternalAppWatcher，来看源码：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">fun <span class="title">install</span><span class="params">(application: Application)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//确保在主线程，否则抛出UnsupportedOperationException异常</span></span><br><span class="line">    checkMainThread()</span><br><span class="line">    <span class="comment">//确保application已赋值，application是lateinit修饰的延迟初始化变量</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">this</span>::application.isInitialized) &#123;</span><br><span class="line">      <span class="keyword">return</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//leakcanary日志初始化</span></span><br><span class="line">    SharkLog.logger = DefaultCanaryLog()</span><br><span class="line">    InternalAppWatcher.application = application</span><br><span class="line">    <span class="comment">//日志配置初始化</span></span><br><span class="line">    val configProvider = &#123; AppWatcher.config &#125;</span><br><span class="line">    <span class="comment">//Activity内存泄漏监听器初始化</span></span><br><span class="line">    ActivityDestroyWatcher.install(application, objectWatcher, configProvider)</span><br><span class="line">    <span class="comment">//Fragment内存泄漏监听器初始化</span></span><br><span class="line">    FragmentDestroyWatcher.install(application, objectWatcher, configProvider)</span><br><span class="line">    <span class="comment">//注册内存泄漏事件回调</span></span><br><span class="line">    onAppWatcherInstalled(application)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>ContentProvider的核心方法CURD在AppWatcherInstaller都是空实现，只用到了onCreate。原来ContentProvider还可以这么玩，新姿势get。需要注意的是ContentProvider.onCreate调用时机介于Application的attachBaseContext和onCreate之间，所以不能依赖之后初始化的其他SDK。</p>
+<h3 id="Activity监听"><a href="#Activity监听" class="headerlink" title="Activity监听"></a>Activity监听</h3><p>在前面初始过程中，分别创建了针对Activity及Fragment的监听器。我们这里以Activity监听为例进行分析，Fragment监听除了生命周期监听方式不同外后面的流程都是一样的。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">companion object &#123;</span><br><span class="line">    <span class="function">fun <span class="title">install</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">      application: Application,</span></span></span><br><span class="line"><span class="function"><span class="params">      objectWatcher: ObjectWatcher,</span></span></span><br><span class="line"><span class="function"><span class="params">      configProvider: ()</span> -&gt; Config</span></span><br><span class="line"><span class="function">    ) </span>&#123;</span><br><span class="line">        <span class="comment">//实例化ActivityDestroyWatcher</span></span><br><span class="line">      val activityDestroyWatcher =</span><br><span class="line">        ActivityDestroyWatcher(objectWatcher, configProvider)</span><br><span class="line">        <span class="comment">//注册ActivityLifecycle监听</span></span><br><span class="line">      application.registerActivityLifecycleCallbacks(activityDestroyWatcher.lifecycleCallbacks)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>registerActivityLifecycleCallbacks是Android Application的一个方法，注册了该方法，可以通过回调获取app中每一个Activity的生命周期变化。再来看看ActivityDestroyWatcher对生命周期回调的处理：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> val lifecycleCallbacks =</span><br><span class="line">    object : Application.<span class="function">ActivityLifecycleCallbacks by <span class="title">noOpDelegate</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      <span class="function">override fun <span class="title">onActivityDestroyed</span><span class="params">(activity: Activity)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (configProvider().watchActivities) &#123;</span><br><span class="line">          objectWatcher.watch(</span><br><span class="line">              activity, <span class="string">"$&#123;activity::class.java.name&#125; received Activity#onDestroy() callback"</span></span><br><span class="line">          )</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>ActivityLifecycleCallbacks生命周期回调有那么多，为什么只用重写其中一个？关键在于by noOpDelegate(),通过类委托机制将其他回调实现都交给noOpDelegate，而noOpDelegate是一个空实现的动态代理。新姿势get+1，在遇到只需要实现接口的部分方法时，就可以这么玩了，其他方法实现都委托给空实现代理类就好了。</p>
+<p>接着看监听到Activity onDestroy后的处理:<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> val lifecycleCallbacks =</span><br><span class="line">    object : Application.<span class="function">ActivityLifecycleCallbacks by <span class="title">noOpDelegate</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      <span class="function">override fun <span class="title">onActivityDestroyed</span><span class="params">(activity: Activity)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (configProvider().watchActivities) &#123;</span><br><span class="line">          objectWatcher.watch(</span><br><span class="line">              activity, <span class="string">"$&#123;activity::class.java.name&#125; received Activity#onDestroy() callback"</span></span><br><span class="line">          )</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>通过ObjectWatcher来监听该Activity，即认为该Activity实例应该被销毁。如果不能正常销毁则表明存在内存泄漏。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Synchronized</span> <span class="function">fun <span class="title">watch</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">    watchedObject: Any,</span></span></span><br><span class="line"><span class="function"><span class="params">    description: String</span></span></span><br><span class="line"><span class="function"><span class="params">  )</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (!isEnabled()) &#123;</span><br><span class="line">      <span class="keyword">return</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//@1.清空queue，即移除之前已回收的引用</span></span><br><span class="line">    removeWeaklyReachableObjects()</span><br><span class="line">    <span class="comment">//生成UUID</span></span><br><span class="line">    val key = UUID.randomUUID()</span><br><span class="line">        .toString()</span><br><span class="line">    <span class="comment">//记录当前时间</span></span><br><span class="line">    val watchUptimeMillis = clock.uptimeMillis()</span><br><span class="line">    <span class="comment">//将当前Activity对象封装成KeyedWeakReference，并关联引用队列queue</span></span><br><span class="line">    <span class="comment">//KeyedWeakReference继承自WeakReference，封装了用于监听对象的辅助信息</span></span><br><span class="line">    val reference =</span><br><span class="line">      KeyedWeakReference(watchedObject, key, description, watchUptimeMillis, queue)</span><br><span class="line">    <span class="comment">//输出日志</span></span><br><span class="line">    SharkLog.d &#123;</span><br><span class="line">      <span class="string">"Watching "</span> +</span><br><span class="line">          (<span class="keyword">if</span> (watchedObject is Class&lt;*&gt;) watchedObject.toString() <span class="keyword">else</span> <span class="string">"instance of $&#123;watchedObject.javaClass.name&#125;"</span>) +</span><br><span class="line">          (<span class="keyword">if</span> (description.isNotEmpty()) <span class="string">" ($description)"</span> <span class="keyword">else</span> <span class="string">""</span>) +</span><br><span class="line">          <span class="string">" with key $key"</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//将弱引用reference存入监听列表watchedObjects</span></span><br><span class="line">    watchedObjects[key] = reference</span><br><span class="line">    <span class="comment">//@2.进行一次后台检查任务，判断引用对象是否未被回收</span></span><br><span class="line">    checkRetainedExecutor.execute &#123;</span><br><span class="line">      moveToRetained(key)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h4 id="清空queue，即移除之前已回收的引用。"><a href="#清空queue，即移除之前已回收的引用。" class="headerlink" title="清空queue，即移除之前已回收的引用。"></a>清空queue，即移除之前已回收的引用。</h4><p>这个方法很重要，第一次调用是清除之前的已回收对象，后面还会再次调用该方法判断引用是否正常回收。<br>  这里涉及到的两个重要变量：</p>
+<ul>
+<li>queue 即引用队列ReferenceQueue</li>
+<li>watchedObjects 所有监听Reference对象的map,key为引用对象对应的UUID，value为Reference对象</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> fun <span class="title">removeWeaklyReachableObjects</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    var ref: KeyedWeakReference?</span><br><span class="line">    <span class="keyword">do</span> &#123;</span><br><span class="line">      <span class="comment">//遍历引用队列</span></span><br><span class="line">      ref = queue.poll() as KeyedWeakReference?</span><br><span class="line">      <span class="comment">//将引用队列中的Reference对象从监听列表watchedObjects中移除</span></span><br><span class="line">      <span class="keyword">if</span> (ref != <span class="keyword">null</span>) &#123;</span><br><span class="line">        watchedObjects.remove(ref.key)</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">while</span> (ref != <span class="keyword">null</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="进行一次后台检查任务moveToRetained，5秒后判断引用对象是否未被回收。"><a href="#进行一次后台检查任务moveToRetained，5秒后判断引用对象是否未被回收。" class="headerlink" title="进行一次后台检查任务moveToRetained，5秒后判断引用对象是否未被回收。"></a>进行一次后台检查任务moveToRetained，5秒后判断引用对象是否未被回收。</h4><p>该任务是延迟5s后执行的<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> val checkRetainedExecutor = Executor &#123;</span><br><span class="line">    <span class="comment">//val watchDurationMillis: Long = TimeUnit.SECONDS.toMillis(5),</span></span><br><span class="line">    mainHandler.postDelayed(it, AppWatcher.config.watchDurationMillis)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Synchronized</span> <span class="function"><span class="keyword">private</span> fun <span class="title">moveToRetained</span><span class="params">(key: String)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//遍历引用队列，并将引用队列中的引用从监听列表watchedObjects中移除</span></span><br><span class="line">    removeWeaklyReachableObjects()</span><br><span class="line">    <span class="comment">//若对象未能成功移除，则表明引用对象可能存在内存泄漏</span></span><br><span class="line">    val retainedRef = watchedObjects[key]</span><br><span class="line">    <span class="keyword">if</span> (retainedRef != <span class="keyword">null</span>) &#123;</span><br><span class="line">      retainedRef.retainedUptimeMillis = clock.uptimeMillis()</span><br><span class="line">      <span class="comment">//@3.onObjectRetainedListeners内存泄漏事件回调</span></span><br><span class="line">      onObjectRetainedListeners.forEach &#123; it.onObjectRetained() &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在这里理一下moveToRetained的处理逻辑：</p>
+<ul>
+<li>正常情况：Activity对象被GC回收掉进入引用队列queue，通过removeWeaklyReachableObjects方法遍历queue获取该引用对象后，将其从监听列表watchedObjects中移除。所以watchedObjects[key]也就无法获取到引用对象了。</li>
+<li>异常情况：Activity对象onDestroy后未能被GC回收掉，所以在引用队列queue中也就找不到该对象，也就是说监听列表watchedObjects中该对象没有被删掉。通过watchedObjects[key]可以拿到该引用对象，即可以判断该引用对象存在内存泄漏问题。</li>
+</ul>
+<h4 id="onObjectRetainedListeners内存泄漏事件回调"><a href="#onObjectRetainedListeners内存泄漏事件回调" class="headerlink" title="onObjectRetainedListeners内存泄漏事件回调"></a>onObjectRetainedListeners内存泄漏事件回调</h4><p>发现内存泄漏对象后会调用onObjectRetainedListeners监听回调，进行后续处理。那么这个onObjectRetainedListeners是在哪里实现的呢？<br>在前面InternalAppWatcher.install初始化时，InternalAppWatcher的初始化方法onAppWatcherInstalled()中初始化了该监听。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">init &#123;</span><br><span class="line">    val internalLeakCanary = <span class="keyword">try</span> &#123;</span><br><span class="line">      val leakCanaryListener = Class.forName(<span class="string">"leakcanary.internal.InternalLeakCanary"</span>)</span><br><span class="line">      leakCanaryListener.getDeclaredField(<span class="string">"INSTANCE"</span>)</span><br><span class="line">          .get(<span class="keyword">null</span>)</span><br><span class="line">    &#125; <span class="keyword">catch</span> (ignored: Throwable) &#123;</span><br><span class="line">      NoLeakCanary</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@kotlin</span>.Suppress(<span class="string">"UNCHECKED_CAST"</span>)</span><br><span class="line">    onAppWatcherInstalled = <span class="function">internalLeakCanary <span class="title">as</span> <span class="params">(Application)</span> -&gt; Unit</span></span><br><span class="line"><span class="function">&#125;</span></span><br></pre></td></tr></table></figure></p>
+<p>我们发现这里通过反射获取InternalLeakCanary.INSTANCE单列对象，这个类位于另一个包leakcanary-android-core，所以用了反射。由于InternalLeakCanary是一个函数对象，onAppWatcherInstalled()对应的调用方法为invoke()来完成监听注册。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">override fun <span class="title">invoke</span><span class="params">(application: Application)</span> </span>&#123;</span><br><span class="line">    _application = application</span><br><span class="line">    <span class="comment">//检查是否debug构建模式</span></span><br><span class="line">    checkRunningInDebuggableBuild()</span><br><span class="line">    <span class="comment">//注册监听</span></span><br><span class="line">    AppWatcher.objectWatcher.addOnObjectRetainedListener(<span class="keyword">this</span>)</span><br><span class="line">    <span class="comment">//创建AndroidHeapDumper对象，用于虚拟机dump hprof产生内存快照文件</span></span><br><span class="line">    val heapDumper = AndroidHeapDumper(application, createLeakDirectoryProvider(application))</span><br><span class="line">    <span class="comment">//GcTrigger通过Runtime.getRuntime().gc()触发GC</span></span><br><span class="line">    val gcTrigger = GcTrigger.Default</span><br><span class="line">    val configProvider = &#123; LeakCanary.config &#125;</span><br><span class="line">    <span class="comment">//创建子线程及对应looper</span></span><br><span class="line">    val handlerThread = HandlerThread(LEAK_CANARY_THREAD_NAME)</span><br><span class="line">    handlerThread.start()</span><br><span class="line">    val backgroundHandler = Handler(handlerThread.looper)</span><br><span class="line">    <span class="comment">//HeapDumpTrigger监听注册</span></span><br><span class="line">    heapDumpTrigger = HeapDumpTrigger(</span><br><span class="line">        application, backgroundHandler, AppWatcher.objectWatcher, gcTrigger, heapDumper,</span><br><span class="line">        configProvider</span><br><span class="line">    )</span><br><span class="line">    <span class="comment">//注册应用可见监听</span></span><br><span class="line">    application.registerVisibilityListener &#123; applicationVisible -&gt;</span><br><span class="line">      <span class="keyword">this</span>.applicationVisible = applicationVisible</span><br><span class="line">      heapDumpTrigger.onApplicationVisibilityChanged(applicationVisible)</span><br><span class="line">    &#125;</span><br><span class="line">    registerResumedActivityListener(application)</span><br><span class="line">    addDynamicShortcut(application)</span><br><span class="line"></span><br><span class="line">    disableDumpHeapInTests()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>当ObjectWatcher中moveToRetained发现未回收对象后，通过回调onObjectRetained()处理时，调用的就是这里注册的HeapDumpTrigger.onObjectRetained()。处理调用链较长,直接看关键方法：<br>–&gt;onObjectRetained–&gt;scheduleRetainedObjectCheck–&gt;checkRetainedObjects<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> fun <span class="title">checkRetainedObjects</span><span class="params">(reason: String)</span> </span>&#123;</span><br><span class="line">    ...<span class="comment">//代码省略</span></span><br><span class="line">    <span class="comment">//监听器中未回收对象个数</span></span><br><span class="line">    var retainedReferenceCount = objectWatcher.retainedObjectCount</span><br><span class="line">    <span class="comment">//执行一次GC，再更新未回收对象个数</span></span><br><span class="line">    <span class="keyword">if</span> (retainedReferenceCount &gt; <span class="number">0</span>) &#123;</span><br><span class="line">      gcTrigger.runGc()</span><br><span class="line">      retainedReferenceCount = objectWatcher.retainedObjectCount</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//若对象个数未达到阈值5，返回</span></span><br><span class="line">    <span class="keyword">if</span> (checkRetainedCount(retainedReferenceCount, config.retainedVisibleThreshold)) <span class="keyword">return</span></span><br><span class="line"></span><br><span class="line">    ...<span class="comment">//代码省略，60s内只会执行一次</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//核心方法,获取内存快照</span></span><br><span class="line">    dumpHeap(retainedReferenceCount, retry = <span class="keyword">true</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> fun <span class="title">dumpHeap</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">    retainedReferenceCount: Int,</span></span></span><br><span class="line"><span class="function"><span class="params">    retry: Boolean</span></span></span><br><span class="line"><span class="function"><span class="params">  )</span> </span>&#123;</span><br><span class="line">    ...<span class="comment">//代码省略</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">//获取当前内存快照hprof文件</span></span><br><span class="line">    val heapDumpFile = heapDumper.dumpHeap()</span><br><span class="line">    ...<span class="comment">//省略hprof获取失败处理</span></span><br><span class="line">    lastDisplayedRetainedObjectCount = <span class="number">0</span></span><br><span class="line">    lastHeapDumpUptimeMillis = SystemClock.uptimeMillis()</span><br><span class="line">    <span class="comment">//清理之前注册的监听</span></span><br><span class="line">    objectWatcher.clearObjectsWatchedBefore(heapDumpUptimeMillis)</span><br><span class="line">    <span class="comment">//开启hprof分析Service，解析hprof文件生成报告</span></span><br><span class="line">    HeapAnalyzerService.runAnalysis(application, heapDumpFile)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="hprof文件解析"><a href="#hprof文件解析" class="headerlink" title="hprof文件解析"></a>hprof文件解析</h3><p>在上面讲到的内存泄漏回调处理中，生成了hprof文件，并开启一个服务来解析该文件。调用链：HeapAnalyzerService.analyzeHeap–&gt;HeapAnalyzer.analyze。该方法实现了解析hprof文件找到内存泄漏对象，并计算对象到GC roots的最短路径，输出报告。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">fun <span class="title">analyze</span><span class="params">(...<span class="comment">/*参数省略*/</span>)</span>: HeapAnalysis </span>&#123;</span><br><span class="line">    ...<span class="comment">//代码省略</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">try</span> &#123;</span><br><span class="line">      <span class="comment">//PARSING_HEAP_DUMP解析状态回调</span></span><br><span class="line">      listener.onAnalysisProgress(PARSING_HEAP_DUMP)</span><br><span class="line">      <span class="comment">//开始解析hprof文件</span></span><br><span class="line">      Hprof.open(heapDumpFile)</span><br><span class="line">          .use &#123; hprof -&gt;</span><br><span class="line">            <span class="comment">//从文件中解析获取对象关系图结构graph</span></span><br><span class="line">            <span class="comment">//并获取图中的所有GC roots根节点</span></span><br><span class="line">            val graph = HprofHeapGraph.indexHprof(hprof, proguardMapping)</span><br><span class="line">            <span class="comment">//创建FindLeakInput对象</span></span><br><span class="line">            <span class="comment">//@4.查找内存泄漏对象</span></span><br><span class="line">            val helpers =</span><br><span class="line">              FindLeakInput(graph, referenceMatchers, computeRetainedHeapSize, objectInspectors)</span><br><span class="line">            helpers.analyzeGraph(</span><br><span class="line">                metadataExtractor, leakingObjectFinder, heapDumpFile, analysisStartNanoTime</span><br><span class="line">            )</span><br><span class="line">          &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (exception: Throwable) &#123;</span><br><span class="line">      ...<span class="comment">//省略解析异常处理</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h4 id="查找内存泄漏对象"><a href="#查找内存泄漏对象" class="headerlink" title="查找内存泄漏对象"></a>查找内存泄漏对象</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> fun FindLeakInput.analyzeGraph(...<span class="comment">/*参数省略*/</span>): HeapAnalysisSuccess &#123;</span><br><span class="line">    ...<span class="comment">//代码省略</span></span><br><span class="line">    <span class="comment">//通过过滤graph中的KeyedWeakReference类型对象来</span></span><br><span class="line">    <span class="comment">//找到对应的内存泄漏对象</span></span><br><span class="line">    val leakingObjectIds = leakingObjectFinder.findLeakingObjectIds(graph)</span><br><span class="line">    <span class="comment">//@5.计算内存泄漏对象到GC roots的路径</span></span><br><span class="line">    val (applicationLeaks, libraryLeaks) = findLeaks(leakingObjectIds)</span><br><span class="line">    <span class="comment">//输出最终hprof分析结果</span></span><br><span class="line">    <span class="keyword">return</span> HeapAnalysisSuccess(...<span class="comment">/*参数省略*/</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="计算内存泄漏对象到GC-roots的路径"><a href="#计算内存泄漏对象到GC-roots的路径" class="headerlink" title="计算内存泄漏对象到GC roots的路径"></a>计算内存泄漏对象到GC roots的路径</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> fun FindLeakInput.findLeaks(leakingObjectIds: Set&lt;Long&gt;): Pair&lt;List&lt;ApplicationLeak&gt;, List&lt;LibraryLeak&gt;&gt; &#123;</span><br><span class="line">    val pathFinder = PathFinder(graph, listener, referenceMatchers)</span><br><span class="line">    <span class="comment">//计算并获取目标对象到GC roots的最短路径</span></span><br><span class="line">    val pathFindingResults =</span><br><span class="line">      pathFinder.findPathsFromGcRoots(leakingObjectIds, computeRetainedHeapSize)</span><br><span class="line"></span><br><span class="line">    SharkLog.d &#123; <span class="string">"Found $&#123;leakingObjectIds.size&#125; retained objects"</span> &#125;</span><br><span class="line">    <span class="comment">//将这些内存泄漏对象的最短路径合并成树结构返回。</span></span><br><span class="line">    <span class="keyword">return</span> buildLeakTraces(pathFindingResults)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最终在可视化界面中将hprof分析结果HeapAnalysisSuccess展示出来：</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><img src="/2020/07/07/LeakCanary源码解析/leak_canary.jpg" alt=" "></p>
+<ul>
+<li>注册监听Activity生命周期onDestroy事件</li>
+<li>在Activity onDestroy事件回调中创建KeyedWeakReference对象，并关联ReferenceQueue</li>
+<li>延时5秒检查目标对象是否回收</li>
+<li>未回收则开启服务，dump heap获取内存快照hprof文件</li>
+<li>解析hprof文件根据KeyedWeakReference类型过滤找到内存泄漏对象</li>
+<li>计算对象到GC roots的最短路径，并合并所有最短路径为一棵树</li>
+<li>输出分析结果，并根据分析结果展示到可视化页面</li>
+</ul>
+<p>除了这些外，LeakCanary中代码风格同样值得学习，包括巧用ContentProvider初始化，kolint类委托进行选择性方法实现等。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>您的支持是我原创的动力</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechatpay.jpg" alt="chuangWu 微信支付"/>
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/images/alipay.jpg" alt="chuangWu 支付宝"/>
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+
+<div>  
+     
+ 
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+      <strong>本文作者：</strong>chuangWu
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="/2020/07/07/LeakCanary源码解析/" title="LeakCanary源码解析">2020/07/07/LeakCanary源码解析/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权： </strong>
+    本站文章均采用 <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0 CN</a> 许可协议，请勿用于商业，转载注明出处！
+  </li>
+</ul>
+
+</div>
+
+      
+        <div class="post-tags">
+          
+            <a href="/tags/android/" rel="tag"># android</a>
+          
+            <a href="/tags/源码解析/" rel="tag"># 源码解析</a>
+          
+            <a href="/tags/LeakCanary/" rel="tag"># LeakCanary</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/07/06/App启动流程分析/" rel="next" title="App启动流程分析">
+                <i class="fa fa-chevron-left"></i> App启动流程分析
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/07/09/Android-Kotlin大全/" rel="prev" title="Android Kotlin大全">
+                Android Kotlin大全 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+      <div>    
+      
+
+
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/head.png"
+                alt="chuangWu" />
+            
+              <p class="site-author-name" itemprop="name">chuangWu</p>
+              <p class="site-description motion-element" itemprop="description">选择大于努力</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">54</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">71</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#基本原理"><span class="nav-number">1.</span> <span class="nav-text">基本原理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Reference"><span class="nav-number">1.1.</span> <span class="nav-text">Reference</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ReferenceQueue"><span class="nav-number">1.2.</span> <span class="nav-text">ReferenceQueue</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#对象回收监听"><span class="nav-number">1.3.</span> <span class="nav-text">对象回收监听</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#源码分析"><span class="nav-number">2.</span> <span class="nav-text">源码分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#初始化"><span class="nav-number">2.1.</span> <span class="nav-text">初始化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Activity监听"><span class="nav-number">2.2.</span> <span class="nav-text">Activity监听</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#清空queue，即移除之前已回收的引用。"><span class="nav-number">2.2.1.</span> <span class="nav-text">清空queue，即移除之前已回收的引用。</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#进行一次后台检查任务moveToRetained，5秒后判断引用对象是否未被回收。"><span class="nav-number">2.2.2.</span> <span class="nav-text">进行一次后台检查任务moveToRetained，5秒后判断引用对象是否未被回收。</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#onObjectRetainedListeners内存泄漏事件回调"><span class="nav-number">2.2.3.</span> <span class="nav-text">onObjectRetainedListeners内存泄漏事件回调</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#hprof文件解析"><span class="nav-number">2.3.</span> <span class="nav-text">hprof文件解析</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#查找内存泄漏对象"><span class="nav-number">2.3.1.</span> <span class="nav-text">查找内存泄漏对象</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#计算内存泄漏对象到GC-roots的路径"><span class="nav-number">2.3.2.</span> <span class="nav-text">计算内存泄漏对象到GC roots的路径</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">3.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">chuangWu</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      本站访客数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      人次
+    </span>
+  
+
+  
+    <span class="site-pv">
+      本站总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

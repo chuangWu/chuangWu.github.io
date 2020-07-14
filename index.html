@@ -5,7 +5,7 @@
   
 
 
-<html class="theme-next gemini use-motion" lang="zh-Hans">
+<html class="theme-next muse use-motion" lang="zh-Hans">
 <head>
   <meta charset="UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -96,7 +96,7 @@
   var NexT = window.NexT || {};
   var CONFIG = {
     root: '/',
-    scheme: 'Gemini',
+    scheme: 'Muse',
     version: '5.1.4',
     sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
     fancybox: true,
@@ -232,7 +232,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/19/OkHttp源码解析-三-：拦截器/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/07/14/Android-系统启动流程/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="chuangWu">
@@ -251,7 +251,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2020/03/19/OkHttp源码解析-三-：拦截器/" itemprop="url">OkHttp源码解析(三)：拦截器</a></h1>
+                <a class="post-title-link" href="/2020/07/14/Android-系统启动流程/" itemprop="url">Android 系统启动流程</a></h1>
         
 
         <div class="post-meta">
@@ -263,8 +263,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-03-19T15:14:22+08:00">
-                2020-03-19
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-07-14T13:40:55+08:00">
+                2020-07-14
               </time>
             
 
@@ -303,13 +303,16 @@
       
         
           
-          
-InterceptorsRetryAndFollowUpInterceptorBridgeInterceptorCacheInterceptorConnectInterceptornetworkInterceptorsCallServerInterceptor
-
-          
+          简介架构图一
+架构图二
+架构解析
+Linux内核层：包含Linux内核和驱动模块（比如USB、Camera、蓝牙等）。
+Libraries层：这一层提供动态库、android运行时库、虚拟机，这一层大部分都是C/C++写的，还有一些三方库比如SQLite, WebKit。
+硬件抽象层 (HAL)：硬
+          ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2020/03/19/OkHttp源码解析-三-：拦截器/#more" rel="contents">
+            <a class="btn" href="/2020/07/14/Android-系统启动流程/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -370,7 +373,7 @@ InterceptorsRetryAndFollowUpInterceptorBridgeInterceptorCacheInterceptorConnectI
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/18/OkHttp源码解析-二-：深入理解/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/07/09/Android-Kotlin大全/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="chuangWu">
@@ -389,7 +392,7 @@ InterceptorsRetryAndFollowUpInterceptorBridgeInterceptorCacheInterceptorConnectI
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2020/03/18/OkHttp源码解析-二-：深入理解/" itemprop="url">OkHttp源码解析(二)：深入理解</a></h1>
+                <a class="post-title-link" href="/2020/07/09/Android-Kotlin大全/" itemprop="url">Android Kotlin大全</a></h1>
         
 
         <div class="post-meta">
@@ -401,8 +404,8 @@ InterceptorsRetryAndFollowUpInterceptorBridgeInterceptorCacheInterceptorConnectI
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-03-18T17:20:41+08:00">
-                2020-03-18
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-07-09T10:39:35+08:00">
+                2020-07-09
               </time>
             
 
@@ -411,28 +414,6 @@ InterceptorsRetryAndFollowUpInterceptorBridgeInterceptorCacheInterceptorConnectI
             
           </span>
 
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Android/" itemprop="url" rel="index">
-                    <span itemprop="name">Android</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
           
 
           
@@ -463,12 +444,11 @@ InterceptorsRetryAndFollowUpInterceptorBridgeInterceptorCacheInterceptorConnectI
       
         
           
-          
-OkHttpClient使用 OkHttp 我们首先需要创建并获得一个 OkHttpClient，OkHttpClient 是 OkHttp 中十分重要的一个类，官方推荐的使用方式是使用一个全局的 OkHttpClient 在多个类之间共享。因为每个 Client 都会有一个自己的连接池和线程池，
+          常用函数letKotlin为了空安全不允许定义为空的，想要定义的话就必须加上问号。123456//可以为空var name: String? = null//不可以为空，初始化为testvar name2: String = "test"//不可以为空，不做初始化lateinit var name3
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2020/03/18/OkHttp源码解析-二-：深入理解/#more" rel="contents">
+            <a class="btn" href="/2020/07/09/Android-Kotlin大全/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -529,7 +509,7 @@ OkHttpClient使用 OkHttp 我们首先需要创建并获得一个 OkHttpClient�
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/18/OkHttp源码解析-一-：基本使用/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/07/07/LeakCanary源码解析/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="chuangWu">
@@ -548,7 +528,7 @@ OkHttpClient使用 OkHttp 我们首先需要创建并获得一个 OkHttpClient�
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2020/03/18/OkHttp源码解析-一-：基本使用/" itemprop="url">OkHttp源码解析(一)：基本使用</a></h1>
+                <a class="post-title-link" href="/2020/07/07/LeakCanary源码解析/" itemprop="url">LeakCanary源码解析</a></h1>
         
 
         <div class="post-meta">
@@ -560,8 +540,8 @@ OkHttpClient使用 OkHttp 我们首先需要创建并获得一个 OkHttpClient�
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-03-18T17:18:31+08:00">
-                2020-03-18
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-07-07T17:03:04+08:00">
+                2020-07-07
               </time>
             
 
@@ -570,28 +550,6 @@ OkHttpClient使用 OkHttp 我们首先需要创建并获得一个 OkHttpClient�
             
           </span>
 
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Android/" itemprop="url" rel="index">
-                    <span itemprop="name">Android</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
           
 
           
@@ -622,11 +580,12 @@ OkHttpClient使用 OkHttp 我们首先需要创建并获得一个 OkHttpClient�
       
         
           
-          OkHttp可以说是Android界最为牛X的网络框架没有之一，GitHub上stat数量26k+，如果你熟悉iOS开发，那么你肯定听说过AFNetworking网络框架了，OkHttp就相当于Android界的AFNetworking了，由square公司出品，Android大神Jake Whar
+          基本原理在开始LeakCanary源码分析前，先来了解下Refercence及ReferenceQueue，它们是LeakCanary实现内存泄漏监听的核心。
+ReferenceReference即引用，是一个泛型抽象类。Android中的SoftReference(软引用)、WeakReferen
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2020/03/18/OkHttp源码解析-一-：基本使用/#more" rel="contents">
+            <a class="btn" href="/2020/07/07/LeakCanary源码解析/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -687,7 +646,7 @@ OkHttpClient使用 OkHttp 我们首先需要创建并获得一个 OkHttpClient�
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/17/Glide源码解析-五-：添加进度/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/07/06/App启动流程分析/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="chuangWu">
@@ -706,7 +665,7 @@ OkHttpClient使用 OkHttp 我们首先需要创建并获得一个 OkHttpClient�
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2020/01/17/Glide源码解析-五-：添加进度/" itemprop="url">Glide源码解析(五)：添加进度</a></h1>
+                <a class="post-title-link" href="/2020/07/06/App启动流程分析/" itemprop="url">App启动流程分析</a></h1>
         
 
         <div class="post-meta">
@@ -718,8 +677,8 @@ OkHttpClient使用 OkHttp 我们首先需要创建并获得一个 OkHttpClient�
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-01-17T17:13:31+08:00">
-                2020-01-17
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-07-06T10:31:50+08:00">
+                2020-07-06
               </time>
             
 
@@ -758,12 +717,16 @@ OkHttpClient使用 OkHttp 我们首先需要创建并获得一个 OkHttpClient�
       
         
           
-          Glide本身功能十分强大，但是有一个缺点就是不支持监听下载进度回调。如果图片比较小的话，会很快加载出来，如果图片比较大的话，就会出现产品上的体验问题。这个时候监听下载进度就十分的有必要了。
-更换HttpUrlConnection为okhttp通过源码分析，我们知道Glide内部是通过HttpUrl
+          简介
+
+1.点击桌面App图标，Launcher进程采用Binder IPC向system_server进程发起startActivity请求；
+2.system_server进程接收到请求后，向zygote进程发送创建进程的请求；
+3.Zygote进程fork出新的子进程，即App进程；
+4.Ap
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2020/01/17/Glide源码解析-五-：添加进度/#more" rel="contents">
+            <a class="btn" href="/2020/07/06/App启动流程分析/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -824,7 +787,7 @@ OkHttpClient使用 OkHttp 我们首先需要创建并获得一个 OkHttpClient�
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/17/Glide源码解析-四-：自定义模块/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/24/Android-Binder机制分析/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="chuangWu">
@@ -843,7 +806,7 @@ OkHttpClient使用 OkHttp 我们首先需要创建并获得一个 OkHttpClient�
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2020/01/17/Glide源码解析-四-：自定义模块/" itemprop="url">Glide源码解析(四)：自定义模块</a></h1>
+                <a class="post-title-link" href="/2020/06/24/Android-Binder机制分析/" itemprop="url">Android Binder机制分析</a></h1>
         
 
         <div class="post-meta">
@@ -855,8 +818,8 @@ OkHttpClient使用 OkHttp 我们首先需要创建并获得一个 OkHttpClient�
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-01-17T17:13:18+08:00">
-                2020-01-17
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-06-24T14:16:23+08:00">
+                2020-06-24
               </time>
             
 
@@ -895,11 +858,12 @@ OkHttpClient使用 OkHttp 我们首先需要创建并获得一个 OkHttpClient�
       
         
           
-          Glide配置和自定义组件流程先看下GlideModule接口1234public interface GlideModule &#123;    void applyOptions(Context context, GlideBuilder builder);    void registerCo
+          简介Binder能干什么？Binder可以提供系统中任何程序都可以访问的全局服务。这个功能当然是任何系统都应该提供的，下面我们简单看一下Android的Binder的框架
+Android Binder框架分为服务器接口、Binder驱动、以及客户端接口；简单想一下，需要提供一个全局服务，那么全局服务
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2020/01/17/Glide源码解析-四-：自定义模块/#more" rel="contents">
+            <a class="btn" href="/2020/06/24/Android-Binder机制分析/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -960,7 +924,7 @@ OkHttpClient使用 OkHttp 我们首先需要创建并获得一个 OkHttpClient�
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/17/Glide源码解析-三-：回调监听/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/24/Activity启动流程分析/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="chuangWu">
@@ -979,7 +943,7 @@ OkHttpClient使用 OkHttp 我们首先需要创建并获得一个 OkHttpClient�
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2020/01/17/Glide源码解析-三-：回调监听/" itemprop="url">Glide源码解析(三)：回调监听</a></h1>
+                <a class="post-title-link" href="/2020/06/24/Activity启动流程分析/" itemprop="url">Activity启动流程分析</a></h1>
         
 
         <div class="post-meta">
@@ -991,8 +955,8 @@ OkHttpClient使用 OkHttp 我们首先需要创建并获得一个 OkHttpClient�
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-01-17T17:12:57+08:00">
-                2020-01-17
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-06-24T14:16:15+08:00">
+                2020-06-24
               </time>
             
 
@@ -1031,14 +995,12 @@ OkHttpClient使用 OkHttp 我们首先需要创建并获得一个 OkHttpClient�
       
         
           
-          图片回调流程前面的文章详细介绍了Glide加载图片的流程，这里我们重点回顾一下图片的的显示流程：DecodeJob完成图片的装载之后，会回调到notifyEncodeAndRelease()方法，之后的流程如下。
-
-EngineJob.onResourceReady
-EngineJob.notify
+          Activity
+startActivity12345678910111213@Overridepublic void startActivity(Intent intent) &#123;    this.startActivity(intent, null);&#125;@Overridepub
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2020/01/17/Glide源码解析-三-：回调监听/#more" rel="contents">
+            <a class="btn" href="/2020/06/24/Activity启动流程分析/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1099,7 +1061,7 @@ EngineJob.notify
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/17/Glide源码解析-二-：流程分析/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/24/Android架构解析-三-：MVX/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="chuangWu">
@@ -1118,7 +1080,7 @@ EngineJob.notify
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2020/01/17/Glide源码解析-二-：流程分析/" itemprop="url">Glide源码解析(二)：流程分析</a></h1>
+                <a class="post-title-link" href="/2020/06/24/Android架构解析-三-：MVX/" itemprop="url">Android架构解析(三)：MVX</a></h1>
         
 
         <div class="post-meta">
@@ -1130,8 +1092,8 @@ EngineJob.notify
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-01-17T17:12:33+08:00">
-                2020-01-17
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-06-24T14:16:04+08:00">
+                2020-06-24
               </time>
             
 
@@ -1170,13 +1132,11 @@ EngineJob.notify
       
         
           
-          Glide : https://github.com/bumptech/glideversion : v4.9.0
-从一个简单的API调用来讲Glide源码内部工作原理。123Glide.with(context)    .load(url)    .into(imageView);
-Glide.w
-          ...
+          
+          
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2020/01/17/Glide源码解析-二-：流程分析/#more" rel="contents">
+            <a class="btn" href="/2020/06/24/Android架构解析-三-：MVX/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1237,7 +1197,7 @@ Glide.w
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/17/Android无痕埋点技术-二-：实践/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/24/Android架构解析-二-：MVVM/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="chuangWu">
@@ -1256,7 +1216,7 @@ Glide.w
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2020/01/17/Android无痕埋点技术-二-：实践/" itemprop="url">Android无痕埋点技术(二)：实践</a></h1>
+                <a class="post-title-link" href="/2020/06/24/Android架构解析-二-：MVVM/" itemprop="url">Android架构解析(二)：MVVM</a></h1>
         
 
         <div class="post-meta">
@@ -1268,8 +1228,8 @@ Glide.w
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-01-17T13:23:58+08:00">
-                2020-01-17
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-06-24T14:15:50+08:00">
+                2020-06-24
               </time>
             
 
@@ -1278,28 +1238,6 @@ Glide.w
             
           </span>
 
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Android/" itemprop="url" rel="index">
-                    <span itemprop="name">Android</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
           
 
           
@@ -1330,11 +1268,12 @@ Glide.w
       
         
           
-          背景线上问题无法定位？无法复现？无痕埋点技术采用非入侵式对java字节码进行处理，达到对页面事件和应用事件进行追踪。传统埋点方案都是在某个事件发生时调用SDK里面相应的接口发送埋点数据，百度统计、友盟、TalkingData、Sensors Analytics等第三方数据统计服务商大都采用这种方案，
+          简介Model:  包含了业务和验证逻辑的数据模型View:  定义屏幕中View的结构，布局和外观ViewModel:  扮演“View”和“Model”之间的使者，帮忙处理 View 的全部业务逻辑
+MVVM的目标和思想与MVP类似，利用数据绑定(Data Binding)、依赖属性(Depen
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2020/01/17/Android无痕埋点技术-二-：实践/#more" rel="contents">
+            <a class="btn" href="/2020/06/24/Android架构解析-二-：MVVM/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1395,7 +1334,7 @@ Glide.w
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/17/Android无痕埋点技术-一-：ASM基础/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/24/Android架构解析-一-：MVP/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="chuangWu">
@@ -1414,7 +1353,7 @@ Glide.w
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2020/01/17/Android无痕埋点技术-一-：ASM基础/" itemprop="url">Android无痕埋点技术(一)：ASM基础</a></h1>
+                <a class="post-title-link" href="/2020/06/24/Android架构解析-一-：MVP/" itemprop="url">Android架构解析(一)：MVP</a></h1>
         
 
         <div class="post-meta">
@@ -1426,8 +1365,8 @@ Glide.w
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-01-17T13:23:49+08:00">
-                2020-01-17
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-06-24T14:15:24+08:00">
+                2020-06-24
               </time>
             
 
@@ -1436,28 +1375,6 @@ Glide.w
             
           </span>
 
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Android/" itemprop="url" rel="index">
-                    <span itemprop="name">Android</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
           
 
           
@@ -1488,11 +1405,12 @@ Glide.w
       
         
           
-          ASM 是一个 Java 字节码操控框架。它能被用来动态生成类或者增强既有类的功能。ASM 可以直接产生二进制 class 文件，也可以在类被加载入 Java 虚拟机之前动态改变类行为。Java class 被存储在严格格式定义的 .class 文件里，这些类文件拥有足够的元数据来解析类中的所有元素
+          MVP概述MVCView:  对应于布局文件Model:  业务逻辑和实体模型Controllor:  对应于Activity
+但是View对应于布局文件，其实能做的事情特别少，实际上关于该布局文件中的数据绑定的操作，事件处理的代码都在Activity中，造成了Activity既像View又像Con
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2020/01/17/Android无痕埋点技术-一-：ASM基础/#more" rel="contents">
+            <a class="btn" href="/2020/06/24/Android架构解析-一-：MVP/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1553,7 +1471,7 @@ Glide.w
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/17/Android模块化实战：学海题舟模块化/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/16/Android-AOP-解决重复点击/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="chuangWu">
@@ -1572,7 +1490,7 @@ Glide.w
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2020/01/17/Android模块化实战：学海题舟模块化/" itemprop="url">Android模块化实战：学海题舟模块化</a></h1>
+                <a class="post-title-link" href="/2020/06/16/Android-AOP-解决重复点击/" itemprop="url">Android AOP 解决重复点击</a></h1>
         
 
         <div class="post-meta">
@@ -1584,8 +1502,8 @@ Glide.w
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-01-17T10:42:04+08:00">
-                2020-01-17
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-06-16T16:40:37+08:00">
+                2020-06-16
               </time>
             
 
@@ -1594,28 +1512,6 @@ Glide.w
             
           </span>
 
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Android/" itemprop="url" rel="index">
-                    <span itemprop="name">Android</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
           
 
           
@@ -1646,11 +1542,12 @@ Glide.w
       
         
           
-          为什么要模块化当一个App用户量增多，业务量增长以后，就会有很多开发工程师参与同一个项目，人员增加了，原先小团队的开发方式已经不合适了。原先的一份代码，现在需要多个人来维护，每个人的代码质量也不相同，在进行代码Review的时候，也是比较困难的，同时也容易会产生代码冲突的问题。同时随着业务的增多，代
+          引入依赖在项目的build.gradle中添加classpath1classpath 'com.hujiang.aspectjx:gradle-android-plugin-aspectjx:2.0.4'
+在模块的build.gradle中添加依赖1apply plugin: 'android-as
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2020/01/17/Android模块化实战：学海题舟模块化/#more" rel="contents">
+            <a class="btn" href="/2020/06/16/Android-AOP-解决重复点击/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1702,7 +1599,7 @@ Glide.w
 
   
   <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -1752,7 +1649,7 @@ Glide.w
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">30</span>
+                  <span class="site-state-item-count">54</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -1774,7 +1671,7 @@ Glide.w
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">44</span>
+                  <span class="site-state-item-count">71</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -1829,7 +1726,7 @@ Glide.w
 
 
 
-  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
 
 
 
@@ -1948,13 +1845,6 @@ Glide.w
 
   
   
-
-
-  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
-
-  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
-
-
 
   
 

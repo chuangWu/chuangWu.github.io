@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="布局优化方案," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="概念合理的布局，能够有效地提高性能，加快页面的显示速度，简化逻辑的复杂度。而布局对于Android性能的影响，则主要包含两个方面：测量+绘制。 作用通过布局的优化，有效的减少页面的卡顿、丢帧等情况，实现应用的流畅。 基础知识为什么布局复杂的时候就容易卡顿？5.0系统之后增加的硬件加速是什么，为什么开了硬件加速能够提高流畅度？我写了个xml文件，怎么就显示到手机屏幕上了？要想了解这些都是和UI布局优">
+<meta name="keywords" content="布局优化方案">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android性能优化(二)：布局优化">
+<meta property="og:url" content="http://yoursite.com/2020/03/20/Android性能优化-二-：布局优化/index.html">
+<meta property="og:site_name" content="小小小青年">
+<meta property="og:description" content="概念合理的布局，能够有效地提高性能，加快页面的显示速度，简化逻辑的复杂度。而布局对于Android性能的影响，则主要包含两个方面：测量+绘制。 作用通过布局的优化，有效的减少页面的卡顿、丢帧等情况，实现应用的流畅。 基础知识为什么布局复杂的时候就容易卡顿？5.0系统之后增加的硬件加速是什么，为什么开了硬件加速能够提高流畅度？我写了个xml文件，怎么就显示到手机屏幕上了？要想了解这些都是和UI布局优">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/2020/03/20/Android性能优化-二-：布局优化/butter.jpg">
+<meta property="og:image" content="http://yoursite.com/2020/03/20/Android性能优化-二-：布局优化/wx.jpg">
+<meta property="og:image" content="http://yoursite.com/2020/03/20/Android性能优化-二-：布局优化/16fps.jpg">
+<meta property="og:image" content="http://yoursite.com/2020/03/20/Android性能优化-二-：布局优化/lay.jpg">
+<meta property="og:image" content="http://yoursite.com/2020/03/20/Android性能优化-二-：布局优化/layout.jpg">
+<meta property="og:updated_time" content="2020-06-22T03:17:45.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android性能优化(二)：布局优化">
+<meta name="twitter:description" content="概念合理的布局，能够有效地提高性能，加快页面的显示速度，简化逻辑的复杂度。而布局对于Android性能的影响，则主要包含两个方面：测量+绘制。 作用通过布局的优化，有效的减少页面的卡顿、丢帧等情况，实现应用的流畅。 基础知识为什么布局复杂的时候就容易卡顿？5.0系统之后增加的硬件加速是什么，为什么开了硬件加速能够提高流畅度？我写了个xml文件，怎么就显示到手机屏幕上了？要想了解这些都是和UI布局优">
+<meta name="twitter:image" content="http://yoursite.com/2020/03/20/Android性能优化-二-：布局优化/butter.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/03/20/Android性能优化-二-：布局优化/"/>
+
+
+
+
+
+  <title>Android性能优化(二)：布局优化 | 小小小青年</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">小小小青年</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/20/Android性能优化-二-：布局优化/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="chuangWu">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/head.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="小小小青年">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Android性能优化(二)：布局优化</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-03-20T16:03:53+08:00">
+                2020-03-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv">本文总阅读量
+            <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>次
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h2><p>合理的布局，能够有效地提高性能，加快页面的显示速度，简化逻辑的复杂度。而布局对于Android性能的影响，则主要包含两个方面：测量+绘制。</p>
+<h2 id="作用"><a href="#作用" class="headerlink" title="作用"></a>作用</h2><p>通过布局的优化，有效的减少页面的卡顿、丢帧等情况，实现应用的流畅。</p>
+<h2 id="基础知识"><a href="#基础知识" class="headerlink" title="基础知识"></a>基础知识</h2><p>为什么布局复杂的时候就容易卡顿？5.0系统之后增加的硬件加速是什么，为什么开了硬件加速能够提高流畅度？我写了个xml文件，怎么就显示到手机屏幕上了？要想了解这些都是和UI布局优化有关的知识，那么就不得不讲一下布局优化的一些基础知识了，可能会枯燥，但是我相信，当你看完之后，对上面的问题都会有一个明确的答案了。</p>
+<h3 id="GPU-VS-CPU"><a href="#GPU-VS-CPU" class="headerlink" title="GPU VS CPU"></a>GPU VS CPU</h3><p>平时我们说的CPU和GPU是什么？当说到这个问题的时候，我们不得不说一下栅格化。我们屏幕上每一个数据（图片、文字、字母、数字等等）的显示，都是由一个个的小格子组成的。这就是栅格化。这种将文字进行栅格化的功能，费时费力。所以Android系统将这部分功能单独交给了GPU来处理。<br>CPU只负责将xml布局中的按钮等转化为纹理，然后GPU负责将纹理进行栅格化之后进行渲染。</p>
+<h3 id="Open-GL"><a href="#Open-GL" class="headerlink" title="Open GL"></a>Open GL</h3><p>GPU是一个单独的硬件，而且市面上各种GPU型号那么多，CPU将数据传输给GPU的时候，肯定不是说想给就给，必须要遵守一定的接口规则。也就是Open GL。<br>Open GL是一个跨编程语言、跨平台的编程接口规格的专业的图形程序接口。而CPU和GPU之间的纹理数据的传输，就是通过 Open GL接口来实现的。</p>
+<h3 id="渲染原理"><a href="#渲染原理" class="headerlink" title="渲染原理"></a>渲染原理</h3><p>CPU和GPU的作用已经清楚了，那么，我们的交给GPU的纹理数据又是如何显示在我们的显示屏上的呢？这时候就涉及到了Android的渲染原理了。</p>
+<h4 id="图形消费者-显示屏"><a href="#图形消费者-显示屏" class="headerlink" title="图形消费者-显示屏"></a>图形消费者-显示屏</h4><p>显示屏的内容，是从硬件帧缓冲区读取的。会从Buffer的起始位置开始，扫描整个Buffer，然后将内容映射到显示屏。<br><img src="/2020/03/20/Android性能优化-二-：布局优化/butter.jpg" alt=" "><br>这里包含了两个缓冲区：<br>前缓冲区：用来显示内容到屏幕帧缓冲区。<br>后缓冲区：用于后台合成下一帧图形的帧缓冲区。<br>很明显，通过两个缓冲区的角色互换能够有效的加快图形的显示。</p>
+<h4 id="图形生产者"><a href="#图形生产者" class="headerlink" title="图形生产者"></a>图形生产者</h4><p>既然显示屏能够从缓冲区拿到数据并显示，那么肯定是有一个模块的功能是用来生产这些数据的。<br>为了更好地理解这一部分的功能，我们先来看一下常用的微信页面，并将其进行拆分。<br><img src="/2020/03/20/Android性能优化-二-：布局优化/wx.jpg" alt=" "></p>
+<h4 id="Surface"><a href="#Surface" class="headerlink" title="Surface"></a>Surface</h4><p>我们的应用是可以多层显示的，每一层其实都是一个Surface，它就像一个画板。View的onDraw方法，会将相应的布局绘制到Surface内，而每层数据都对应一个Surface。你可以理解为Surface是Android窗口的描述。一个应用最多是可以包含31个窗口的。</p>
+<h4 id="GraphicBuffer"><a href="#GraphicBuffer" class="headerlink" title="GraphicBuffer"></a>GraphicBuffer</h4><p>Surface内部存在多个缓冲区，形成一个缓冲队列BufferQueue，缓冲则是通过GraphicBuffer来表示。j就像Surface是Android窗口的描述一样，GraphicBuffer则是Android中图形Buffer的描述。</p>
+<h3 id="刷新机制"><a href="#刷新机制" class="headerlink" title="刷新机制"></a>刷新机制</h3><p>Android系统每隔16ms发出VSYNC信号，触发对UI进行渲染，如果每次渲染都成功，这样就能够达到流畅的画面所需的60FPS。<br>如果我们想要实现流畅的画面，那么就必须保证从整个渲染过程必须在16ms内完成。如果页面比较复杂，导致了onLayout、onDraw的时间特别长或者复杂的处理占用了主线程较多的时间，导致16ms无法完成后缓冲区的准备工作，那么当前就没办法实现前后缓存区的交换，从而导致页面中仍然显示之前的数据，给人一种卡顿的感觉。<br>我们来看一个卡顿的具体流程。<br><img src="/2020/03/20/Android性能优化-二-：布局优化/16fps.jpg" alt=" "></p>
+<ol>
+<li>1.Display显示第0帧数据，此时CPU和GPU渲染第1帧画面，而且赶在Display显示下一帧前完成</li>
+<li>2.因为渲染及时，Display在第0帧显示完成后，也就是第1个VSync后，正常显示第1帧</li>
+<li>3.由于某些原因，比如CPU资源被占用，系统没有及时地开始处理第2帧，直到第2个VSync快来前才开始处理</li>
+<li>4.第2个VSync来时，由于第2帧数据还没有准备就绪，显示的还是第1帧。这种情况被Android开发组命名为“Jank”。</li>
+<li>5.当第2帧数据准备完成后，它并不会马上被显示，而是要等待下一个VSync。<br>优<h2 id="优化工具"><a href="#优化工具" class="headerlink" title="优化工具"></a>优化工具</h2>对于UI卡顿的问题，是有很多的诱因的。比如说页面复杂、层级较深、Bitmap过大、一些操作占用了UI线程等等。如果我们能够通过经验就能定位到问题，那当然最好了。但是很多情况下我们无法得知到底是什么原因导致的卡顿，这时候我们就需要通过工具来进行辅助了。<h3 id="Systrace"><a href="#Systrace" class="headerlink" title="Systrace"></a>Systrace</h3>systrace能够有效的跟踪系统的I/O操作、内核工作队列、CPU负载以及Android各个子系统的运行状况，然后生成HTML报告，可以用来分析我们的卡顿和渲染问题。</li>
+</ol>
+<ul>
+<li>DDMS在Android Studio3.0以后的版本已经去掉了，需要通过sdk\tools\monitor.bat来启动。</li>
+<li><p>代码方式如下<br>systrace没有办法控制Trace的开始和结束。如果我们确定要分析某个部分的代码，我们必须要为这段代码指定具体的Label，以便能够在systrace生成的视图中能够找到我们的trace信息。这时候就通过代码方式，在要监控的代码开始和结果通过添加监控代码来进行处理。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">TraceCompat.beginSection(<span class="string">"xxx"</span>);</span><br><span class="line">TraceCompat.endSection();</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>结果分析<br>通过浏览器打开以后，在左侧找到在Frames。可以看到右侧有红、粉、绿三种颜色的圆圈。一般红色表示有问题，需要优化的地方。</p>
+</li>
+</ul>
+<h3 id="Layout-Inspector"><a href="#Layout-Inspector" class="headerlink" title="Layout Inspector"></a>Layout Inspector</h3><p>Layout Inspector是Android Studio自带的视图层次结构分析工具（Android Studio2.2以后），取代了以前经常使用的Hierarchy View工具。它允许在运行时检测应用程序的视图层次结构。<br>应用启动之后，直接在Android Studio中通过Tools-&gt;Layout Inspector。就可以启动Layout Inspector。（该版本是Android Studio4.0。老版本是Tools-&gt;Android-&gt;Layout Inspector）。<br><img src="/2020/03/20/Android性能优化-二-：布局优化/lay.jpg" alt=" "><br>打开之后，能够看到手机当前的页面，左侧则是页面的布局层级。右侧则是选中的控件的属性。<br><img src="/2020/03/20/Android性能优化-二-：布局优化/layout.jpg" alt=" "><br>通过这个功能，能够分析布局的层级结构，减少不必要的层级，减少overdraw的问题，从而达到渲染优化的效果。</p>
+<h3 id="TraceView"><a href="#TraceView" class="headerlink" title="TraceView"></a>TraceView</h3><p>TraceView是一种可视化工具，可以看出代码在运行时的一些具体信息，方法的调用时长，次数，时间比率等等。了解代码运行过程中的效率问题，从而针对性的改善代码。对于systrace中不能够精确定位问题的，TraceView则能够精确地显示出来。</p>
+<h2 id="提前监控"><a href="#提前监控" class="headerlink" title="提前监控"></a>提前监控</h2><p>既然经常出现布局比较耗时的问题，那么有办法去获取布局耗时的方案么？答案当然是肯定了的了，而且方法还不止一种呢~~</p>
+<h3 id="方法前后增加计时"><a href="#方法前后增加计时" class="headerlink" title="方法前后增加计时"></a>方法前后增加计时</h3><p>这种方法，相信你应该用过。通过在setContentView()方法前后增加代码，然后计算其耗时，从而监控布局是否出现问题。先不说你是不是个勤劳的cver，这种方法，写起来累是肯定的。少的时候还好，但是一旦页面特别多，估计写着写着就cu死了~</p>
+<h3 id="AOP切面编程"><a href="#AOP切面编程" class="headerlink" title="AOP切面编程"></a>AOP切面编程</h3><p>面向切面编程，这种在后台开发中，属于已经用烂了的技术，但是在Android端，其实相对来说要少很多。既然是切面编程，那么必然是需要一个切点，能够织入我们自己的代码。这里我们的切入点就是setContentView方法了。通过@Around来进行切面处理<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Around</span>(<span class="string">"execution(* android.app.Activity.setContentView(..))"</span>)</span><br><span class="line"> <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">getSetContentViewTime</span><span class="params">(ProceedingJoinPoint joinPoint)</span></span>&#123;    </span><br><span class="line">     Signature signature = joinPoint.getSignature();    </span><br><span class="line">     String name = signature.toShortString();    </span><br><span class="line">     <span class="keyword">long</span> time = System.currentTimeMillis();    </span><br><span class="line">     <span class="keyword">try</span> &#123;        </span><br><span class="line">         joinPoint.proceed();    </span><br><span class="line">     &#125; <span class="keyword">catch</span> (Throwable throwable) &#123;</span><br><span class="line">         throwable.printStackTrace();    </span><br><span class="line">     &#125;</span><br><span class="line">     LogHelper.i(name  + <span class="string">" cost "</span> + (System.currentTimeMillis() - time));</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure></p>
+<p>重装应用，然后打开几个页面，就可以看到对应的页面布局加载耗时日志信息了</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h3 id="布局优化方向"><a href="#布局优化方向" class="headerlink" title="布局优化方向"></a>布局优化方向</h3><ul>
+<li>使用ConstraintLayout降低布局嵌套层级。</li>
+<li>避免嵌套使用RelativeLayout</li>
+<li>使用ViewStub、Merge，ViewStub是一种高效占位符，用于延迟初始化。</li>
+<li>onDraw中避免创建大对象，进行耗时操作。</li>
+<li>使用异步布局框架Litho</li>
+<li>使用Flutter实现高性能的UI布局</li>
+<li>避免层级叠加,去掉多余的backgroud</li>
+</ul>
+<h3 id="布局优化工具"><a href="#布局优化工具" class="headerlink" title="布局优化工具"></a>布局优化工具</h3><ul>
+<li>Choreographer：统计线上的FPS</li>
+<li>LayoutInflaterCompat.setFactory2：可以更细粒度地去检测每一个控件的加载耗时。</li>
+<li>LayoutInspector：可以很方便地看到每一个界面的布局层级。</li>
+<li>Systrace：Systrace可以很方便地看到每帧的具体耗时以及这一帧在布局当中它真正做了什么。</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>您的支持是我原创的动力</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechatpay.jpg" alt="chuangWu 微信支付"/>
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/images/alipay.jpg" alt="chuangWu 支付宝"/>
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+
+<div>  
+     
+ 
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+      <strong>本文作者：</strong>chuangWu
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="/2020/03/20/Android性能优化-二-：布局优化/" title="Android性能优化(二)：布局优化">2020/03/20/Android性能优化-二-：布局优化/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权： </strong>
+    本站文章均采用 <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0 CN</a> 许可协议，请勿用于商业，转载注明出处！
+  </li>
+</ul>
+
+</div>
+
+      
+        <div class="post-tags">
+          
+            <a href="/tags/布局优化方案/" rel="tag"># 布局优化方案</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/03/20/Android性能优化-一-：内存优化/" rel="next" title="Android性能优化(一)：内存优化">
+                <i class="fa fa-chevron-left"></i> Android性能优化(一)：内存优化
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/03/20/Android性能优化-三-：网络优化/" rel="prev" title="Android性能优化(三)：网络优化">
+                Android性能优化(三)：网络优化 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+      <div>    
+      
+
+
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/head.png"
+                alt="chuangWu" />
+            
+              <p class="site-author-name" itemprop="name">chuangWu</p>
+              <p class="site-description motion-element" itemprop="description">选择大于努力</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">54</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">71</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#概念"><span class="nav-number">1.</span> <span class="nav-text">概念</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#作用"><span class="nav-number">2.</span> <span class="nav-text">作用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#基础知识"><span class="nav-number">3.</span> <span class="nav-text">基础知识</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#GPU-VS-CPU"><span class="nav-number">3.1.</span> <span class="nav-text">GPU VS CPU</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Open-GL"><span class="nav-number">3.2.</span> <span class="nav-text">Open GL</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#渲染原理"><span class="nav-number">3.3.</span> <span class="nav-text">渲染原理</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#图形消费者-显示屏"><span class="nav-number">3.3.1.</span> <span class="nav-text">图形消费者-显示屏</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#图形生产者"><span class="nav-number">3.3.2.</span> <span class="nav-text">图形生产者</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Surface"><span class="nav-number">3.3.3.</span> <span class="nav-text">Surface</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#GraphicBuffer"><span class="nav-number">3.3.4.</span> <span class="nav-text">GraphicBuffer</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#刷新机制"><span class="nav-number">3.4.</span> <span class="nav-text">刷新机制</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#优化工具"><span class="nav-number">4.</span> <span class="nav-text">优化工具</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Systrace"><span class="nav-number">4.1.</span> <span class="nav-text">Systrace</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Layout-Inspector"><span class="nav-number">4.2.</span> <span class="nav-text">Layout Inspector</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#TraceView"><span class="nav-number">4.3.</span> <span class="nav-text">TraceView</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#提前监控"><span class="nav-number">5.</span> <span class="nav-text">提前监控</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#方法前后增加计时"><span class="nav-number">5.1.</span> <span class="nav-text">方法前后增加计时</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#AOP切面编程"><span class="nav-number">5.2.</span> <span class="nav-text">AOP切面编程</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">6.</span> <span class="nav-text">总结</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#布局优化方向"><span class="nav-number">6.1.</span> <span class="nav-text">布局优化方向</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#布局优化工具"><span class="nav-number">6.2.</span> <span class="nav-text">布局优化工具</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">chuangWu</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      本站访客数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      人次
+    </span>
+  
+
+  
+    <span class="site-pv">
+      本站总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="内存优化," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="对象的声明周期Java代码编译后生成的字节码.class文件从从文件系统中加载到虚拟机之后，便有了JVM上的Java对象，Java对象在JVM上运行有7个阶段。 Created（创建） 为对象分配存储空间,然后进行构造 从父类到子类的静态成员初始化，类的静态成员会在ClassLoader加载该类的时候进行。 父类成员变量初始化，递归调用父类构造方法 子类成员变量初始化，然后创建对象。InUse（使">
+<meta name="keywords" content="内存优化">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android性能优化(一)：内存优化">
+<meta property="og:url" content="http://yoursite.com/2020/03/20/Android性能优化-一-：内存优化/index.html">
+<meta property="og:site_name" content="小小小青年">
+<meta property="og:description" content="对象的声明周期Java代码编译后生成的字节码.class文件从从文件系统中加载到虚拟机之后，便有了JVM上的Java对象，Java对象在JVM上运行有7个阶段。 Created（创建） 为对象分配存储空间,然后进行构造 从父类到子类的静态成员初始化，类的静态成员会在ClassLoader加载该类的时候进行。 父类成员变量初始化，递归调用父类构造方法 子类成员变量初始化，然后创建对象。InUse（使">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/2020/03/20/Android性能优化-一-：内存优化/1.png">
+<meta property="og:updated_time" content="2020-04-09T09:30:43.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android性能优化(一)：内存优化">
+<meta name="twitter:description" content="对象的声明周期Java代码编译后生成的字节码.class文件从从文件系统中加载到虚拟机之后，便有了JVM上的Java对象，Java对象在JVM上运行有7个阶段。 Created（创建） 为对象分配存储空间,然后进行构造 从父类到子类的静态成员初始化，类的静态成员会在ClassLoader加载该类的时候进行。 父类成员变量初始化，递归调用父类构造方法 子类成员变量初始化，然后创建对象。InUse（使">
+<meta name="twitter:image" content="http://yoursite.com/2020/03/20/Android性能优化-一-：内存优化/1.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/03/20/Android性能优化-一-：内存优化/"/>
+
+
+
+
+
+  <title>Android性能优化(一)：内存优化 | 小小小青年</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">小小小青年</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/20/Android性能优化-一-：内存优化/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="chuangWu">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/head.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="小小小青年">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Android性能优化(一)：内存优化</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-03-20T16:03:11+08:00">
+                2020-03-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv">本文总阅读量
+            <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>次
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="对象的声明周期"><a href="#对象的声明周期" class="headerlink" title="对象的声明周期"></a>对象的声明周期</h2><p>Java代码编译后生成的字节码.class文件从从文件系统中加载到虚拟机之后，便有了JVM上的Java对象，Java对象在JVM上运行有7个阶段。</p>
+<h3 id="Created（创建）"><a href="#Created（创建）" class="headerlink" title="Created（创建）"></a>Created（创建）</h3><ul>
+<li>为对象分配存储空间,然后进行构造</li>
+<li>从父类到子类的静态成员初始化，类的静态成员会在ClassLoader加载该类的时候进行。</li>
+<li>父类成员变量初始化，递归调用父类构造方法</li>
+<li>子类成员变量初始化，然后创建对象。<h3 id="InUse（使用）"><a href="#InUse（使用）" class="headerlink" title="InUse（使用）"></a>InUse（使用）</h3>此时对象至少被一个强引用持有。<h3 id="Invisible（不可见）"><a href="#Invisible（不可见）" class="headerlink" title="Invisible（不可见）"></a>Invisible（不可见）</h3>当一个对象处于不可见阶段时，说明程序本身不再持有该对象的任何强引用，虽然该对象仍然是存在的。简单的例子就是程序的执行已经超出了该对象的作用域了。但是，该对象仍可能被虚拟机下的某些已装载的静态变量线程或JNI等强引用持有，这些特殊的强引用称为“GC Root”。被这些GC Root强引用的对象会导致该对象的内存泄漏，因而无法被GC回收。<h3 id="Unreachable（不可达）"><a href="#Unreachable（不可达）" class="headerlink" title="Unreachable（不可达）"></a>Unreachable（不可达）</h3>该对象不再被任何强引用持有。<h3 id="Collected（收集）"><a href="#Collected（收集）" class="headerlink" title="Collected（收集）"></a>Collected（收集）</h3>当GC已经对该对象的内存空间重新分配做好准备时，对象进入收集阶段，如果该对象重写了finalize()方法，则执行它。<h3 id="Finalized（终结）"><a href="#Finalized（终结）" class="headerlink" title="Finalized（终结）"></a>Finalized（终结）</h3>等待垃圾回收器回收该对象空间。<h3 id="Deallocated（对象空间重新分配）"><a href="#Deallocated（对象空间重新分配）" class="headerlink" title="Deallocated（对象空间重新分配）"></a>Deallocated（对象空间重新分配）</h3>GC对该对象所占用的内存空间进行回收或者再分配，则该对象彻底消失。</li>
+</ul>
+<h2 id="内存回收机制"><a href="#内存回收机制" class="headerlink" title="内存回收机制"></a>内存回收机制</h2><p>在Android的高级系统版本中，针对Heap空间有一个Generational Heap Memory的模型，其中将整个内存分为三个区域。Young Generation（年轻代）、Old Generation（年老代）、Permanent Generation（持久代）。<br><img src="/2020/03/20/Android性能优化-一-：内存优化/1.png" alt=" "></p>
+<h3 id="Young-Generation"><a href="#Young-Generation" class="headerlink" title="Young Generation"></a>Young Generation</h3><p>由一个Eden区和两个Survivor区组成，程序中生成的大部分新的对象都在Eden区中，当Eden区满时，还存活的对象将被复制到其中一个Survivor区，当此Survivor区满时，此区存活的对象又被复制到另一个Survivor区，当这个Survivor区也满时，会将其中存活的对象复制到年老代。</p>
+<h3 id="Old-Generation"><a href="#Old-Generation" class="headerlink" title="Old Generation"></a>Old Generation</h3><p>一般情况下，年老代中的对象生命周期都比较长。</p>
+<h3 id="Permanent-Generation"><a href="#Permanent-Generation" class="headerlink" title="Permanent Generation"></a>Permanent Generation</h3><p>用于存放静态的类和方法，持久代对垃圾回收没有显著影响。</p>
+<h3 id="处理过程总结"><a href="#处理过程总结" class="headerlink" title="处理过程总结"></a>处理过程总结</h3><ul>
+<li>对象创建后在Eden区。</li>
+<li>执行GC后，如果对象仍然存活，则复制到S0区。</li>
+<li>当S0区满时，该区域存活对象将复制到S1区，然后S0清空，接下来S0和S1角色互换。</li>
+<li>当第3步达到一定次数（系统版本不同会有差异）后，存活对象将被复制到Old Generation。</li>
+<li>当这个对象在Old Generation区域停留的时间达到一定程度时，它会被移动到Old Generation，最后累积一定时间再移动到Permanent Generation区域。<blockquote>
+<p>执行GC占用的时间与Generation和Generation中的对象数量有关<br>Young Generation &lt; Old Generation &lt; Permanent Generation<br>Generation中的对象数量与执行时间成反比。</p>
+</blockquote>
+</li>
+</ul>
+<h2 id="GC"><a href="#GC" class="headerlink" title="GC"></a>GC</h2><h3 id="GC类型"><a href="#GC类型" class="headerlink" title="GC类型"></a>GC类型</h3><ul>
+<li>kGcCauseForAlloc：分配内存不够引起的GC，会Stop World。由于是并发GC，其它线程都会停止，直到GC完成。</li>
+<li>kGcCauseBackground：内存达到一定阈值触发的GC，由于是一个后台GC，所以不会引起Stop World。</li>
+<li>kGcCauseExplicit：显示调用时进行的GC，当ART打开这个选项时，使用System.gc时会进行GC。<br>分析一下Android虚拟机中的GC日志。<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">D/dalvikvm(<span class="number">7030</span>)：GC_CONCURRENT freed <span class="number">1049</span>K, <span class="number">60</span>% free <span class="number">2341</span>K/<span class="number">9351</span>K, external <span class="number">3502</span>K/<span class="number">6261</span>K, paused <span class="number">3</span>ms <span class="number">3</span>ms</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>GC_CONCURRENT 是当前GC时的类型，GC日志中有以下几种类型：</p>
+<blockquote>
+<ul>
+<li>GC_CONCURRENT：当应用程序中的Heap内存占用上升时（分配对象大小超过384k），避免Heap内存满了而触发的GC。如果发现有大量的GC_CONCURRENT出现，说明应用中可能一直有大于384k的对象被分配，而这一般都是一些临时对象被反复创建，可能是对象复用不够所导致的。</li>
+<li>GC_FOR_MALLOC：这是由于Concurrent GC没有及时执行完，而应用又需要分配更多的内存，这时不得不停下来进行Malloc GC。</li>
+<li>GC_EXTERNAL_ALLOC：这是为external分配的内存执行的GC。</li>
+<li>GC_HPROF_DUMP_HEAP：创建一个HPROF profile的时候执行。</li>
+<li>GC_EXPLICIT：显示调用了System.GC()。（尽量避免）</li>
+</ul>
+</blockquote>
+<ul>
+<li>freed 1049k：表明在这次GC中回收了多少内存。</li>
+<li>60% free 2341k/9351K：表明回收后60%的Heap可用，存活的对象大小为2341kb，heap大小是9351kb。</li>
+<li>external 3502/6261K：是Native Memory的数据。存放Bitmap Pixel Data（位图数据）或者堆以外内存（NIO Direct Buffer）之类的数据。第一个值说明在Native Memory中已分配3502kb内存，第二个值是一个浮动的GC阈值，当分配内存达到这个值时，会触发一次GC。</li>
+<li>paused 3ms 3ms：表明GC的暂停时间，如果是Concurrent GC，会看到两个时间，一个开始，一个结束，且时间很短，如果是其他类型的GC，很可能只会看到一个时间，且这个时间是相对比较长的。并且，越大的Heap Size在GC时导致暂停的时间越长。<blockquote>
+<p>在Dalvik虚拟机下，GC的操作都是并发的，也就意味着每次触发GC都会导致其它线程暂停工作（包括UI线程）。而在ART模式下，GC时不像Dalvik仅有一种回收算法，ART在不同的情况下会选择不同的回收算法，比如Alloc内存不够时会采用非并发GC，但在Alloc后，发现内存达到一定阈值时又会触发并发GC。所以在ART模式下，并不是所有的GC都是非并发的。<br>总体来看，在GC方面，与Dalvik相比，ART更为高效，不仅仅是GC的效率，大大地缩短了Pause时间，而且在内存分配上对大内存分配单独的区域，还能有算法在后台做内存整理，减少内存碎片。因此，在ART虚拟机下，可以避免较多的类似GC导致的卡顿问题。</p>
+</blockquote>
+</li>
+</ul>
+<h3 id="Young-Generation-GC"><a href="#Young-Generation-GC" class="headerlink" title="Young Generation GC"></a>Young Generation GC</h3><p>由于其对象存活时间短，因此基于Copying算法（扫描出存活的对象，并复制到一块新的完全未使用的控件中）来回收。新生代采用空闲指针的方式来控制GC触发，指针保持最后一个分配的对象在Young Generation区间的位置，当有新的对象要分配内存时，用于检查空间是否足够，不够就触发GC。</p>
+<h3 id="Old-Generation-GC"><a href="#Old-Generation-GC" class="headerlink" title="Old Generation GC"></a>Old Generation GC</h3><p>由于其对象存活时间较长，比较稳定，因此采用Mark（标记）算法（扫描出存活的对象，然后再回收未被标记的对象，回收后对空出的空间要么合并，要么标记出来便于下次分配，以减少内存碎片带来的效率损耗）来回收。</p>
+<h3 id="垃圾收集算法"><a href="#垃圾收集算法" class="headerlink" title="垃圾收集算法"></a>垃圾收集算法</h3><ul>
+<li>引用计数法</li>
+<li>可达性分析法</li>
+</ul>
+<h3 id="垃圾回收算法"><a href="#垃圾回收算法" class="headerlink" title="垃圾回收算法"></a>垃圾回收算法</h3><h4 id="标记-清除算法"><a href="#标记-清除算法" class="headerlink" title="标记-清除算法"></a>标记-清除算法</h4><ol>
+<li>标记所有需要回收的对象</li>
+<li>统一回收所有被标记的对象。<blockquote>
+<p>优点:实现比较简单。缺点:标记、清除效率不高。容易产生大量内存碎片。</p>
+</blockquote>
+</li>
+</ol>
+<h4 id="复制算法"><a href="#复制算法" class="headerlink" title="复制算法"></a>复制算法</h4><ol>
+<li>将内存划分为大小相等的两块。</li>
+<li>一块内存用完之后复制存活对象到另一块。</li>
+<li>清理另一块内存。<blockquote>
+<p>优点:实现简单，运行高效，每次仅需遍历标记一半的内存区域。缺点:会浪费一半的空间，代价大。</p>
+</blockquote>
+</li>
+</ol>
+<h4 id="标记-整理算法"><a href="#标记-整理算法" class="headerlink" title="标记-整理算法"></a>标记-整理算法</h4><ol>
+<li>标记过程与 标记-清除算法 一样。</li>
+<li>存活对象往一端进行移动。</li>
+<li>清理其余内存。<blockquote>
+<p>优点：避免 标记-清除 导致的内存碎片。避免复制算法的空间浪费。</p>
+</blockquote>
+</li>
+</ol>
+<h4 id="分代收集算法"><a href="#分代收集算法" class="headerlink" title="分代收集算法"></a>分代收集算法</h4><p>现在 主流的虚拟机 一般用的比较多的还是分代收集算法，它具有如下 特点：</p>
+<ul>
+<li>结合多种算法优势。</li>
+<li>新生代对象存活率低，使用 复制算法。</li>
+<li>老年代对象存活率高，使用 标记-整理算法。</li>
+</ul>
+<h2 id="内存问题"><a href="#内存问题" class="headerlink" title="内存问题"></a>内存问题</h2><h3 id="内存抖动"><a href="#内存抖动" class="headerlink" title="内存抖动"></a>内存抖动</h3><p>内存波动图形呈 锯齿张、GC导致卡顿。<br>这个问题在 Dalvik虚拟机 上会 更加明显，而 ART虚拟机 在 内存管理跟回收策略 上都做了 大量优化，内存分配和GC效率相比提升了5~10倍，所以 出现内存抖动的概率会小很多。</p>
+<h4 id="为什么会内存抖动？"><a href="#为什么会内存抖动？" class="headerlink" title="为什么会内存抖动？"></a>为什么会内存抖动？</h4><ul>
+<li>频繁创建对象，导致内存不足及碎片（不连续）。</li>
+<li>不连续的内存片无法被分配，导致OOM。</li>
+</ul>
+<h4 id="内存抖动常见案例"><a href="#内存抖动常见案例" class="headerlink" title="内存抖动常见案例"></a>内存抖动常见案例</h4><h5 id="字符串使用加号拼接"><a href="#字符串使用加号拼接" class="headerlink" title="字符串使用加号拼接"></a>字符串使用加号拼接</h5><ol>
+<li>使用StringBuilder替代。</li>
+<li>初始化时设置容量，减少StringBuilder的扩容。</li>
+</ol>
+<h5 id="资源复用"><a href="#资源复用" class="headerlink" title="资源复用"></a>资源复用</h5><ol>
+<li>使用 全局缓存池，以 重用频繁申请和释放的对象。</li>
+<li>注意 结束 使用后，需要 手动释放对象池中的对象。</li>
+</ol>
+<h5 id="减少不合理的对象创建"><a href="#减少不合理的对象创建" class="headerlink" title="减少不合理的对象创建"></a>减少不合理的对象创建</h5><ol>
+<li>ondraw、getView 中创建的对象尽量进行复用。</li>
+<li>避免在循环中不断创建局部变量。</li>
+</ol>
+<h5 id="使用合理的数据结构"><a href="#使用合理的数据结构" class="headerlink" title="使用合理的数据结构"></a>使用合理的数据结构</h5><ol>
+<li>使用 SparseArray类族、ArrayMap 来替代 HashMap。<h4 id="内存抖动解决实战"><a href="#内存抖动解决实战" class="headerlink" title="内存抖动解决实战"></a>内存抖动解决实战</h4>这里我们假设有这样一个场景：点击按钮使用 handler 发送一个空消息，handler 的 handleMessage 接收到消息后创建内存抖动，即在 for 循环创建 100个容量为10万 的 strings 数组并在 30ms 后继续发送空消息。<br>一般使用 Memory Profiler （表现为 频繁GC、内存曲线呈锯齿状）结合代码排查即可找到内存抖动出现的地方。<br>通常的技巧就是着重查看 循环或频繁被调用 的地方。</li>
+</ol>
+<h3 id="内存泄漏"><a href="#内存泄漏" class="headerlink" title="内存泄漏"></a>内存泄漏</h3><p>Android系统虚拟机的垃圾回收是通过虚拟机GC机制来实现的。GC会选择一些还存活的对象作为内存遍历的根节点GC Roots，通过对GC Roots的可达性来判断是否需要回收。内存泄漏就是 在当前应用周期内不再使用的对象被GC Roots引用，导致不能回收，使实际可使用内存变小。简言之，就是 对象被持有导致无法释放或不能按照对象正常的生命周期进行释放。一般来说，可用内存减少、频繁GC，容易导致内存泄漏。</p>
+<h4 id="常见的内存泄漏场景"><a href="#常见的内存泄漏场景" class="headerlink" title="常见的内存泄漏场景"></a>常见的内存泄漏场景</h4><h5 id="资源性对象未关闭"><a href="#资源性对象未关闭" class="headerlink" title="资源性对象未关闭"></a>资源性对象未关闭</h5><p>对于资源性对象不再使用时，应该立即调用它的close()函数，将其关闭，然后再置为null。例如Bitmap等资源未关闭会造成内存泄漏，此时我们应该在Activity销毁时及时关闭。</p>
+<h5 id="注册对象未注销"><a href="#注册对象未注销" class="headerlink" title="注册对象未注销"></a>注册对象未注销</h5><p>例如BraodcastReceiver、EventBus未注销造成的内存泄漏，我们应该在Activity销毁时及时注销。</p>
+<h5 id="类的静态变量持有大数据对象"><a href="#类的静态变量持有大数据对象" class="headerlink" title="类的静态变量持有大数据对象"></a>类的静态变量持有大数据对象</h5><p>尽量避免使用静态变量存储数据，特别是大数据对象，建议使用数据库存储。</p>
+<h5 id="单例造成的内存泄漏"><a href="#单例造成的内存泄漏" class="headerlink" title="单例造成的内存泄漏"></a>单例造成的内存泄漏</h5><p>优先使用Application的Context，如需使用Activity的Context，可以在传入Context时使用弱引用进行封装，然后，在使用到的地方从弱引用中获取Context，如果获取不到，则直接return即可。</p>
+<h5 id="非静态内部类的静态实例"><a href="#非静态内部类的静态实例" class="headerlink" title="非静态内部类的静态实例"></a>非静态内部类的静态实例</h5><p>该实例的生命周期和应用一样长，这就导致该静态实例一直持有该Activity的引用，Activity的内存资源不能正常回收。此时，我们可以将该内部类设为静态内部类或将该内部类抽取出来封装成一个单例，如果需要使用Context，尽量使用Application Context，如果需要使用Activity Context，就记得用完后置空让GC可以回收，否则还是会内存泄漏。</p>
+<h5 id="Handler临时性内存泄漏"><a href="#Handler临时性内存泄漏" class="headerlink" title="Handler临时性内存泄漏"></a>Handler临时性内存泄漏</h5><p>Message发出之后存储在MessageQueue中，在Message中存在一个target，它是Handler的一个引用，Message在Queue中存在的时间过长，就会导致Handler无法被回收。如果Handler是非静态的，则会导致Activity或者Service不会被回收。并且消息队列是在一个Looper线程中不断地轮询处理消息，当这个Activity退出时，消息队列中还有未处理的消息或者正在处理的消息，并且消息队列中的Message持有Handler实例的引用，Handler又持有Activity的引用，所以导致该Activity的内存资源无法及时回收，引发内存泄漏。解决方案如下所示：</p>
+<ol>
+<li>使用一个静态Handler内部类，然后对Handler持有的对象（一般是Activity）使用弱引用，这样在回收时，也可以回收Handler持有的对象。</li>
+<li>在Activity的Destroy或者Stop时，应该移除消息队列中的消息，避免Looper线程的消息队列中有待处理的消息需要处理。</li>
+</ol>
+<p>需要注意的是，AsyncTask内部也是Handler机制，同样存在内存泄漏风险，但其一般是临时性的。对于类似AsyncTask或是线程造成的内存泄漏，我们也可以将AsyncTask和Runnable类独立出来或者使用静态内部类。</p>
+<h5 id="Handler的错误使用"><a href="#Handler的错误使用" class="headerlink" title="Handler的错误使用"></a>Handler的错误使用</h5><p>Handler是开发中异步处理最常使用到的工具之一，但是如果错误地使用Handler 也极容易产生内存泄漏。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MainActivity</span> <span class="keyword">extends</span> <span class="title">AppCompatActivity</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Handler myHandler = <span class="keyword">new</span> Handler()&#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handleMessage</span><span class="params">(Message msg)</span> </span>&#123;</span><br><span class="line">            <span class="comment">//doSomething</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.onCreate(savedInstanceState);</span><br><span class="line"></span><br><span class="line">        myHandler.postDelayed(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                <span class="comment">//doSomething</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;,<span class="number">60</span>*<span class="number">10</span>*<span class="number">1000</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>怎么样，看起来是不是合情合理，但是其中隐藏着一个重要的隐患，当我们创建出一个Handler 的时候，代码中的mHandler为Handler 的非静态内部类的实例，所以mHandler 持有对外部类，即Activity 的引用。并且Handler 中的Looper不断轮询消息队列中的message，message 又持有mHandler的引用，但mHandler这玩意儿又持有Activity 的引用，所以这下倒好，因为你一个message 导致我整个Activity都无法被回收，你说气人不气人。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MainActivity</span> <span class="keyword">extends</span> <span class="title">AppCompatActivity</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> MyHandler mHandler = <span class="keyword">new</span> MyHandler(<span class="keyword">this</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Runnable sRunnable = <span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            <span class="comment">//doSomething</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.onCreate(savedInstanceState);</span><br><span class="line">        mHandler.postDelayed(sRunnable, <span class="number">60</span> * <span class="number">10</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">this</span>.finish();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">MyHandler</span> <span class="keyword">extends</span> <span class="title">Handler</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">final</span> WeakReference&lt;MainActivity&gt; mActivity;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="title">MyHandler</span><span class="params">(MainActivity activity)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">this</span>.mActivity = <span class="keyword">new</span> WeakReference&lt;MainActivity&gt;(activity);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handleMessage</span><span class="params">(Message msg)</span> </span>&#123;</span><br><span class="line">            MainActivity activity = mActivity.get();</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (activity != <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="comment">//doSomething</span></span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="容器中的对象没清理造成的内存泄漏"><a href="#容器中的对象没清理造成的内存泄漏" class="headerlink" title="容器中的对象没清理造成的内存泄漏"></a>容器中的对象没清理造成的内存泄漏</h5><p>在退出程序之前，将集合里的东西clear，然后置为null，再退出程序</p>
+<h5 id="WebView"><a href="#WebView" class="headerlink" title="WebView"></a>WebView</h5><p>WebView都存在内存泄漏的问题，在应用中只要使用一次WebView，内存就不会被释放掉。我们可以为WebView开启一个独立的进程，使用AIDL与应用的主进程进行通信，WebView所在的进程可以根据业务的需要选择合适的时机进行销毁，达到正常释放内存的目的。</p>
+<h5 id="使用ListView时造成的内存泄漏"><a href="#使用ListView时造成的内存泄漏" class="headerlink" title="使用ListView时造成的内存泄漏"></a>使用ListView时造成的内存泄漏</h5><p>在构造Adapter时，使用缓存的convertView。</p>
+<h5 id="内存泄漏监控"><a href="#内存泄漏监控" class="headerlink" title="内存泄漏监控"></a>内存泄漏监控</h5><p>一般使用LeakCanary进行内存泄漏的监控即可。</p>
+<h4 id="常用的内存泄漏分析工具"><a href="#常用的内存泄漏分析工具" class="headerlink" title="常用的内存泄漏分析工具"></a>常用的内存泄漏分析工具</h4><p>通过第三方库LeakCanary，和Android Studio自带的MAT。</p>
+<h3 id="内存溢出"><a href="#内存溢出" class="headerlink" title="内存溢出"></a>内存溢出</h3><p>即OOM，OOM时会导致程序异常。Android设备出厂以后，java虚拟机对单个应用的最大内存分配就确定下来了，超出这个值就会OOM。单个应用可用的最大内存对应于 /system/build.prop 文件中的 dalvik.vm.heapgrowthlimit。<br>此外，除了因内存泄漏累积到一定程度导致OOM的情况以外，也有一次性申请很多内存，比如说 一次创建大的数组或者是载入大的文件如图片的时候会导致OOM。而且，实际情况下 很多OOM就是因图片处理不当 而产生的。</p>
+<h3 id="内存优化"><a href="#内存优化" class="headerlink" title="内存优化"></a>内存优化</h3><h4 id="对象引用"><a href="#对象引用" class="headerlink" title="对象引用"></a>对象引用</h4><h5 id="强引用"><a href="#强引用" class="headerlink" title="强引用"></a>强引用</h5><p>如果一个对象具有强引用，GC就绝对不会回收它。当内存空间不足时，JVM会抛出OOM错误。</p>
+<h5 id="软引用"><a href="#软引用" class="headerlink" title="软引用"></a>软引用</h5><p>如果一个对象只具有软引用，则内存空间足够，GC时就不会回收它；如果内存不足，就会回收这些对象的内存。可用来实现内存敏感的高速缓存。<br>软引用可以和一个ReferenceQueue（引用队列）联合使用，如果软引用引用的对象被垃圾回收器回收，JVM会把这个软引用加入与之关联的引用队列中。<br>软引用是用来描述一些有用但并不是必需的对象，在Java中用java.lang.ref.SoftReference类来表示。对于软引用关联着的对象，只有在内存不足的时候JVM才会回收该对象。因此，这一点可以很好地用来解决OOM的问题，并且这个特性很适合用来实现缓存：比如网页缓存、图片缓存等。</p>
+<h5 id="弱引用"><a href="#弱引用" class="headerlink" title="弱引用"></a>弱引用</h5><p>在垃圾回收器线程扫描它所管辖的内存区域的过程中，一旦发现了只具有弱引用的对象，不管当前内存空间是否足够，都会回收它的内存。不过，由于垃圾回收器是一个优先级很低的线程，因此不一定会很快发现那些只具有弱引用的对象。<br>这里要注意，可能需要运行多次GC，才能找到并释放弱引用对象。<br>弱引用也是用来描述非必需对象的，当JVM进行垃圾回收时，无论内存是否充足，都会回收被弱引用关联的对象。在java中，用java.lang.ref.WeakReference类来表示。</p>
+<h5 id="虚引用"><a href="#虚引用" class="headerlink" title="虚引用"></a>虚引用</h5><p>只能用于跟踪即将对被引用对象进行的收集。虚拟机必须与ReferenceQueue类联合使用。因为它能够充当通知机制。<br>虚引用和前面的软引用、弱引用不同，它并不影响对象的生命周期。在java中用java.lang.ref.PhantomReference类表示。如果一个对象与虚引用关联，则跟没有引用与之关联一样，在任何时候都可能被垃圾回收器回收。</p>
+<blockquote>
+<p>要注意的是，虚引用必须和引用队列关联使用，当垃圾回收器准备回收一个对象时，如果发现它还有虚引用，就会把这个虚引用加入到与之 关联的引用队列中。程序可以通过判断引用队列中是否已经加入了虚引用，来了解被引用的对象是否将要被垃圾回收。如果程序发现某个虚引用已经被加入到引用队列，那么就可以在所引用的对象的内存被回收之前采取必要的行动。</p>
+</blockquote>
+<h4 id="减少不必要的内存开销"><a href="#减少不必要的内存开销" class="headerlink" title="减少不必要的内存开销"></a>减少不必要的内存开销</h4><h5 id="AutoBoxing"><a href="#AutoBoxing" class="headerlink" title="AutoBoxing"></a>AutoBoxing</h5><p>自动装箱的核心就是把基础数据类型转换成对应的复杂类型。在自动装箱转化时，都会产生一个新的对象，这样就会产生更多的内存和性能开销。如int只占4字节，而Integer对象有16字节，特别是HashMap这类容器，进行增、删、改、查操作时，都会产生大量的自动装箱操作。<br>检测方式：使用TraceView查看耗时，如果发现调用了大量的integer.value，就说明发生了AutoBoxing。</p>
+<h5 id="内存复用"><a href="#内存复用" class="headerlink" title="内存复用"></a>内存复用</h5><ul>
+<li>资源复用：通用的字符串、颜色定义、简单页面布局的复用。</li>
+<li>视图复用：可以使用ViewHolder实现ConvertView复用。</li>
+<li>对象池：显示创建对象池，实现复用逻辑，对相同的类型数据使用同一块内存空间。</li>
+<li>Bitmap对象的复用：使用inBitmap属性可以告知Bitmap解码器尝试使用已经存在的内存区域，新解码的bitmap会尝试使用之前那张bitmap在heap中占据的pixel data内存区域。</li>
+</ul>
+<h5 id="使用最优的数据类型"><a href="#使用最优的数据类型" class="headerlink" title="使用最优的数据类型"></a>使用最优的数据类型</h5><p>parseArray、SparseBooleanArray、LongSparseArray，使用这些API可以让我们的程序更加高效。HashMap 工具类会相对比较 低效，因为它 需要为每一个键值对都提供一个对象入口，而 SparseArray 就 避免 掉了 基本数据类型转换成对象数据类型的时间。</p>
+<h5 id="使用-IntDef和StringDef-替代枚举类型"><a href="#使用-IntDef和StringDef-替代枚举类型" class="headerlink" title="使用 IntDef和StringDef 替代枚举类型"></a>使用 IntDef和StringDef 替代枚举类型</h5><p>使用枚举类型的dex size是普通常量定义的dex size的13倍以上，同时，运行时的内存分配，一个enum值的声明会消耗至少20bytes。<br>枚举最大的优点是类型安全，但在Android平台上，枚举的内存开销是直接定义常量的三倍以上。所以Android提供了注解的方式检查类型安全。目前提供了int型和String型两种注解方式：IntDef和StringDef，用来提供编译期的类型检查。<br>使用IntDef和StringDef需要在Gradle配置中引入相应的依赖包：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">compile <span class="string">'com.android.support:support-annotations:22.0.0'</span></span><br></pre></td></tr></table></figure></p>
+<h5 id="LruCache"><a href="#LruCache" class="headerlink" title="LruCache"></a>LruCache</h5><p>最近最少使用缓存，使用强引用保存需要缓存的对象，它内部维护了一个由LinkedHashMap组成的双向列表，不支持线程安全，LruCache对它进行了封装，添加了线程安全操作。当其中的一个值被访问时，它被放到队列的尾部，当缓存将满时，队列头部的值（最近最少被访问的）被丢弃，之后可以被GC回收。<br>除了普通的get/set方法之外，还有sizeOf方法，它用来返回每个缓存对象的大小。此外，还有entryRemoved方法，当一个缓存对象被丢弃时调用的方法，当第一个参数为true：表明环处对象是为了腾出空间而被清理时。否则，表明缓存对象的entry被remove移除或者被put覆盖时。</p>
+<h5 id="图片内存优化"><a href="#图片内存优化" class="headerlink" title="图片内存优化"></a>图片内存优化</h5><ul>
+<li><p>设置位图的规格：当显示小图片或对图片质量要求不高时可以考虑使用RGB_565，用户头像或圆角图片一般可以尝试ARGB_4444。通过设置inPreferredConfig参数来实现不同的位图规格，代码如下所示：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">BitmapFactory.Options options = <span class="keyword">new</span> BitmapFactory.Options();</span><br><span class="line">options.inPreferredConfig = Bitmap.Config.RGB_565;</span><br><span class="line">BitmapFactory.decodeStream(is, <span class="keyword">null</span>, options);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>inSampleSize：位图功能对象中的inSampleSize属性实现了位图的缩放功能，代码如下所示：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">BitampFactory.Options options = <span class="keyword">new</span> BitmapFactory.Options();</span><br><span class="line"><span class="comment">// 设置为4就是宽和高都变为原来1/4大小的图片</span></span><br><span class="line">options.inSampleSize = <span class="number">4</span>;</span><br><span class="line">BitmapFactory.decodeSream(is, <span class="keyword">null</span>, options);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>inScaled，inDensity和inTargetDensity实现更细的缩放图片：当inScaled设置为true时，系统会按照现有的密度来划分目标密度，代码如下所示：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">BitampFactory.Options options = <span class="keyword">new</span> BitampFactory.Options();</span><br><span class="line">options.inScaled = <span class="keyword">true</span>;</span><br><span class="line">options.inDensity = srcWidth;</span><br><span class="line">options.inTargetDensity = dstWidth;</span><br><span class="line">BitmapFactory.decodeStream(is, <span class="keyword">null</span>, options);</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>上述三种方案的缺点：使用了过多的算法，导致图片显示过程需要更多的时间开销，如果图片很多的话，就影响到图片的显示效果。最好的方案是结合这两个方法，达到最佳的性能结合，首先使用inSampleSize处理图片，转换为接近目标的2次幂，然后用inDensity和inTargetDensity生成最终想要的准确大小，因为inSampleSize会减少像素的数量，而基于输出密码的需要对像素重新过滤。但获取资源图片的大小，需要设置位图对象的inJustDecodeBounds值为true，然后继续解码图片文件，这样才能生产图片的宽高数据，并允许继续优化图片。总体的代码如下所示：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">BitmapFactory.Options options = <span class="keyword">new</span> BitampFactory.Options();</span><br><span class="line">options.inJustDecodeBounds = <span class="keyword">true</span>;</span><br><span class="line">BitmapFactory.decodeStream(is, <span class="keyword">null</span>, options);</span><br><span class="line">options.inScaled = <span class="keyword">true</span>;</span><br><span class="line">options.inDensity = options.outWidth;</span><br><span class="line">options.inSampleSize = <span class="number">4</span>;</span><br><span class="line">Options.inTargetDensity = desWith * options.inSampleSize;</span><br><span class="line">options.inJustDecodeBounds = <span class="keyword">false</span>;</span><br><span class="line">BitmapFactory.decodeStream(is, <span class="keyword">null</span>, options);</span><br></pre></td></tr></table></figure></p>
+<h5 id="图片放置优化"><a href="#图片放置优化" class="headerlink" title="图片放置优化"></a>图片放置优化</h5><p>只需要UI提供一套高分辨率的图，图片建议放在drawable-xxhdpi文件夹下，这样在低分辨率设备中图片的大小只是压缩，不会存在内存增大的情况。如若遇到不需缩放的文件，放在drawable-nodpi文件夹下。</p>
+<h5 id="在App可用内存过低时主动释放内存"><a href="#在App可用内存过低时主动释放内存" class="headerlink" title="在App可用内存过低时主动释放内存"></a>在App可用内存过低时主动释放内存</h5><p>在App退到后台内存紧张即将被Kill掉时选择重写 onTrimMemory/onLowMemory 方法去释放掉图片缓存、静态缓存来自保。</p>
+<h5 id="item被回收不可见时释放掉对图片的引用"><a href="#item被回收不可见时释放掉对图片的引用" class="headerlink" title="item被回收不可见时释放掉对图片的引用"></a>item被回收不可见时释放掉对图片的引用</h5><ul>
+<li>ListView：因此每次item被回收后再次利用都会重新绑定数据，只需在ImageView onDetachFromWindow的时候释放掉图片引用即可。</li>
+<li>RecyclerView：因为被回收不可见时第一选择是放进mCacheView中，这里item被复用并不会只需bindViewHolder来重新绑定数据，只有被回收进mRecyclePool中后拿出来复用才会重新绑定数据，因此重写Recycler.Adapter中的onViewRecycled()方法来使item被回收进RecyclePool的时候去释放图片引用。</li>
+</ul>
+<h5 id="避免创作不必要的对象"><a href="#避免创作不必要的对象" class="headerlink" title="避免创作不必要的对象"></a>避免创作不必要的对象</h5><p>例如，我们可以在字符串拼接的时候使用StringBuffer，StringBuilder。</p>
+<h5 id="自定义View中的内存优化"><a href="#自定义View中的内存优化" class="headerlink" title="自定义View中的内存优化"></a>自定义View中的内存优化</h5><p>例如，在onDraw方法里面不要执行对象的创建，一般来说，都应该在自定义View的构造器中创建对象。</p>
+<h5 id="其它的内存优化注意事项"><a href="#其它的内存优化注意事项" class="headerlink" title="其它的内存优化注意事项"></a>其它的内存优化注意事项</h5><p>除了上面的一些内存优化点之外，这里还有一些内存优化的点我们需要注意，如下所示：</p>
+<ul>
+<li>尽使用static final 优化成员变量。</li>
+<li>使用增强型for循环语法。</li>
+<li>在没有特殊原因的情况下，尽量使用基本数据类型来代替封装数据类型，int比Integer要更加有效，其它数据类型也是一样。</li>
+<li>在合适的时候适当采用软引用和弱引用。</li>
+<li>采用内存缓存和磁盘缓存。</li>
+<li>尽量采用静态内部类，可避免潜在由于内部类导致的内存泄漏。</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>您的支持是我原创的动力</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechatpay.jpg" alt="chuangWu 微信支付"/>
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/images/alipay.jpg" alt="chuangWu 支付宝"/>
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+
+<div>  
+     
+ 
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+      <strong>本文作者：</strong>chuangWu
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="/2020/03/20/Android性能优化-一-：内存优化/" title="Android性能优化(一)：内存优化">2020/03/20/Android性能优化-一-：内存优化/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权： </strong>
+    本站文章均采用 <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0 CN</a> 许可协议，请勿用于商业，转载注明出处！
+  </li>
+</ul>
+
+</div>
+
+      
+        <div class="post-tags">
+          
+            <a href="/tags/内存优化/" rel="tag"># 内存优化</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/03/19/OkHttp源码解析-四-：缓存机制/" rel="next" title="OkHttp源码解析(四)：缓存机制">
+                <i class="fa fa-chevron-left"></i> OkHttp源码解析(四)：缓存机制
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/03/20/Android性能优化-二-：布局优化/" rel="prev" title="Android性能优化(二)：布局优化">
+                Android性能优化(二)：布局优化 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+      <div>    
+      
+
+
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/head.png"
+                alt="chuangWu" />
+            
+              <p class="site-author-name" itemprop="name">chuangWu</p>
+              <p class="site-description motion-element" itemprop="description">选择大于努力</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">54</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">71</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#对象的声明周期"><span class="nav-number">1.</span> <span class="nav-text">对象的声明周期</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Created（创建）"><span class="nav-number">1.1.</span> <span class="nav-text">Created（创建）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#InUse（使用）"><span class="nav-number">1.2.</span> <span class="nav-text">InUse（使用）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Invisible（不可见）"><span class="nav-number">1.3.</span> <span class="nav-text">Invisible（不可见）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Unreachable（不可达）"><span class="nav-number">1.4.</span> <span class="nav-text">Unreachable（不可达）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Collected（收集）"><span class="nav-number">1.5.</span> <span class="nav-text">Collected（收集）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Finalized（终结）"><span class="nav-number">1.6.</span> <span class="nav-text">Finalized（终结）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Deallocated（对象空间重新分配）"><span class="nav-number">1.7.</span> <span class="nav-text">Deallocated（对象空间重新分配）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#内存回收机制"><span class="nav-number">2.</span> <span class="nav-text">内存回收机制</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Young-Generation"><span class="nav-number">2.1.</span> <span class="nav-text">Young Generation</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Old-Generation"><span class="nav-number">2.2.</span> <span class="nav-text">Old Generation</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Permanent-Generation"><span class="nav-number">2.3.</span> <span class="nav-text">Permanent Generation</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#处理过程总结"><span class="nav-number">2.4.</span> <span class="nav-text">处理过程总结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GC"><span class="nav-number">3.</span> <span class="nav-text">GC</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#GC类型"><span class="nav-number">3.1.</span> <span class="nav-text">GC类型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Young-Generation-GC"><span class="nav-number">3.2.</span> <span class="nav-text">Young Generation GC</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Old-Generation-GC"><span class="nav-number">3.3.</span> <span class="nav-text">Old Generation GC</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#垃圾收集算法"><span class="nav-number">3.4.</span> <span class="nav-text">垃圾收集算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#垃圾回收算法"><span class="nav-number">3.5.</span> <span class="nav-text">垃圾回收算法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#标记-清除算法"><span class="nav-number">3.5.1.</span> <span class="nav-text">标记-清除算法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#复制算法"><span class="nav-number">3.5.2.</span> <span class="nav-text">复制算法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#标记-整理算法"><span class="nav-number">3.5.3.</span> <span class="nav-text">标记-整理算法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#分代收集算法"><span class="nav-number">3.5.4.</span> <span class="nav-text">分代收集算法</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#内存问题"><span class="nav-number">4.</span> <span class="nav-text">内存问题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#内存抖动"><span class="nav-number">4.1.</span> <span class="nav-text">内存抖动</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#为什么会内存抖动？"><span class="nav-number">4.1.1.</span> <span class="nav-text">为什么会内存抖动？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#内存抖动常见案例"><span class="nav-number">4.1.2.</span> <span class="nav-text">内存抖动常见案例</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#字符串使用加号拼接"><span class="nav-number">4.1.2.1.</span> <span class="nav-text">字符串使用加号拼接</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#资源复用"><span class="nav-number">4.1.2.2.</span> <span class="nav-text">资源复用</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#减少不合理的对象创建"><span class="nav-number">4.1.2.3.</span> <span class="nav-text">减少不合理的对象创建</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#使用合理的数据结构"><span class="nav-number">4.1.2.4.</span> <span class="nav-text">使用合理的数据结构</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#内存抖动解决实战"><span class="nav-number">4.1.3.</span> <span class="nav-text">内存抖动解决实战</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#内存泄漏"><span class="nav-number">4.2.</span> <span class="nav-text">内存泄漏</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#常见的内存泄漏场景"><span class="nav-number">4.2.1.</span> <span class="nav-text">常见的内存泄漏场景</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#资源性对象未关闭"><span class="nav-number">4.2.1.1.</span> <span class="nav-text">资源性对象未关闭</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#注册对象未注销"><span class="nav-number">4.2.1.2.</span> <span class="nav-text">注册对象未注销</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#类的静态变量持有大数据对象"><span class="nav-number">4.2.1.3.</span> <span class="nav-text">类的静态变量持有大数据对象</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#单例造成的内存泄漏"><span class="nav-number">4.2.1.4.</span> <span class="nav-text">单例造成的内存泄漏</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#非静态内部类的静态实例"><span class="nav-number">4.2.1.5.</span> <span class="nav-text">非静态内部类的静态实例</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Handler临时性内存泄漏"><span class="nav-number">4.2.1.6.</span> <span class="nav-text">Handler临时性内存泄漏</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Handler的错误使用"><span class="nav-number">4.2.1.7.</span> <span class="nav-text">Handler的错误使用</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#容器中的对象没清理造成的内存泄漏"><span class="nav-number">4.2.1.8.</span> <span class="nav-text">容器中的对象没清理造成的内存泄漏</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#WebView"><span class="nav-number">4.2.1.9.</span> <span class="nav-text">WebView</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#使用ListView时造成的内存泄漏"><span class="nav-number">4.2.1.10.</span> <span class="nav-text">使用ListView时造成的内存泄漏</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#内存泄漏监控"><span class="nav-number">4.2.1.11.</span> <span class="nav-text">内存泄漏监控</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#常用的内存泄漏分析工具"><span class="nav-number">4.2.2.</span> <span class="nav-text">常用的内存泄漏分析工具</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#内存溢出"><span class="nav-number">4.3.</span> <span class="nav-text">内存溢出</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#内存优化"><span class="nav-number">4.4.</span> <span class="nav-text">内存优化</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#对象引用"><span class="nav-number">4.4.1.</span> <span class="nav-text">对象引用</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#强引用"><span class="nav-number">4.4.1.1.</span> <span class="nav-text">强引用</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#软引用"><span class="nav-number">4.4.1.2.</span> <span class="nav-text">软引用</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#弱引用"><span class="nav-number">4.4.1.3.</span> <span class="nav-text">弱引用</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#虚引用"><span class="nav-number">4.4.1.4.</span> <span class="nav-text">虚引用</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#减少不必要的内存开销"><span class="nav-number">4.4.2.</span> <span class="nav-text">减少不必要的内存开销</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#AutoBoxing"><span class="nav-number">4.4.2.1.</span> <span class="nav-text">AutoBoxing</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#内存复用"><span class="nav-number">4.4.2.2.</span> <span class="nav-text">内存复用</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#使用最优的数据类型"><span class="nav-number">4.4.2.3.</span> <span class="nav-text">使用最优的数据类型</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#使用-IntDef和StringDef-替代枚举类型"><span class="nav-number">4.4.2.4.</span> <span class="nav-text">使用 IntDef和StringDef 替代枚举类型</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#LruCache"><span class="nav-number">4.4.2.5.</span> <span class="nav-text">LruCache</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#图片内存优化"><span class="nav-number">4.4.2.6.</span> <span class="nav-text">图片内存优化</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#图片放置优化"><span class="nav-number">4.4.2.7.</span> <span class="nav-text">图片放置优化</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#在App可用内存过低时主动释放内存"><span class="nav-number">4.4.2.8.</span> <span class="nav-text">在App可用内存过低时主动释放内存</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#item被回收不可见时释放掉对图片的引用"><span class="nav-number">4.4.2.9.</span> <span class="nav-text">item被回收不可见时释放掉对图片的引用</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#避免创作不必要的对象"><span class="nav-number">4.4.2.10.</span> <span class="nav-text">避免创作不必要的对象</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#自定义View中的内存优化"><span class="nav-number">4.4.2.11.</span> <span class="nav-text">自定义View中的内存优化</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#其它的内存优化注意事项"><span class="nav-number">4.4.2.12.</span> <span class="nav-text">其它的内存优化注意事项</span></a></li></ol></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">chuangWu</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      本站访客数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      人次
+    </span>
+  
+
+  
+    <span class="site-pv">
+      本站总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
